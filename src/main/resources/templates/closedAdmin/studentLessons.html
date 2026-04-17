@@ -1,0 +1,594 @@
+
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>IT Kids School | Розклад занять</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fc;
+            color: #1a2c3e;
+            padding: 2rem 1.5rem;
+        }
+
+        /* головний контейнер */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        /* hero / header стиль */
+        .hero {
+            background: linear-gradient(135deg, #0b2b3b 0%, #1b4f6e 100%);
+            padding: 2rem 2rem 1.8rem 2rem;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hero h1 i {
+            font-size: 2rem;
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 20px;
+        }
+
+        .hero .sub {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.85;
+            margin-top: 8px;
+            border-left: 3px solid #ffc857;
+            padding-left: 1rem;
+        }
+
+        .hero p {
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            max-width: 80%;
+            opacity: 0.9;
+        }
+
+        /* навігація днями (горизонтальний скрол + кнопки) */
+        .week-navigation {
+            background: white;
+            border-bottom: 1px solid #e2edf2;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #eef3f7;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1f5e7e;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: #cbdde6;
+            transform: scale(0.96);
+        }
+
+        .date-indicator {
+            font-weight: 600;
+            background: #eef2f5;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            color: #0f3b4f;
+        }
+
+        .scroll-hint {
+            font-size: 0.75rem;
+            color: #6c8d9c;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* таблиця з фіксованою першою колонкою (години) */
+        .table-wrapper {
+            overflow-x: auto;
+            position: relative;
+            border-radius: 0 0 1.5rem 1.5rem;
+            background: #ffffff;
+        }
+
+        .schedule-table {
+            min-width: 700px;
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+
+        /* стікі заголовки днів */
+        .schedule-table thead tr th {
+            position: sticky;
+            top: 0;
+            background: #f9fbfd;
+            z-index: 10;
+            padding: 1rem 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #dce7ed;
+            color: #1f4e6e;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+
+        /* фіксована колонка часу (не гортається) */
+        .schedule-table th.time-col,
+        .schedule-table td.time-cell {
+            position: sticky;
+            left: 0;
+            background-color: white;
+            z-index: 5;
+            font-weight: 600;
+            box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05);
+        }
+
+        .schedule-table th.time-col {
+            background: #f9fbfd;
+            z-index: 15;
+            border-right: 1px solid #e2edf2;
+            font-weight: 700;
+        }
+
+        .schedule-table td.time-cell {
+            background: white;
+            border-right: 1px solid #e9f0f4;
+            font-weight: 500;
+            color: #2c5a74;
+            text-align: center;
+        }
+
+        .schedule-table td, .schedule-table th {
+            border-bottom: 1px solid #eef3f8;
+            padding: 0.9rem 0.4rem;
+            vertical-align: middle;
+            transition: all 0.1s ease;
+        }
+
+        /* стилі комірок */
+        .lesson-card {
+            background: #fefefe;
+            border-radius: 14px;
+            padding: 8px 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            text-align: center;
+            transition: transform 0.05s;
+        }
+
+        .course-name {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e2f3c;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: #f0f2f5;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 4px;
+        }
+
+        /* кольори статусів */
+        .status-will, .status-was {
+            background-color: #e0f7ea;
+            border-left: 4px solid #2b7e3a;
+        }
+        .status-wont, .status-wasnt {
+            background-color: #ffe6e5;
+            border-left: 4px solid #c7362b;
+        }
+        .status-will .status-badge, .status-was .status-badge {
+            background: #c8e6d9;
+            color: #146b3a;
+        }
+        .status-wont .status-badge, .status-wasnt .status-badge {
+            background: #ffd9d7;
+            color: #b13a2e;
+        }
+
+        .empty-lesson {
+            background-color: #f2f5f7;
+            border-radius: 12px;
+            padding: 8px 4px;
+            text-align: center;
+            color: #8ea3b0;
+            font-size: 0.75rem;
+            font-style: italic;
+        }
+
+        /* адаптив */
+        @media (max-width: 750px) {
+            body {
+                padding: 1rem;
+            }
+            .hero p {
+                max-width: 100%;
+            }
+            .schedule-table td, .schedule-table th {
+                padding: 0.7rem 0.2rem;
+            }
+            .course-name {
+                font-size: 0.75rem;
+            }
+        }
+
+        footer {
+            background: #f8fafc;
+            padding: 1rem 2rem;
+            font-size: 0.75rem;
+            text-align: center;
+            color: #5c7f91;
+            border-top: 1px solid #e2edf2;
+        }
+        a {
+            color: #3a3d41;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 30px;
+        }
+        .mode-switch {-->
+                    background: white;-->
+                    padding: 1rem 2rem;-->
+                    border-bottom: 1px solid #e2edf2;-->
+                    display: flex;-->
+                    justify-content: flex-end;-->
+                    gap: 1rem;}
+
+        .mode-btn {-->
+                                padding: 8px 24px;-->
+                                border-radius: 40px;-->
+                                border: 2px solid #1f5e7e;-->
+                                background: white;-->
+                                color: #1f5e7e;-->
+                                font-weight: 600;-->
+                                cursor: pointer;-->
+                                transition: all 0.2s;-->
+                                font-size: 0.9rem;-->
+                            }
+
+                .mode-btn.active {-->
+                                background: #1f5e7e;-->
+                                color: white;-->
+                            }
+
+                .mode-btn:hover {
+                                transform: translateY(-1px);-->
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.1);-->
+                            }
+        /* ///////////////// */
+        .div-start{
+            width: 200px;
+            height: 200px;
+            background-color: lightgreen;
+            transform: translateY(400px);
+        }
+        .div-jump{
+            animation: jump 1.5s  0s 1 ease-in-out normal forwards;
+        }
+        @keyframes jump {
+            0%{
+                transform: translateY(400px);
+            }
+
+
+            50%{
+                transform: translateY(0px);
+            }
+
+
+            100%{
+                transform: translateY(400px);
+            }
+        }
+
+        /* ///////////////// */
+
+
+        .show{
+            animation: show 2s ease-in-out 0s 1 normal forwards;
+        }
+        .hide{
+            animation: hide 2s ease-in-out 0s 1 normal forwards;
+        }
+
+        @keyframes show {
+            0%{
+                opacity: 0;
+                scale: 0;
+            }
+            100%{
+                opacity: 1;
+                scale: 1;
+            }
+        }
+
+        @keyframes hide {
+            0%{
+                opacity: 1;
+                scale: 1;
+            }
+            100%{
+                opacity: 0;
+                scale: 0;
+            }
+        }
+
+        img{
+            width:900px;
+            height: 900px;
+        }
+
+        /* Стилі для попапу */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .popup-header {
+            padding: 15px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-header h3 {
+            margin: 0;
+        }
+
+        .popup-close {
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .popup-close:hover {
+            transform: scale(1.2);
+        }
+
+        .popup-body {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .popup-body p {
+            margin: 10px 0;
+        }
+
+        .popup-footer {
+            padding: 15px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .popup-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background-color: #218838;
+        }
+
+        .cancel-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* Стиль для клікабельних комірок */
+        .table-wrapper td {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .table-wrapper td:hover {
+            opacity: 0.8;
+        }
+
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="hero">
+        <h1><i class="fas fa-laptop-code"></i> IT Kids School</h1>
+        <div class="sub">Сучасна IT-школа для дітей та підлітків</div>
+        <p>Ми молода школа, але вже маємо амбітну команду, сильну навчальну програму та великий потенціал вирости у топовий освітній IT-центр.</p>
+    </div>
+
+    <!-- контроли для гортання днями -->
+    <div class="week-navigation">
+        <div class="nav-buttons">
+            <button class="nav-btn" id="scrollLeftBtn" title="Попередні дні"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn" id="scrollRightBtn" title="Наступні дні"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="date-indicator" id="dateRangeIndicator">
+            <i class="far fa-calendar-alt"></i> <span id="rangeText">Завантаження...</span>
+        </div>
+        <div class="scroll-hint">
+            <i class="fas fa-arrows-alt-h"></i> <span>Гортайте таблицю →</span>
+        </div>
+<!--        <div class="mode-switch">-->
+<!--            <button class="mode-btn" id="checkModeBtn">👁️ Check Mode</button>-->
+<!--            <button class="mode-btn" id="editModeBtn">✏️ Edit Mode</button>-->
+<!--        </div>-->
+    </div>
+
+    <div class="table-wrapper" id="tableWrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Час</th>
+                <th th:each="day : ${weekDays}"
+                    th:text="${day}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="hour : ${hours}">
+                <td th:text="${hour}"></td>
+
+                <td style="height: 20px; background-color: lightgray; margin: 0px; cursor: pointer;"
+                    th:each="day : ${weekDays}">
+
+<!--                    th:onclick="|showPopup( + ${day.split(' ')[1].charAt(0)},${day.split(' ')[1].charAt(2)}, ${hour} + )|">-->
+<!--                th:attr="onclick='showPopup(\'' + ${day.split(' ')[1].charAt(0)} + '\', \'' + ${day.split(' ')[1].charAt(2)} + '\', \'' + ${hour} + '\')'">-->
+<!--                    <p th:text="${day.split(' ')[1].charAt(0)}"></p>-->
+                        <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
+
+                            <button th:if="${lesson != null and (lesson.status=='wasnt' or lesson.status=='wont')}" style="background-color: red;">
+                                <span style="font-size: 20px" th:text="${lesson.course.name}"></span>
+                            </button>
+                            <button th:if="${lesson != null and (lesson.status=='will' or lesson.status=='was')}" style="background-color: lightgreen;">
+                                <span style="font-size: 16px" th:text="${lesson.course.name}"></span>
+                            </button>
+                            <button th:if="${lesson == null}">
+                            </button>
+                        </div>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <footer>
+        <i class="far fa-clock"></i> Розклад занять • Години 08:00 – 21:00 • Кольори: зелений (заняття було/буде), червоний (пропуск/не було), сірий (немає заняття)
+    </footer>
+</div>
+
+<!--    <div id="lessonPopup" class="popup-overlay" style="display: none;">-->
+<!--        <div class="popup-content">-->
+<!--            <div class="popup-header">-->
+<!--                <h3>Керування заняттям</h3>-->
+<!--                <span class="popup-close" onclick="closePopup()">&times;</span>-->
+<!--            </div>-->
+<!--            <div class="popup-body">-->
+<!--                <p><strong>Дата:</strong> <span id="popupDate"></span></p>-->
+<!--                <p><strong>Час:</strong> <span id="popupTime"></span></p>-->
+<!--                <div id="popupLessonInfo">-->
+<!--                    &lt;!&ndash; Тут буде інформація про заняття, якщо воно є &ndash;&gt;-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="popup-footer">-->
+<!--                <button id="editLessonBtn" class="popup-btn edit-btn" onclick="editLesson()">✏️ Змінити</button>-->
+<!--                <button id="deleteLessonBtn" class="popup-btn delete-btn" onclick="deleteLesson()">🗑️ Видалити</button>-->
+<!--                <button id="addLessonBtn" class="popup-btn add-btn" onclick="addLesson()" style="display: none;">➕ Додати</button>-->
+<!--                <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+
+</body>
+</html>

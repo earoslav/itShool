@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Home</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #f4f7fb;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        header {
+            background: #111827;
+            color: #ffffff;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 72px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        section {
+            padding: 52px 0;
+        }
+        h2 {
+            font-size: 30px;
+            margin-bottom: 18px;
+            color: #0f172a;
+        }
+        .cards {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+        .card h3 {
+            margin-bottom: 8px;
+            color: #1d4ed8;
+        }
+        .courses-list {
+            display: grid;
+            gap: 14px;
+        }
+        .course-item {
+            background: #ffffff;
+            border-left: 5px solid #2563eb;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .course-description {
+            margin-top: 8px;
+            color: #475569;
+        }
+        .course-link {
+            color: #1d4ed8;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .course-link:hover {
+            text-decoration: underline;
+        }
+        .about-text {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+        .about-text h3 {
+            margin: 16px 0 8px;
+            color: #1d4ed8;
+        }
+        .about-text p {
+            margin-bottom: 10px;
+        }
+        .about-text ul {
+            padding-left: 22px;
+            margin-bottom: 12px;
+        }
+        .about-text li {
+            margin-bottom: 6px;
+        }
+        .teachers-list,
+        .comments-list {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        .person-card,
+        .comment-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+        }
+        .meta {
+            color: #475569;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .cta {
+            text-align: center;
+            background: #e0ecff;
+            border-radius: 16px;
+            padding: 36px 16px;
+        }
+        .teacher-cta {
+            text-align: center;
+            background: #dbeafe;
+            border-radius: 16px;
+            padding: 34px 16px;
+        }
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a class="active" href="/homepage/homepage">Головна</a>
+            <a href="/homepage/courses">Курси</a>
+            <a href="#">Викладачі</a>
+            <a href="#">Розклад</a>
+            <a href="#">Контакти</a>
+        </nav>
+    </div>
+</header>
+<main>
+    <section class="hero">
+        <div class="container">
+            <h1>Сучасна IT-школа для дітей та підлітків</h1>
+            <p>
+                Ми молода школа, але вже маємо амбітну команду, сильну навчальну програму
+                та великий потенціал вирости у топовий освітній IT-центр.
+            </p>
+            <div class="hero-buttons">
+                <a class="btn btn-primary" href="/homepage/signUpAsStudent">Спробувати перше заняття</a>
+                <a class="btn btn-secondary" href="/homepage/courses">Переглянути курси</a>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <h2>Чому обирають нас</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Практичний підхід</h3>
+                    <p>Учні одразу створюють власні міні-проєкти та портфоліо.</p>
+                </div>
+                <div class="card">
+                    <h3>Актуальні технології</h3>
+                    <p>Вивчаємо програмування, веброзробку, логіку та цифрові навички.</p>
+                </div>
+                <div class="card">
+                    <h3>Комфортний темп</h3>
+                    <p>Групи невеликі, тому викладач приділяє увагу кожному учню.</p>
+                </div>
+                <div class="card">
+                    <h3>Підтримка батьків</h3>
+                    <p>Після занять надаємо короткий фідбек про прогрес дитини.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <h2>Про нас</h2>
+            <div class="about-text">
+                <p>
+                    <strong>IT Kids School - сучасна IT освіта для дітей</strong>
+                </p>
+                <p>
+                    IT Kids School - це молода школа, яка допомагає дітям і підліткам освоювати сучасні технології
+                    та розвивати свої навички в IT.
+                </p>
+                <h3>Ми пропонуємо зручне навчання:</h3>
+                <ul>
+                    <li>онлайн — з будь-якої точки України</li>
+                </ul>
+
+                <h3>Чому IT Kids School?</h3>
+                <p>
+                    IT — це про майбутнє, розвиток і нові можливості. Ми навчаємо дітей не просто користуватись
+                    технологіями, а розуміти їх і створювати власні проєкти.
+                </p>
+
+                <h3>Наш підхід:</h3>
+                <ul>
+                    <li>навчання в малих групах (до 6 учнів)</li>
+                    <li>також навчання один на один</li>
+                    <li>багато практики</li>
+                    <li>сучасні програми навчання</li>
+                    <li>підтримка викладача на кожному етапі</li>
+                </ul>
+
+                <h3>Як проходить навчання?</h3>
+                <p>
+                    Кожен учень отримує максимум уваги та можливість розвиватись у своєму темпі.
+                </p>
+
+                <h3>Напрямки навчання</h3>
+                <p>Ми пропонуємо курси для дітей 7-17 років:</p>
+                <ul>
+                    <li>програмування (Python, Java, C++)</li>
+                    <li>веб-розробка (HTML, CSS, JavaScript)</li>
+                    <li>дизайн (Figma, Photoshop)</li>
+                    <li>створення ігор</li>
+                    <li>Scratch</li>
+                </ul>
+                <p>Дитина обирає напрямок і глибоко його вивчає протягом курсу.</p>
+
+                <h3>Що отримають учні?</h3>
+                <p>Учні IT Kids School:</p>
+                <ul>
+                    <li>створюють власні сайти та проєкти</li>
+                    <li>вчаться програмувати та мислити логічно</li>
+                    <li>розвивають креативність і технічні навички</li>
+                    <li>отримують базу для майбутньої професії</li>
+                </ul>
+
+                <h3>Наша команда</h3>
+                <p>IT Kids School — це команда викладачів, які:</p>
+                <ul>
+                    <li>вміють цікаво пояснювати</li>
+                    <li>працюють з дітьми та розуміють їх</li>
+                    <li>допомагають досягати результату</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <h2>Наші курси</h2>
+            <div class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
+                <div class="course-item" th:each="course : ${courses}">
+                    <a class="course-link" href="/homepage/courses" th:text="${course.name}">Назва курсу</a>
+                    <span> - </span>
+                    <span th:text="${course.costPerLesson} + ' грн за заняття'">Вартість</span>
+                    <p class="course-description" th:data-full-text="${course.description != null and !course.description.isEmpty() ? course.description : 'Опис курсу скоро з''явиться.'}">
+                        Опис курсу
+                    </p>
+                </div>
+            </div>
+            <div class="course-item" th:if="${courses == null or courses.isEmpty()}">
+                Поки що курси ще додаються. Скоро тут буде повний каталог.
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <h2>Наші викладачі</h2>
+            <div class="teachers-list" th:if="${teachers != null and !teachers.isEmpty()}">
+                <div class="person-card" th:each="teacher : ${teachers}">
+                    <h3 th:text="${teacher.name}">Ім'я викладача</h3>
+                    <p class="meta" th:text="'Вік: ' + ${teacher.age}">Вік</p>
+                    <p class="meta teacher-description" th:data-full-text="${teacher.comment != null and !teacher.comment.isEmpty() ? teacher.comment : 'Опис викладача скоро з''явиться.'}">
+                        Короткий опис викладача
+                    </p>
+                </div>
+            </div>
+            <div class="person-card" th:if="${teachers == null or teachers.isEmpty()}">
+                Список викладачів скоро з'явиться.
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container teacher-cta">
+            <h2>Ви викладач?</h2>
+            <p>Тоді записуйтеся до IT Kids School та приєднуйтеся до нашої команди.</p>
+            <div class="hero-buttons" style="justify-content: center; margin-top: 16px;">
+                <a class="btn btn-primary" href="/homepage/signUpAsTeacher">Стати викладачем</a>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <h2>Коментарі учнів та батьків</h2>
+            <div class="comments-list" th:if="${comments != null and !comments.isEmpty()}">
+                <div class="comment-card" th:each="comment : ${comments}">
+                    <p th:text="${comment.commentText}">Текст коментаря</p>
+                    <p class="meta">
+                        Від:
+                        <span th:text="${comment.student != null and comment.student.name != null and !comment.student.name.isEmpty() ? comment.student.name : 'Анонім'}">Ім'я учня</span>
+                        |
+                        Викладач:
+                        <span th:text="${comment.teacher != null and comment.teacher.name != null and !comment.teacher.name.isEmpty() ? comment.teacher.name : 'Не вказано'}">Ім'я викладача</span>
+                    </p>
+                    <p class="meta" th:text="'Оцінка: ' + ${comment.ratingOfStars} + ' / 5'">Рейтинг</p>
+                </div>
+            </div>
+            <div class="comment-card" th:if="${comments == null or comments.isEmpty()}">
+                Поки що немає коментарів, але скоро тут буде фідбек від наших учнів.
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container cta">
+            <h2>Приєднуйтесь до IT Kids School</h2>
+            <p>Навіть як молода школа, ми вже будуємо сильну базу і маємо реальний потенціал для росту.</p>
+            <div class="hero-buttons" style="justify-content: center; margin-top: 16px;">
+                <a class="btn btn-primary" href="/homepage/signUpAsStudent">Записатися</a>
+                <a class="btn btn-secondary" href="#" style="color:#1e3a8a; border-color:#1e3a8a;">Поставити запитання</a>
+            </div>
+        </div>
+    </section>
+</main>
+<footer>
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
+<script>
+    (function () {
+        const maxWords = 10;
+        document.querySelectorAll('.course-description, .teacher-description').forEach(function (element) {
+            const fullText = (element.dataset.fullText || '').trim();
+            const words = fullText.split(/\s+/).filter(Boolean);
+            if (words.length > maxWords) {
+                element.textContent = words.slice(0, maxWords).join(' ') + '...';
+            } else {
+                element.textContent = fullText;
+            }
+        });
+    })();
+</script>
+</body>
+</html>

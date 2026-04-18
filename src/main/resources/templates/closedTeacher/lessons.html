@@ -743,10 +743,10 @@
 
 
 
-            <form action="" method="post" id="addLessonForm">
+            <form th:action="@{/teacher/{teachId}/lessons/addLesson/0/0/0(teachId=${teacher.id})}" method="post" id="addLessonForm">
                 <button type="submit" id="addLessonBtnInEmptyPopup" class="popup-btn edit-btn" >Додати одне заняття</button>
             </form>
-            <form action="" method="post" id="addCourseForm">
+            <form th:action="@{/teacher/{teachId}/lessons/addCourse/0/0/0(teachId=${teacher.id})}" method="post" id="addCourseForm">
                 <button type="submit" id="addCourseBtnInEmptyPopup" class="popup-btn edit-btn" >Додати курc з учнем</button>
             </form>
         </div>
@@ -793,9 +793,10 @@
         const date = el.dataset.date;
         const hour = el.dataset.hour;
         const teachId = popupTeacherID.innerText;
-        let courses = el.dataset.courses;
-        let students = el.dataset.students;
         let retDate = date+" "+hour;
+        console.log(0)
+        emptyPopupAddCourseForm.action = `/teacher/` + teachId + `/lessons/addCourse/0/0/`+ retDate;
+        emptyPopupAddLessonForm.action = `/teacher/` + teachId + `/lessons/addLesson/0/0/`+ retDate;
         popupDateInEmptyPopup.innerText = date;
         popupTimeInEmptyPopup.innerText = hour;
 

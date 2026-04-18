@@ -551,6 +551,14 @@
             width: 47.5px;
             overflow: hidden;
         }
+        .popup-content-for-empty {
+            background-color: white;
+            border-radius: 12px;
+            width: 600px;
+            max-width: 90%;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -572,19 +580,19 @@
                 <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
             </div>
         </div>
-        <div class="error-box" th:if="${error=='tooLate'}">Вибачте, але редагувати можна лише за 12 годин до заняття</div>
-        <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
+        <div class="error-box" th:if="${error=='tooLate'}">Вибачте, але редагувати можна лише за 12 годин до заняття.</div>
+        <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так.</div>
+        <div class="error-box" th:if="${error == 'lessonBeforeNow'}">Вибачте, але додати урок можна тільки на майбутній час, виберіть пізнішу дату.</div>
+        <div class="error-box" th:if="${error == 'courseNotFound'}">Вибачте, але ви не вибрали курс або курс не знайдено.</div>
         <div class="error-box" th:if="${error == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.</div>
+        <div class="error-box" th:if="${error == 'timeNotEmpty'}">Вибачте, але час який ви вибрали у вас вже зайнятий іншим/іншими зайняттями з цим/іншими учнями.</div>
         <div class="date-indicator" id="dateRangeIndicator">
             <i class="far fa-calendar-alt"></i> <span id="rangeText">Завантаження...</span>
         </div>
         <div class="scroll-hint">
             <i class="fas fa-arrows-alt-h"></i> <span>Гортайте таблицю →</span>
         </div>
-        <!--        <div class="mode-switch">-->
-        <!--            <button class="mode-btn" id="checkModeBtn">👁️ Check Mode</button>-->
-        <!--            <button class="mode-btn" id="editModeBtn">✏️ Edit Mode</button>-->
-        <!--        </div>-->
+
     </div>
 
     <div class="table-wrapper" id="tableWrapper">
@@ -603,9 +611,6 @@
                 <td style="height: 20px; background-color: lightgray; margin: 0px; cursor: pointer;"
                     th:each="day : ${weekDays}">
 
-                    <!--                    th:onclick="|showPopup( + ${day.split(' ')[1].charAt(0)},${day.split(' ')[1].charAt(2)}, ${hour} + )|">-->
-                    <!--                th:attr="onclick='showPopup(\'' + ${day.split(' ')[1].charAt(0)} + '\', \'' + ${day.split(' ')[1].charAt(2)} + '\', \'' + ${hour} + '\')'">-->
-                    <!--                    <p th:text="${day.split(' ')[1].charAt(0)}"></p>-->
                     <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
 
                         <button th:if="${lesson != null and (lesson.status=='wasnt' or lesson.status=='wont')}" style="background-color: red;border: 1px solid black; border-radius: 5px; font-size: 16px; width: 46px; height: 20px;overflow: hidden; white-space: nowrap;">
@@ -634,7 +639,8 @@
                                 th:data-lesson="${lesson}"
                                 th:data-teachId="${teacher.id}"
                                 th:data-hour="${hour}"
-
+                                th:data-course = "${courses}"
+                                th:data-students="${students}"
                                 th:onclick="'openPopup(this)'">
                             <span style="font-size: 16px; opacity: 0;">emptyy</span>
                         </button>
@@ -699,29 +705,37 @@
                 </div>
             </div>
         </div>
-        <div id="emptyPopup" class="popup-content hide">
+        <div id="emptyPopup" class="popup-content-for-empty hide">
             <div class="popup-header">
                 <h3>Вільна колонка</h3>
                 <span class="popup-close" onclick="closePopup()">&times;</span>
             </div>
             <div class="popup-body">
+                <span style="display: none" id="stIdInEmptyPopup" th:text="${student.id}"></span>
                 <p><strong>Дата:</strong> <span id="popupDateInEmptyPopup"></span></p>
                 <p><strong>Час:</strong> <span id="popupTimeInEmptyPopup"></span></p>
-                <p><strong>Імя учня:</strong> <span th:text="${student.name}"></span></p>
-                <p><strong>Email учня:</strong> <span th:text="${student.email}"></span></p>
-                <p ><strong>Курс:</strong> <span id="coursesInEmptyPopup" class="newDates"></span></p>
+                <p ><strong>Курс:</strong> <span id=""></span></p>
+                <div  class="coursesAndNames">
+                    <div style="display: flex">
+                        <div  style="display: grid;" id="courseIds"  >
+                            <input th:each="course : ${courses}" type="checkbox" style="height: 20px" th:value="${course.id}">
+                        </div>
+                        <span style="opacity: 0;">emp</span>
+                        <div  style="display: grid; height: 30px" id="courseNames" >
+                            <label th:each="course : ${courses}" style="height: 20px" th:text="${course.name}"></label>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <form action="" method="post" id="addLessonForm">
-                <span id="courseId" th:each="course : ${courses}">
-                    <input type="checkbox" th:value="${course.id}">
-                    <label th:text="${'  '+course.name}"></label>
-                </span>
+
+            <form th:action="@{/teacher/{teachId}/student/{stId}/lessons/addLesson/0/0(teachId=${teacher.id}, stId=${student.id})}" method="post" id="addLessonForm">
                 <button type="submit" id="addLessonBtnInEmptyPopup" class="popup-btn edit-btn" >Додати одне заняття</button>
             </form>
-            <form action="" method="post" id="addCourseForm">
+            <form th:action="@{/teacher/{teachId}/student/{stId}/lessons/addCourse/0/0(teachId=${teacher.id}, stId=${student.id})}" method="post" id="addCourseForm">
                 <button type="submit" id="addCourseBtnInEmptyPopup" class="popup-btn edit-btn" >Додати курc з учнем</button>
             </form>
         </div>
+
     </div>
 
 
@@ -759,22 +773,28 @@
     let emptyPopupAddLessonForm = document.querySelector("#addLessonForm")
     let emptyPopupAddCourseForm = document.querySelector("#addCourseForm")
     let coursesInEmptyPopup = document.querySelector("#coursesInEmptyPopup")
-    let courseIdInEmptyPopup =  document.querySelector("#courseId")
+    let courseIdInEmptyPopup =  document.querySelector("#courseIds")
+    let stIdInEmptyPopup = document.querySelector("#stIdInEmptyPopup")
     function emptyPopup(el){
         const date = el.dataset.date;
         const hour = el.dataset.hour;
         const teachId = popupTeacherID.innerText;
-        let retDate = ""
+        let stId = stIdInEmptyPopup.innerText;
+        let retDate = date+" "+hour;
+        emptyPopupAddCourseForm.action = `/teacher/` + teachId + `/student/`+ stId+ `/lessons/addCourse/0/` + retDate;
+        emptyPopupAddLessonForm.action = `/teacher/` + teachId + `/student/`+ stId+ `/lessons/addLesson/0/` + retDate;
         popupDateInEmptyPopup.innerText = date;
         popupTimeInEmptyPopup.innerText = hour;
+
         let cIds = courseIdInEmptyPopup.getElementsByTagName("input")
         let cId = 0
-
-        for(let i = 0; i<cIds.length; i++) {
+        for (let i = 0; i < cIds.length; i++) {
             cIds[i].addEventListener('change', () => {
                 if (cIds[i].checked) {
                     cId = cIds[i].value;
-                    editForm.action = `/teacher/` + teachId + `/student/lessons/addLesson/` + cId + "/" + retDate;
+                    emptyPopupAddLessonForm.action = `/teacher/` + teachId + `/student/`+ stId+ `/lessons/addLesson/` +cId + "/" + retDate;
+                    emptyPopupAddCourseForm.action = `/teacher/` + teachId + `/student/`+ stId+ `/lessons/addCourse/` +cId + "/" + retDate;
+
                 }
             });
         }

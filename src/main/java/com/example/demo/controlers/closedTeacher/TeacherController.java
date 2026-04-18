@@ -203,6 +203,7 @@ public class TeacherController {
         List<Course> courses = new ArrayList<>();
         teacher.getTeacherCourses().stream().forEach(course->courses.add(course.getCourse()));
 
+
         model.addAttribute("lessons", lessonHashMap);
         model.addAttribute("courses", courses);
         model.addAttribute("weekDays", weekDays);
@@ -405,11 +406,17 @@ public class TeacherController {
         int hour = Integer.parseInt(date.split(" ")[2]);
         LocalDateTime time = LocalDateTime.now();
         if(time.getMonth().getValue()==12 && month==1){
-            time = time.withYear(time.getYear()+1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
+            time = time.withYear(time.getYear()+1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0).withNano(0);
         }else{
-            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
+            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0).withNano(0);
         }
-        if(time.isAfter(LocalDateTime.now())){
+        boolean hasCourse = false;
+        for(TeacherStudentTimeOfTheWeek tsw : tswService.findAllByTeachId(idTeach)){
+            if(tsw.getTimeOfTheWeek().getDayOfTheWeek()==time.getDayOfWeek().getValue() && tsw.getTimeOfTheWeek().getTimeOfTheDay()==time.getHour()){
+                hasCourse = true;
+            }
+        }
+        if(time.isAfter(LocalDateTime.now()) && !hasCourse){
             if(cId!=0){
                 if(stId!=0){
                     AtomicBoolean exists = new AtomicBoolean(false);
@@ -417,7 +424,7 @@ public class TeacherController {
                     LocalDateTime checkingTime = time;
                     for(int i = 1; i<=4; i++){
                         for(Lesson les : teacherService.getById(idTeach).getLessons()){
-                            if(les.getLessonTime().getDayOfMonth()==checkingTime.getDayOfMonth()&&les.getLessonTime().getMonth().getValue()==checkingTime.getMonth().getValue()){
+                            if(les.getLessonTime().getMonth().getValue()==checkingTime.getMonth().getValue()&&les.getLessonTime().getDayOfMonth()==checkingTime.getDayOfMonth()&&les.getLessonTime().getHour()==checkingTime.getHour()){
                                 exists.set(true);
                             }
                         }
@@ -436,7 +443,7 @@ public class TeacherController {
                         model.addAttribute("teacher", teacher);
                         model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
                         model.addAttribute("error", "timeNotEmpty");
-                        return "redirect:/teacher/"+idTeach+"/lessons";
+                        return "closedTeacher/lessons";
                     }else {
                         for(int i = 1; i<=4; i++){
                             lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, 1, theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), "will");
@@ -468,7 +475,7 @@ public class TeacherController {
                     model.addAttribute("teacher", teacher);
                     model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
                     model.addAttribute("error", "studentNotFound");
-                    return "redirect:/teacher/"+idTeach+"/lessons";
+                    return "closedTeacher/lessons";
                 }
             }else{
                 Teacher teacher = teacherService.getById(idTeach);
@@ -483,7 +490,7 @@ public class TeacherController {
                 model.addAttribute("teacher", teacher);
                 model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
                 model.addAttribute("error", "courseNotFound");
-                return "redirect:/teacher/"+idTeach+"/lessons";
+                return "closedTeacher/lessons";
             }
 
         }else{
@@ -499,7 +506,192 @@ public class TeacherController {
             model.addAttribute("teacher", teacher);
             model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
             model.addAttribute("error", "lessonBeforeNow");
-            return "redirect:/teacher/"+idTeach+"/lessons";
+            return "closedTeacher/lessons";
+        }
+    }
+
+
+
+    @PostMapping("/{teachId}/student/{stId}/lessons/addLesson/{cId}/{retDate}")
+    public String addLessonToStudent(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId,@PathVariable("retDate") String date, Model model) throws MessagingException {
+        int dayOfMonth = Integer.parseInt(date.split(" ")[1].split("\\.")[0]);
+        int month = Integer.parseInt(date.split(" ")[1].split("\\.")[1]);
+        int hour = Integer.parseInt(date.split(" ")[2]);
+        LocalDateTime time = LocalDateTime.now();
+        if(time.getMonth().getValue()==12 && month==1){
+            time = time.withYear(time.getYear()+1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
+        }else{
+            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
+        }
+        if(time.isAfter(LocalDateTime.now())){
+            if(cId!=0){
+                if(stId!=0){
+                    Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, 1, theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), "will");
+                    lessonService.create(lesson);
+                    Mail mail = new Mail();
+                    mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
+                    mail.setSubject("Лист про додання одного заняття");
+                    mail.setBody("");
+                    Teacher teacher = teacherService.getById(idTeach);
+                    mailService.sendEmailWithThymeleafToStudentAboutLessonAdded(mail, teacher, lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour());
+                    return "redirect:/teacher/"+idTeach+"/student/"+stId+"/lessons";
+                }else{
+                    Teacher teacher = teacherService.getById(idTeach);
+                    List<Course> courses = new ArrayList<>();
+                    teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+                    List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                    model.addAttribute("lessons", lessonHashMap);
+                    model.addAttribute("student", studentService.getById(stId));
+                    model.addAttribute("courses", courses);
+                    model.addAttribute("weekDays", weekDays);
+                    model.addAttribute("teacher", teacher);
+                    model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+                    model.addAttribute("error", "studentNotFound");
+                    return "closedTeacher/studentLessons";
+                }
+            }else{
+                Teacher teacher = teacherService.getById(idTeach);
+                List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+                List<Course> courses = new ArrayList<>();
+                teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                model.addAttribute("lessons", lessonHashMap);
+                model.addAttribute("student", studentService.getById(stId));
+                model.addAttribute("courses", courses);
+                model.addAttribute("weekDays", weekDays);
+                model.addAttribute("teacher", teacher);
+                model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+                model.addAttribute("error", "courseNotFound");
+                return "closedTeacher/studentLessons";
+            }
+
+        }else{
+            Teacher teacher = teacherService.getById(idTeach);
+            List<Course> courses = new ArrayList<>();
+            teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+            model.addAttribute("lessons", lessonHashMap);
+            model.addAttribute("student", studentService.getById(stId));
+            model.addAttribute("courses", courses);
+            model.addAttribute("weekDays", weekDays);
+            model.addAttribute("teacher", teacher);
+            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+            model.addAttribute("error", "lessonBeforeNow");
+            return "closedTeacher/studentLessons";
+        }
+    }
+    @PostMapping("/{teachId}/student/{stId}/lessons/addCourse/{cId}/{retDate}")
+    public String addCourseToStudent(@PathVariable("teachId") int idTeach,  @PathVariable("stId") int stId,@PathVariable("cId") int cId,@PathVariable("retDate") String date, Model model) throws MessagingException {
+        int dayOfMonth = Integer.parseInt(date.split(" ")[1].split("\\.")[0]);
+        int month = Integer.parseInt(date.split(" ")[1].split("\\.")[1]);
+        int hour = Integer.parseInt(date.split(" ")[2]);
+        LocalDateTime time = LocalDateTime.now();
+        if(time.getMonth().getValue()==12 && month==1){
+            time = time.withYear(time.getYear()+1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
+        }else{
+            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
+        }
+        boolean hasCourse = false;
+        for(TeacherStudentTimeOfTheWeek tsw : tswService.findAllByTeachId(idTeach)){
+            if(tsw.getTimeOfTheWeek().getDayOfTheWeek()==time.getDayOfWeek().getValue() && tsw.getTimeOfTheWeek().getTimeOfTheDay()==time.getHour()){
+                hasCourse = true;
+            }
+        }
+
+
+        if(time.isAfter(LocalDateTime.now()) && !hasCourse){
+            if(cId!=0){
+                if(stId!=0){
+                    AtomicBoolean exists = new AtomicBoolean(false);
+                    Lesson lesson = new Lesson();
+                    LocalDateTime checkingTime = time;
+                    for(int i = 1; i<=4; i++){
+                        for(Lesson les : teacherService.getById(idTeach).getLessons()){
+                            if(les.getLessonTime().getMonth().getValue()==checkingTime.getMonth().getValue()&&les.getLessonTime().getDayOfMonth()==checkingTime.getDayOfMonth()&&les.getLessonTime().getHour()==checkingTime.getHour()){
+                                exists.set(true);
+                            }
+                        }
+                        checkingTime = checkingTime.plusWeeks(1);
+                    }
+                    if(exists.get()){
+                        Teacher teacher = teacherService.getById(idTeach);
+                        List<Course> courses = new ArrayList<>();
+                        teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+                        List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+                        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                        model.addAttribute("lessons", lessonHashMap);
+                        model.addAttribute("student", studentService.getById(stId));
+                        model.addAttribute("courses", courses);
+                        model.addAttribute("weekDays", weekDays);
+                        model.addAttribute("teacher", teacher);
+                        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+                        model.addAttribute("error", "timeNotEmpty");
+                        return "closedTeacher/studentLessons";
+                    }else {
+                        for(int i = 1; i<=4; i++){
+                            lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, 1, theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), "will");
+                            lessonService.create(lesson);
+
+                            time = time.plusWeeks(1);
+                        }
+                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()));
+                        tswService.create(tsw);
+
+                        Mail mail = new Mail();
+                        mail.setTo(Collections.singletonList(studentService.getById(stId).getEmail()));
+                        mail.setSubject("Лист про додання курсу занять");
+                        mail.setBody("");
+                        Teacher teacher = teacherService.getById(idTeach);
+                        mailService.sendEmailWithThymeleafToStudentAboutCourseAdded(mail, teacher, String.valueOf(lesson.getLessonTime().getDayOfWeek()),lesson.getLessonTime().getHour());
+                        return "redirect:/teacher/"+idTeach+"/student/"+stId+"/lessons";
+                    }
+                }else{
+                    Teacher teacher = teacherService.getById(idTeach);
+                    List<Course> courses = new ArrayList<>();
+                    teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+                    List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                    model.addAttribute("lessons", lessonHashMap);
+                    model.addAttribute("student", studentService.getById(stId));
+                    model.addAttribute("courses", courses);
+                    model.addAttribute("weekDays", weekDays);
+                    model.addAttribute("teacher", teacher);
+                    model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+                    model.addAttribute("error", "studentNotFound");
+                    return "closedTeacher/studentLessons";
+                }
+            }else{
+                Teacher teacher = teacherService.getById(idTeach);
+                List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+                List<Course> courses = new ArrayList<>();
+                teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                model.addAttribute("lessons", lessonHashMap);
+                model.addAttribute("student", studentService.getById(stId));
+                model.addAttribute("courses", courses);
+                model.addAttribute("weekDays", weekDays);
+                model.addAttribute("teacher", teacher);
+                model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+                model.addAttribute("error", "courseNotFound");
+                return "closedTeacher/studentLessons";
+            }
+
+        }else{
+            Teacher teacher = teacherService.getById(idTeach);
+            List<Course> courses = new ArrayList<>();
+            teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
+            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+            model.addAttribute("lessons", lessonHashMap);
+            model.addAttribute("student", studentService.getById(stId));
+            model.addAttribute("courses", courses);
+            model.addAttribute("weekDays", weekDays);
+            model.addAttribute("teacher", teacher);
+            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+            model.addAttribute("error", "lessonBeforeNow");
+            return "closedTeacher/studentLessons";
         }
     }
 

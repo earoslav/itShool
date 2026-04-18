@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Редагування викладача</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #0f172a, #2563eb);
+            color: white;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .block {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .block h2 {
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .password-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .status {
+            font-weight: bold;
+            color: green;
+        }
+
+        .status.not-approved {
+            color: red;
+        }
+
+        .times-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .times-table th, .times-table td {
+            border: 1px solid #e2e8f0;
+            padding: 6px;
+            text-align: center;
+        }
+        .status-will, .status-was {
+            background-color: #e0f7ea;
+            border-left: 4px solid #2b7e3a;
+        }
+        .status-wont, .status-wasnt {
+            background-color: #ffe6e5;
+            border-left: 4px solid #c7362b;
+        }
+        .status-will .status-badge, .status-was .status-badge {
+            background: #c8e6d9;
+            color: #146b3a;
+        }
+        .status-wont .status-badge, .status-wasnt .status-badge {
+            background: #ffd9d7;
+            color: #b13a2e;
+        }
+        .error-box {
+            border: 1px solid #fecaca;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+        .empty-lesson {
+            background-color: #f2f5f7;
+            border-radius: 12px;
+            padding: 8px 4px;
+            text-align: center;
+            color: #8ea3b0;
+            font-size: 0.75rem;
+            font-style: italic;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1 th:text="${teacher.name}">Викладач</h1>
+    <div class="nav-links">
+    <a th:href="@{/adimn/homepage}">Головна</a>
+    <a th:href="@{/admin/students}">Учні</a>
+    <a th:href="@{/admin/teachers}">Вчителі</a>
+</div>
+</div>
+
+
+<div class="container">
+    <div class="error-box" th:if="${error == 'exists'}">Така пошта вже зареєстрована</div>
+    <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
+    <form th:action="@{/admin/teacher/{id}/edit(id=${teacher.id})}" th:object="${teacher}" method="post" onsubmit="return handleSubmit(event)">
+
+        <input type="hidden" th:field="*{id}">
+
+        <!-- Основна інформація -->
+        <div class="block">
+            <h2>Основна інформація</h2>
+
+            <p>Ім'я:<br>
+                <input type="text" th:field="*{name}">
+            </p>
+
+            <p>Вік:<br>
+                <input type="number" th:field="*{age}">
+            </p>
+
+            <p>Email:<br>
+                <input type="text" th:field="*{email}">
+            </p>
+
+            <p>Телефон:<br>
+                <input type="text" th:field="*{phoneNumber}">
+            </p>
+
+            <p>Telegram:<br>
+                <input type="text" th:field="*{tgUsername}">
+            </p>
+
+            <p>Коментар:<br>
+                <input type="text" th:field="*{comment}">
+            </p>
+
+            <p>
+                Статус:
+                <span th:classappend="${teacher.approved} ? 'status' : 'status not-approved'"
+                      th:text="${teacher.approved ? 'Підтверджений' : 'Непідтверджений'}">
+            </span>
+            </p>
+
+            <!-- Пароль -->
+            <input type="password" th:field="*{password}" name="password" placeholder="Введіть новий пароль">
+            <div class="password-box">
+                Пароль(якщо бажаєте змінити):
+            </div>
+        </div>
+
+        <!-- Курси -->
+        <div class="block">
+            <h2>Курси</h2>
+
+            <!-- список -->
+            <ul id="coursesList">
+                <li th:each="tc : ${teacher.teacherCourses}"
+                    th:text="${tc.course.name}">
+                </li>
+            </ul>
+
+            <!-- select -->
+            <select id="courseSelect">
+                <option value="">Додати курс</option>
+                <option th:each="c : ${allCourses}"
+                        th:value="${c.id}"
+                        th:text="${c.name}">
+                </option>
+            </select>
+
+            <!-- hidden inputs -->
+            <div id="coursesInputs"></div>
+        </div>
+
+        <!-- Вільний час -->
+        <div class="block">
+            <h2>Вільний час</h2>
+
+            <table class="times-table">
+                <thead>
+                <tr>
+                    <th>Година</th>
+                    <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="hour : ${hours}">
+                    <th th:text="${hour} + ':00'"></th>
+
+                    <td th:each="day : ${days}">
+                        <input type="checkbox"
+                               class="freeTimeCheckbox"
+                               name="freeTimeIds"
+                               th:each="ft : ${freeTimes}"
+                               th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour}"
+                               th:value="${ft.id}"
+                               th:checked="${teacherFreeTimes.contains(ft.id)}">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn" type="submit">Зберегти</button>
+
+    </form>
+
+</div>
+<script>
+    const select = document.getElementById("courseSelect");
+    const list = document.getElementById("coursesList");
+    const inputsDiv = document.getElementById("coursesInputs");
+
+    // щоб не додавати дублікати
+    let addedCourses = new Set();
+
+    select.addEventListener("change", function () {
+        const selectedOption = select.options[select.selectedIndex];
+        const courseId = selectedOption.value;
+        const courseName = selectedOption.text;
+
+        if (!courseId) return;
+
+        if (addedCourses.has(courseId)) {
+            alert("Цей курс вже доданий");
+            return;
+        }
+
+        // додаємо в список
+        const li = document.createElement("li");
+        li.innerText = courseName;
+        list.appendChild(li);
+
+        // додаємо hidden input для бекенду
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "newCourseIds";
+        input.value = courseId;
+        inputsDiv.appendChild(input);
+
+        addedCourses.add(courseId);
+
+        // скидаємо select
+        select.value = "";
+    });
+</script>
+<script>
+    let freeTimeChanged = false;
+
+    document.querySelectorAll('.freeTimeCheckbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            freeTimeChanged = true;
+        });
+    });
+
+    function handleSubmit(event) {
+        if (freeTimeChanged) {
+            return confirm("Якщо ви змінете свої вільні часи то ваші заняття з учнями на ці часи будуть видалені. Продовжити?");
+        }
+        return true;
+    }
+
+    function togglePassword() {
+        const input = document.getElementById("passwordField");
+        const btn = event.target;
+
+        if (input.type === "password") {
+            input.type = "text";
+            btn.innerText = "Сховати";
+        } else {
+            input.type = "password";
+            btn.innerText = "Показати";
+        }
+    }
+</script>
+
+</body>
+</html>

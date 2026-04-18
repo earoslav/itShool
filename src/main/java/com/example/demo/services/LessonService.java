@@ -311,4 +311,82 @@ public class LessonService {
         retValue.add(lessonHashMap);
         return retValue;
     }
+
+
+
+
+    public List<Object> compileLessonsForStudentInAdmin(Student student){
+        LocalDate now = LocalDate.now();
+        now = now.minusWeeks(2);
+        List<String> weekDaysTemp = new ArrayList<>();
+        weekDaysTemp.add("ПОН");weekDaysTemp.add("ВІВТ");weekDaysTemp.add("СЕР");weekDaysTemp.add("ЧЕТ");weekDaysTemp.add("ПЯТ");weekDaysTemp.add("СУБ");weekDaysTemp.add("НЕД");
+        List<String> weekDays = new ArrayList<>();
+        for(int i = 0; i<5;i++){
+            for(String weekDay : weekDaysTemp){
+                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue()-1)+" "+now.getDayOfMonth()+"."+now.getMonthValue());
+                now = now.plusDays(1);
+            }
+        }
+        List<Lesson> studentLessons = student.getLessons();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
+        for(Lesson lesson : studentLessons){
+            String timeOfTheLesson = "";
+            timeOfTheLesson+=lesson.getLessonTime().getDayOfMonth()+"."+lesson.getLessonTime().getMonthValue()+" "+lesson.getLessonTime().getHour();
+            lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+        }
+
+
+        LocalDateTime now2 = LocalDateTime.now();
+
+        final LocalDateTime[] t = {now2};
+        Set<TeacherAdminLessonsDTO> teachers =new HashSet<>();
+        List<LessonAdminLessonsDTO> less = new ArrayList<>();
+        lessonHashMap.values().stream().forEach(val->less.add(val)); ////////////////////
+        lessonHashMap.values().stream().forEach(les->teachers.add(les.getTeacher()));
+        for(TeacherAdminLessonsDTO teacher : teachers){
+
+            final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less.stream().filter(lesss -> lesss.getTeacher().equals(teacher)).toList()};
+            HashMap<LocalDateTime,TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
+            teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT->{
+                if(empTFT.getTime().getDayOfTheWeek()<now2.getDayOfWeek().getValue()){
+                    t[0] = now2.minusDays(now2.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay());
+                }else if(empTFT.getTime().getDayOfTheWeek()==now2.getDayOfWeek().getValue()){
+                    if(empTFT.getTime().getTimeOfTheDay()>now2.getHour()){
+                        t[0] = now2.withHour(empTFT.getTime().getTimeOfTheDay());
+                    }else{
+                        t[0] = now2.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay());
+                    }
+
+                }else{
+                    if(empTFT.getTime().getDayOfTheWeek()-now2.getDayOfWeek().getValue()==1){
+                        if(now2.plusHours(12).isBefore(now2.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))){
+                            t[0] =now2.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay());
+                        }else{
+                            t[0] =now2.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay());
+                        }
+                    }else{
+                        t[0] = now2.plusDays(empTFT.getTime().getDayOfTheWeek()-now2.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay());
+                    }
+                }
+                teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT.getTime(),TimeOfTheWeekAdminLessonsDTO.class));
+            });
+            for (TimeOfTheWeekAdminLessonsDTO notTakenTime : teacherfreeTimes.values().stream().toList()){
+                for(LessonAdminLessonsDTO teacherLesson : teacherLessons[0]){
+                    if(notTakenTime.getDayOfTheWeek()!=null && notTakenTime.getTimeOfTheDay()!=null){
+                        if(notTakenTime.getDayOfTheWeek()==teacherLesson.getLessonTime().getDayOfWeek().getValue()&&notTakenTime.getTimeOfTheDay()==teacherLesson.getLessonTime().getHour()){
+                            teacherfreeTimes.values().remove(notTakenTime);
+                        }
+                    }
+
+                }
+            }
+            Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
+            lessonHashMap.values().stream().filter(les->les.getTeacher().equals(teacher)).forEach(val->val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+        }
+
+        List<Object> retValue = new ArrayList<>();
+        retValue.add(weekDays);
+        retValue.add(lessonHashMap);
+        return retValue;
+    }
 }

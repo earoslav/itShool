@@ -317,8 +317,8 @@ public class TeacherController {
             return "redirect:/teacher/"+idTeach+"/student/"+lesson.getStudent().getId()+"/lessons";
         }else{
             Teacher teacher = teacherService.getById(idTeach);
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+            List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, lesson.getStudent().getId()).get(0);
+            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, lesson.getStudent().getId()).get(1);
             model.addAttribute("lessons", lessonHashMap);
             model.addAttribute("weekDays", weekDays);
             model.addAttribute("teacher", teacher);
@@ -539,8 +539,8 @@ public class TeacherController {
                     Teacher teacher = teacherService.getById(idTeach);
                     List<Course> courses = new ArrayList<>();
                     teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                    List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
-                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                    List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
                     model.addAttribute("lessons", lessonHashMap);
                     model.addAttribute("student", studentService.getById(stId));
                     model.addAttribute("courses", courses);
@@ -552,10 +552,11 @@ public class TeacherController {
                 }
             }else{
                 Teacher teacher = teacherService.getById(idTeach);
-                List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+
                 List<Course> courses = new ArrayList<>();
                 teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
                 model.addAttribute("lessons", lessonHashMap);
                 model.addAttribute("student", studentService.getById(stId));
                 model.addAttribute("courses", courses);
@@ -570,8 +571,8 @@ public class TeacherController {
             Teacher teacher = teacherService.getById(idTeach);
             List<Course> courses = new ArrayList<>();
             teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+            List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
             model.addAttribute("lessons", lessonHashMap);
             model.addAttribute("student", studentService.getById(stId));
             model.addAttribute("courses", courses);
@@ -601,7 +602,7 @@ public class TeacherController {
         }
 
 
-        if(time.isAfter(LocalDateTime.now()) && !hasCourse){
+        if(time.isAfter(LocalDateTime.now())){
             if(cId!=0){
                 if(stId!=0){
                     AtomicBoolean exists = new AtomicBoolean(false);
@@ -615,12 +616,12 @@ public class TeacherController {
                         }
                         checkingTime = checkingTime.plusWeeks(1);
                     }
-                    if(exists.get()){
+                    if(exists.get() || hasCourse){
                         Teacher teacher = teacherService.getById(idTeach);
                         List<Course> courses = new ArrayList<>();
                         teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                        List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
-                        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                        List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+                        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
                         model.addAttribute("lessons", lessonHashMap);
                         model.addAttribute("student", studentService.getById(stId));
                         model.addAttribute("courses", courses);
@@ -651,8 +652,8 @@ public class TeacherController {
                     Teacher teacher = teacherService.getById(idTeach);
                     List<Course> courses = new ArrayList<>();
                     teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                    List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
-                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                    List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
                     model.addAttribute("lessons", lessonHashMap);
                     model.addAttribute("student", studentService.getById(stId));
                     model.addAttribute("courses", courses);
@@ -664,10 +665,11 @@ public class TeacherController {
                 }
             }else{
                 Teacher teacher = teacherService.getById(idTeach);
-                List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
+
                 List<Course> courses = new ArrayList<>();
                 teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+                List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
                 model.addAttribute("lessons", lessonHashMap);
                 model.addAttribute("student", studentService.getById(stId));
                 model.addAttribute("courses", courses);
@@ -682,8 +684,8 @@ public class TeacherController {
             Teacher teacher = teacherService.getById(idTeach);
             List<Course> courses = new ArrayList<>();
             teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher).get(1);
+            List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(0);
+            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentAndTeacher(idTeach, stId).get(1);
             model.addAttribute("lessons", lessonHashMap);
             model.addAttribute("student", studentService.getById(stId));
             model.addAttribute("courses", courses);

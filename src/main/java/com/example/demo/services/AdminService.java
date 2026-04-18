@@ -3,7 +3,6 @@ package com.example.demo.services;
 import com.example.demo.models.Admin;
 import com.example.demo.repositories.AdminRepository;
 import org.springframework.stereotype.Service;
-
 @Service
 public class AdminService {
     private AdminRepository adminRepository;

@@ -161,7 +161,6 @@
             <a href="/admin/homepage">Головна</a>
             <a href="/admin/students">Учні</a>
             <a href="/admin/teachers">Викладачі</a>
-
         </nav>
     </div>
 </header>
@@ -171,7 +170,7 @@
 <!-- HERO -->
 <div class="hero">
     <h1>
-        Усі учні
+        Усі викладачі
     </h1>
 </div>
 
@@ -188,6 +187,7 @@
                 <th>Вік</th>
                 <th>Email</th>
                 <th>Телефон</th>
+                <th>tg username</th>
                 <th>Пароль</th>
                 <th>Коментар</th>
                 <th>Дії</th>
@@ -195,33 +195,32 @@
             </thead>
 
             <tbody>
-            <tr th:each="student : ${students}">
-                <td th:text="${student.id}">1</td>
-                <td th:text="${student.name}">Ім'я</td>
-                <td th:text="${student.age}">15</td>
-                <td th:text="${student.email}">email</td>
-                <td th:text="${student.phoneNumber}">+380...</td>
-                <td th:text="${student.password}">pass</td>
-                <td th:text="${student.comment}">comment</td>
+            <tr th:each="teacher : ${teachers}">
+                <td th:text="${teacher.id}">1</td>
+                <td th:text="${teacher.name}">Ім'я</td>
+                <td th:text="${teacher.age}">15</td>
+                <td th:text="${teacher.email}">email</td>
+                <td th:text="${teacher.phoneNumber}">+380...</td>
+                <td th:text="${teacher.tgUsername}">+380...</td>
+                <td th:text="${teacher.password}">pass</td>
+                <td th:text="${teacher.comment}">comment</td>
 
                 <td>
-                    <a th:href="@{/admin/student/{id}/edit(id=${student.id})}" class="btn btn-blue">✏️</a>
-                    <a th:href="@{/admin/student/{id}/lessons(id=${student.id})}" class="btn btn-blue">lessons</a>
-                    <form method="post" th:action="@{/admin/student/delete}">
-<!--                    <a th:href="@{/admin/student/delete/{id}(id=${student.id})}"-->
-<!--                       class="btn btn-red"-->
-<!--                       onclick="return confirm('Видалити?')">🗑</a>-->
-                        <input type="hidden" name="studentId" th:value="${student.id}" />
+                    <a th:href="@{/admin/teacher/{id}/edit(id=${teacher.id})}" class="btn btn-blue">✏️</a>
+                    <a th:href="@{/admin/teacher/{id}/lessons(id=${teacher.id})}" class="btn btn-blue">lessons</a>
+                    <form method="post" th:action="@{/admin/teacher/{id}/delete(id=${teacher.id})}">
+                        <input type="hidden" name="teacherId" th:value="${teacher.id}" />
                     <button class="btn btn-red" type="submit" onclick="return confirm('Видалити?')">🗑</button>
                     </form>
+                    <a th:href="@{/admin/teacher/{id}/info(id=${teacher.id})}" class="btn btn-blue">info</a>
                 </td>
             </tr>
             </tbody>
         </table>
 
         <!-- якщо список пустий -->
-        <div th:if="${#lists.isEmpty(students)}">
-            <p>Учнів поки немає</p>
+        <div th:if="${#lists.isEmpty(teacher)}">
+            <p>Вчителів поки немає</p>
         </div>
 
     </div>

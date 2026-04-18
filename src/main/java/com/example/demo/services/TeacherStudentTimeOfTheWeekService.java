@@ -20,6 +20,9 @@ public class TeacherStudentTimeOfTheWeekService {
     public TeacherStudentTimeOfTheWeek getById(int id){
         return tSWRepository.findById(id).get();
     }
+    public void deleteById(int id){
+        tSWRepository.deleteById(id);
+    }
     public void removeByTIdAndWId(int tId, int wId){
         tSWRepository.removeAllByTeacherIdAndTimeOfTheWeekId(tId, wId);
     }

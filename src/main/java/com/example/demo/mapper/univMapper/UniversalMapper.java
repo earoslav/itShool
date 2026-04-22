@@ -1,7 +1,7 @@
 //package com.example.demo.mapper.univMapper;
 //
-//import com.example.demo.models.Teacher;
-//import com.example.demo.models.User;
+//import com.example.demo.models.entities.Teacher;
+//import com.example.demo.models.entities.User;
 //import org.springframework.stereotype.Service;
 //
 //import java.lang.reflect.Field;

@@ -1,34 +1,24 @@
-package com.example.demo.dto.adminLessons;
+package com.example.demo.dto.programe;
 
+import com.example.demo.dto.entities.StudentDTO;
+import com.example.demo.dto.entities.TeacherDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class LessonAdminLessonsDTO {
+public class LessonDTO {
     private int id;
-
-    private StudentAdminLessonsDTO student;
-
-
-    private TeacherAdminLessonsDTO teacher;
-
-
-    private CourseAdminLessonsDTO course;
-
-
+    private StudentDTO student;
+    private TeacherDTO teacher;
+    private CourseDTO course;
     private LocalDateTime lessonTime;
-
     private int duration;
-
     private String status;
-
-    private TimeOfTheWeekAdminLessonsDTO timeOfTheWeek;
 
 }

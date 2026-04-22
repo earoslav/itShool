@@ -1,11 +1,6 @@
 package com.example.demo.dto.adminLessons;
 
-import com.example.demo.models.TimeOfTheWeek;
 import lombok.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Locale;
 
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background: #f4f7fb;
+        color: #1f2937;
+        line-height: 1.5;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin-top:30px;
+        padding: 0 20px;
+
+    }
+
+    header {
+        background: #111827;
+        color: #ffffff;
+        padding: 16px 0;
+    }
+
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+    }
+
+    .logo {
+        font-weight: 700;
+        font-size: 22px;
+    }
+
+    .menu {
+        display: flex;
+        gap: 18px;
+    }
+
+    .menu a {
+        color: #d1d5db;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .menu a:hover {
+        color: #ffffff;
+    }
+
+    .hero {
+        padding: 56px 0;
+        background: linear-gradient(120deg, #0f172a, #1d4ed8);
+        color: #ffffff;
+    }
+
+    .hero h1 {
+        font-size: 38px;
+        margin-bottom: 8px;
+        margin-left: 30px;
+    }
+
+    .hero p {
+        margin-left: 30px;
+        color: #e5e7eb;
+    }
+
+    main {
+        padding: 48px 0;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #1e3a8a;
+        color: white;
+    }
+
+    .btn-red {
+        background-color: #ef4444;
+        color: white;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+    footer {
+        background: #111827;
+        color: #cbd5e1;
+        padding: 28px 0;
+        margin-top: 24px;
+    }
+
+    .footer-links {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .footer-links a {
+        color: #93c5fd;
+        text-decoration: none;
+    }
+    footer{
+        margin-bottom: 0px;
+    }
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main-content {
+        flex: 1;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+    }
+    .menu {
+        display: flex;
+        gap: 18px;
+    }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header>
+    <div class="container navbar">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a href="/admin/homepage">Головна</a>
+            <a href="/admin/students">Учні</a>
+            <a href="/admin/teachers">Викладачі</a>
+
+        </nav>
+    </div>
+</header>
+
+
+
+<!-- HERO -->
+<div class="hero">
+    <h1>
+        Усі учні
+    </h1>
+</div>
+
+
+<!-- FORM -->
+<div class="container">
+    <div class="card">
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ім'я</th>
+                <th>Вік</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Коментар</th>
+                <th>Дії</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="student : ${students}">
+                <td th:text="${student.id}">1</td>
+                <td th:text="${student.name}">Ім'я</td>
+                <td th:text="${student.age}">15</td>
+                <td th:text="${student.email}">email</td>
+                <td th:text="${student.phoneNumber}">+380...</td>
+                <td th:text="${student.comment}">comment</td>
+
+                <td>
+                    <a th:href="@{/admin/student/{id}/edit(id=${student.id})}" class="btn btn-blue">✏️</a>
+                    <a th:href="@{/admin/student/{id}/lessons(id=${student.id})}" class="btn btn-blue">lessons</a>
+                    <form method="post" th:action="@{/admin/student/delete}">
+<!--                    <a th:href="@{/admin/student/delete/{id}(id=${student.id})}"-->
+<!--                       class="btn btn-red"-->
+<!--                       onclick="return confirm('Видалити?')">🗑</a>-->
+                        <input type="hidden" name="studentId" th:value="${student.id}" />
+                    <button class="btn btn-red" type="submit" onclick="return confirm('Видалити?')">🗑</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- якщо список пустий -->
+        <div th:if="${#lists.isEmpty(students)}">
+            <p>Учнів поки немає</p>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

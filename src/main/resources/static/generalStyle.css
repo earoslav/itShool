@@ -63,3 +63,1209 @@
         padding: 14px 16px;
     }
 }
+
+
+
+
+
+
+
+
+
+/*!* ===========================================*/
+/*   Combined & Deduplicated CSS*/
+/*   Generated from project HTML templates*/
+/*=========================================== *!*/
+
+
+/*!* ---- @keyframes ---- *!*/
+
+/*@keyframes hide {*/
+/*    0%   { opacity: 1; scale: 1; }*/
+/*    100% { opacity: 0; scale: 0; }*/
+/*}*/
+
+/*@keyframes jump {*/
+/*    0%   { transform: translateY(400px); }*/
+/*    50%  { transform: translateY(0px); }*/
+/*    100% { transform: translateY(400px); }*/
+/*}*/
+
+/*@keyframes show {*/
+/*    0%   { opacity: 0; scale: 0; }*/
+/*    100% { opacity: 1; scale: 1; }*/
+/*}*/
+
+/*@keyframes slideIn {*/
+/*    from { transform: translateY(-50px); opacity: 0; }*/
+/*    to   { transform: translateY(0);     opacity: 1; }*/
+/*}*/
+
+
+/*!* ---- Reset ---- *!*/
+
+/** {*/
+/*    box-sizing: border-box;*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*}*/
+
+/*html {*/
+/*    scroll-behavior: smooth;*/
+/*}*/
+
+/*html, body {*/
+/*    font-family: Arial, sans-serif;*/
+/*    background-color: #f5f6fa;*/
+/*    height: 100%;*/
+/*    margin: 0;*/
+/*}*/
+
+/*body {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    min-height: 100vh;*/
+/*    color: #1f2937;*/
+/*    line-height: 1.5;*/
+/*}*/
+
+
+/*!* ---- Base elements ---- *!*/
+
+/*a {*/
+/*    text-decoration: none;*/
+/*    color: inherit;*/
+/*}*/
+
+/*h2 {*/
+/*    color: #0f172a;*/
+/*    font-size: 24px;*/
+/*    margin-bottom: 10px;*/
+/*}*/
+
+/*button {*/
+/*    background: linear-gradient(90deg, #22c55e, #16a34a);*/
+/*    border: none;*/
+/*    border-radius: 12px;*/
+/*    color: white;*/
+/*    cursor: pointer;*/
+/*    font-size: 17px;*/
+/*    font-weight: 700;*/
+/*    padding: 15px;*/
+/*    transition: 0.25s;*/
+/*    width: 100%;*/
+/*}*/
+
+/*button:hover {*/
+/*    box-shadow: 0 12px 25px rgba(34,197,94,0.25);*/
+/*    transform: translateY(-2px);*/
+/*}*/
+
+/*form {*/
+/*    background: white;*/
+/*    border-radius: 20px;*/
+/*    box-shadow: 0 14px 40px rgba(0,0,0,0.08);*/
+/*    max-width: 470px;*/
+/*}*/
+
+/*input {*/
+/*    border: 1px solid #dbe2ea;*/
+/*    border-radius: 12px;*/
+/*    font-size: 16px;*/
+/*    outline: none;*/
+/*    padding: 15px 16px;*/
+/*    transition: 0.25s;*/
+/*    width: 100%;*/
+/*}*/
+
+/*input, select {*/
+/*    border: 1px solid #ccc;*/
+/*    border-radius: 8px;*/
+/*    margin-top: 5px;*/
+/*    padding: 6px 10px;*/
+/*}*/
+
+/*input, textarea {*/
+/*    border: 1px solid #cbd5e1;*/
+/*    border-radius: 10px;*/
+/*    font-size: 15px;*/
+/*    padding: 10px 12px;*/
+/*    width: 100%;*/
+/*}*/
+
+/*input:focus {*/
+/*    border-color: #2563eb;*/
+/*    box-shadow: 0 0 0 4px rgba(37,99,235,0.10);*/
+/*}*/
+
+/*input:invalid:focus, textarea:invalid:focus {*/
+/*    border-color: #dc2626;*/
+/*    outline: none;*/
+/*}*/
+
+/*label {*/
+/*    color: #1e3a8a;*/
+/*    display: block;*/
+/*    font-size: 15px;*/
+/*    font-weight: 600;*/
+/*    margin-bottom: 5px;*/
+/*    margin-top: 18px;*/
+/*}*/
+
+/*main {*/
+/*    padding: 48px 0;*/
+/*}*/
+
+/*section {*/
+/*    padding: 52px 0;*/
+/*}*/
+
+/*table {*/
+/*    border-collapse: collapse;*/
+/*    width: 100%;*/
+/*}*/
+
+/*textarea {*/
+/*    min-height: 100px;*/
+/*    resize: vertical;*/
+/*}*/
+
+/*th {*/
+/*    background-color: #1e3a8a;*/
+/*    color: white;*/
+/*}*/
+
+/*th, td {*/
+/*    border-bottom: 1px solid #ddd;*/
+/*    padding: 10px;*/
+/*    text-align: left;*/
+/*}*/
+
+/*img {*/
+/*    max-width: 100%;*/
+/*    height: auto;*/
+/*}*/
+
+
+/*!* ---- Layout ---- *!*/
+
+/*header {*/
+/*    background-color: #111827;*/
+/*    color: white;*/
+/*    padding: 16px 0;*/
+/*    position: sticky;*/
+/*    top: 0;*/
+/*    z-index: 10;*/
+/*}*/
+
+/*footer {*/
+/*    background: #111827;*/
+/*    color: #cbd5e1;*/
+/*    font-size: 0.85rem;*/
+/*    margin-top: auto;*/
+/*    padding: 28px 0;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.container {*/
+/*    max-width: 1100px;*/
+/*    margin: 0 auto;*/
+/*    padding: 0 20px;*/
+/*}*/
+
+/*.container-flex {*/
+/*    display: flex;*/
+/*    align-items: flex-start;*/
+/*    padding: 30px 20px;*/
+/*    max-width: 1100px;*/
+/*    margin: 0 auto;*/
+/*}*/
+
+/*.main-content {*/
+/*    flex: 1;*/
+/*}*/
+
+
+/*!* ---- Navbar / Nav ---- *!*/
+
+/*.navbar {*/
+/*    background: linear-gradient(90deg, #0f172a, #1e3a8a);*/
+/*    padding: 15px 40px;*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*    color: white;*/
+/*}*/
+
+/*.navbar h2 {*/
+/*    margin: 0;*/
+/*}*/
+
+/*.nav {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: space-between;*/
+/*}*/
+
+/*.nav-links a {*/
+/*    color: white;*/
+/*    text-decoration: none;*/
+/*    margin-left: 20px;*/
+/*    padding: 8px 14px;*/
+/*    border-radius: 8px;*/
+/*    transition: 0.3s;*/
+/*}*/
+
+/*.nav-links a:hover {*/
+/*    background-color: rgba(255,255,255,0.2);*/
+/*}*/
+
+/*.nav-btn {*/
+/*    align-items: center;*/
+/*    background: #eef3f7;*/
+/*    border: none;*/
+/*    border-radius: 40px;*/
+/*    color: #1f5e7e;*/
+/*    cursor: pointer;*/
+/*    display: inline-flex;*/
+/*    font-size: 1.2rem;*/
+/*    font-weight: bold;*/
+/*    height: 38px;*/
+/*    justify-content: center;*/
+/*    transition: all 0.2s;*/
+/*    width: 38px;*/
+/*}*/
+
+/*.nav-btn:hover {*/
+/*    background: #cbdde6;*/
+/*    transform: scale(0.96);*/
+/*}*/
+
+/*.nav-buttons {*/
+/*    display: flex;*/
+/*    gap: 8px;*/
+/*}*/
+
+/*.logo {*/
+/*    font-weight: 700;*/
+/*    font-size: 22px;*/
+/*    color: white;*/
+/*}*/
+
+/*.menu {*/
+/*    display: flex;*/
+/*    gap: 18px;*/
+/*}*/
+
+/*.menu a {*/
+/*    color: #d1d5db;*/
+/*    text-decoration: none;*/
+/*    font-weight: 600;*/
+/*    transition: color 0.2s;*/
+/*}*/
+
+/*.menu a:hover,*/
+/*.menu a.active {*/
+/*    color: #ffffff;*/
+/*}*/
+
+
+/*!* ---- Hero section ---- *!*/
+
+/*.hero {*/
+/*    background: linear-gradient(90deg, #1e3a8a, #2563eb);*/
+/*    color: white;*/
+/*    padding: 30px 0;*/
+/*}*/
+
+/*.hero h1 {*/
+/*    color: #ffffff;*/
+/*    font-size: 38px;*/
+/*    font-weight: 700;*/
+/*    margin-bottom: 8px;*/
+/*}*/
+
+/*.hero h2 {*/
+/*    color: white;*/
+/*    font-size: 44px;*/
+/*    margin-bottom: 14px;*/
+/*}*/
+
+/*.hero h3 {*/
+/*    color: white;*/
+/*    font-size: 22px;*/
+/*    font-weight: 600;*/
+/*}*/
+
+/*.hero p {*/
+/*    color: #e5e7eb;*/
+/*    font-size: 18px;*/
+/*    margin-bottom: 24px;*/
+/*    margin-top: 1rem;*/
+/*    max-width: 760px;*/
+/*    opacity: 0.9;*/
+/*}*/
+
+/*.hero .sub {*/
+/*    border-left: 3px solid #ffc857;*/
+/*    font-size: 1rem;*/
+/*    font-weight: 500;*/
+/*    margin-top: 8px;*/
+/*    opacity: 0.85;*/
+/*    padding-left: 1rem;*/
+/*}*/
+
+/*.hero h1 i {*/
+/*    background: rgba(255,255,255,0.2);*/
+/*    border-radius: 20px;*/
+/*    font-size: 2rem;*/
+/*    padding: 8px;*/
+/*}*/
+
+/*.hero-buttons {*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;*/
+/*    gap: 12px;*/
+/*}*/
+
+
+/*!* ---- Cards ---- *!*/
+
+/*.card {*/
+/*    background: white;*/
+/*    padding: 25px;*/
+/*    border-radius: 15px;*/
+/*    box-shadow: 0 5px 15px rgba(0,0,0,0.1);*/
+/*    margin: 20px;*/
+/*}*/
+
+/*.card h2 {*/
+/*    margin-top: 0;*/
+/*    font-size: 20px;*/
+/*    color: #0f172a;*/
+/*}*/
+
+/*.card h3 {*/
+/*    color: #1d4ed8;*/
+/*    margin-bottom: 8px;*/
+/*}*/
+
+/*.cards {*/
+/*    display: grid;*/
+/*    gap: 16px;*/
+/*    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));*/
+/*}*/
+
+/*.block {*/
+/*    background: white;*/
+/*    border-radius: 15px;*/
+/*    box-shadow: 0 5px 15px rgba(0,0,0,0.05);*/
+/*    margin-bottom: 20px;*/
+/*    padding: 20px;*/
+/*}*/
+
+/*.block h2 {*/
+/*    margin-bottom: 15px;*/
+/*}*/
+
+/*.form-card {*/
+/*    background: #ffffff;*/
+/*    border-radius: 14px;*/
+/*    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);*/
+/*    margin: 0 auto;*/
+/*    max-width: 700px;*/
+/*    padding: 24px;*/
+/*}*/
+
+/*.person-card, .comment-card {*/
+/*    background: #ffffff;*/
+/*    border-radius: 12px;*/
+/*    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);*/
+/*    padding: 16px;*/
+/*}*/
+
+/*.course-card {*/
+/*    background: #ffffff;*/
+/*    border-left: 5px solid #2563eb;*/
+/*    border-radius: 12px;*/
+/*    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);*/
+/*    padding: 18px;*/
+/*}*/
+
+/*.course-card h3 {*/
+/*    color: #1d4ed8;*/
+/*    margin-bottom: 8px;*/
+/*}*/
+
+/*.course-item {*/
+/*    background: #ffffff;*/
+/*    border-left: 5px solid #2563eb;*/
+/*    border-radius: 10px;*/
+/*    padding: 14px 16px;*/
+/*}*/
+
+/*.about-text {*/
+/*    background: #ffffff;*/
+/*    border-radius: 12px;*/
+/*    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);*/
+/*    padding: 20px;*/
+/*}*/
+
+/*.about-text h3 {*/
+/*    color: #1d4ed8;*/
+/*    margin: 16px 0 8px;*/
+/*}*/
+
+/*.about-text li  { margin-bottom: 6px; }*/
+/*.about-text p   { margin-bottom: 10px; }*/
+/*.about-text ul  { margin-bottom: 12px; padding-left: 22px; }*/
+
+
+/*!* ---- Buttons ---- *!*/
+
+/*.btn {*/
+/*    margin-top: 3px;*/
+/*    display: inline-block;*/
+/*    padding: 4px 8px;*/
+/*    border-radius: 10px;*/
+/*    text-decoration: none;*/
+/*    font-weight: bold;*/
+/*    border: 1px solid transparent;*/
+/*    transition: all 0.2s;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.btn-green {*/
+/*    background-color: forestgreen;*/
+/*    color: white;*/
+/*}*/
+
+/*.btn-green:hover {*/
+/*    background-color: #16a34a;*/
+/*}*/
+
+/*.btn-blue {*/
+/*    background-color: #3b82f6;*/
+/*    color: white;*/
+/*}*/
+
+/*.btn-blue:hover {*/
+/*    background-color: #2563eb;*/
+/*}*/
+
+/*.btn-primary {*/
+/*    background: #22c55e;*/
+/*    color: #04210e;*/
+/*}*/
+
+/*.btn-primary:hover {*/
+/*    background: #16a34a;*/
+/*}*/
+
+/*.btn-secondary {*/
+/*    color: #ffffff;*/
+/*    border-color: #93c5fd;*/
+/*}*/
+
+/*.btn-secondary:hover {*/
+/*    background: rgba(255, 255, 255, 0.08);*/
+/*}*/
+
+/*.btn-red {*/
+/*    background-color: #ef4444;*/
+/*    border-radius: 8px;*/
+/*    color: white;*/
+/*    padding: 6px 10px;*/
+/*    text-decoration: none;*/
+/*}*/
+
+/*.add-btn {*/
+/*    background-color: #28a745;*/
+/*    color: white;*/
+/*}*/
+
+/*.add-btn:hover {*/
+/*    background-color: #218838;*/
+/*}*/
+
+/*.edit-btn {*/
+/*    background-color: #ffc107;*/
+/*    color: #333;*/
+/*}*/
+
+/*.edit-btn:hover {*/
+/*    background-color: #e0a800;*/
+/*}*/
+
+/*.delete-btn {*/
+/*    background-color: #dc3545;*/
+/*    color: white;*/
+/*}*/
+
+/*.delete-btn:hover {*/
+/*    background-color: #c82333;*/
+/*}*/
+
+/*.cancel-btn {*/
+/*    background-color: #6c757d;*/
+/*    color: white;*/
+/*}*/
+
+/*.cancel-btn:hover {*/
+/*    background-color: #5a6268;*/
+/*}*/
+
+/*.submit-btn {*/
+/*    background: #2563eb;*/
+/*    border: none;*/
+/*    border-radius: 10px;*/
+/*    color: #ffffff;*/
+/*    cursor: pointer;*/
+/*    font-weight: 700;*/
+/*    margin-top: 14px;*/
+/*    padding: 12px 16px;*/
+/*}*/
+
+/*.submit-btn:hover {*/
+/*    background: #1d4ed8;*/
+/*}*/
+
+/*.back-link {*/
+/*    color: #1d4ed8;*/
+/*    display: inline-block;*/
+/*    font-weight: 700;*/
+/*    margin-top: 20px;*/
+/*    text-decoration: none;*/
+/*}*/
+
+/*.buttons {*/
+/*    margin-top: 20px;*/
+/*    margin-right: 20px;*/
+/*}*/
+
+
+/*!* ---- Info / Labels ---- *!*/
+
+/*.info {*/
+/*    font-size: 16px;*/
+/*    margin: 10px 0;*/
+/*}*/
+
+/*.label {*/
+/*    font-weight: bold;*/
+/*    color: #1e3a8a;*/
+/*}*/
+
+/*.meta {*/
+/*    color: #475569;*/
+/*    font-size: 14px;*/
+/*    margin-top: 4px;*/
+/*}*/
+
+/*.hint {*/
+/*    color: #64748b;*/
+/*    font-size: 13px;*/
+/*    margin-top: 4px;*/
+/*}*/
+
+/*.subtitle {*/
+/*    color: #475569;*/
+/*    margin-bottom: 20px;*/
+/*}*/
+
+/*.price {*/
+/*    font-weight: 700;*/
+/*    margin-bottom: 8px;*/
+/*}*/
+
+
+/*!* ---- Forms & Fields ---- *!*/
+
+/*.form-grid {*/
+/*    display: grid;*/
+/*    gap: 14px;*/
+/*    grid-template-columns: 1fr 1fr;*/
+/*}*/
+
+/*.form-group {*/
+/*    margin-bottom: 15px;*/
+/*}*/
+
+/*.field {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    gap: 6px;*/
+/*}*/
+
+/*.field.full {*/
+/*    grid-column: 1 / -1;*/
+/*}*/
+
+/*.password-box {*/
+/*    align-items: center;*/
+/*    display: flex;*/
+/*    gap: 10px;*/
+/*}*/
+
+/*.myInput, #myInput {*/
+/*    border: 1px solid #ddd;*/
+/*    font-size: 16px;*/
+/*    margin-bottom: 12px;*/
+/*    padding: 8px 10px 8px 20px;*/
+/*    width: 100%;*/
+/*}*/
+
+
+/*!* ---- Tables ---- *!*/
+
+/*.schedule-scroll {*/
+/*    overflow-x: auto;*/
+/*}*/
+
+/*.schedule-table {*/
+/*    border-collapse: separate;*/
+/*    border-spacing: 0;*/
+/*    font-size: 0.85rem;*/
+/*    min-width: 700px;*/
+/*    width: 100%;*/
+/*}*/
+
+/*.schedule-table td, .schedule-table th {*/
+/*    border-bottom: 1px solid #eef3f8;*/
+/*    padding: 0.9rem 0.4rem;*/
+/*    transition: all 0.1s ease;*/
+/*    vertical-align: middle;*/
+/*}*/
+
+/*.schedule-table th, .schedule-table td {*/
+/*    border: 1px solid #ddd;*/
+/*    min-width: 100px;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.schedule-table th {*/
+/*    background: #1e3a8a;*/
+/*    color: white;*/
+/*}*/
+
+/*.schedule-table td.time-cell {*/
+/*    background: white;*/
+/*    border-right: 1px solid #e9f0f4;*/
+/*    color: #2c5a74;*/
+/*    font-weight: 500;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.schedule-table td:hover {*/
+/*    background-color: #dbeafe;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.schedule-table th.time-col {*/
+/*    background: #f9fbfd;*/
+/*    border-right: 1px solid #e2edf2;*/
+/*    font-weight: 700;*/
+/*    z-index: 15;*/
+/*}*/
+
+/*.schedule-table th.time-col, .schedule-table td.time-cell {*/
+/*    background-color: white;*/
+/*    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05);*/
+/*    font-weight: 600;*/
+/*    left: 0;*/
+/*    position: sticky;*/
+/*    z-index: 5;*/
+/*}*/
+
+/*.schedule-table thead tr th {*/
+/*    backdrop-filter: blur(2px);*/
+/*    background: #f9fbfd;*/
+/*    border-bottom: 2px solid #dce7ed;*/
+/*    color: #1f4e6e;*/
+/*    font-size: 0.9rem;*/
+/*    font-weight: 600;*/
+/*    padding: 1rem 0.5rem;*/
+/*    position: sticky;*/
+/*    text-align: center;*/
+/*    top: 0;*/
+/*    z-index: 10;*/
+/*}*/
+
+/*.schedule-wrapper {*/
+/*    margin-top: 30px;*/
+/*}*/
+
+/*.times-table {*/
+/*    background: #ffffff;*/
+/*    border-collapse: collapse;*/
+/*    width: 100%;*/
+/*}*/
+
+/*.times-table th, .times-table td {*/
+/*    border: 1px solid #e2e8f0;*/
+/*    font-size: 13px;*/
+/*    padding: 8px 6px;*/
+/*    text-align: center;*/
+/*    vertical-align: middle;*/
+/*}*/
+
+/*.times-table th:first-child {*/
+/*    width: 110px;*/
+/*}*/
+
+/*.table-wrapper {*/
+/*    background: #ffffff;*/
+/*    border-radius: 0 0 1.5rem 1.5rem;*/
+/*    overflow-x: auto;*/
+/*    position: relative;*/
+/*}*/
+
+/*.table-wrapper td {*/
+/*    cursor: pointer;*/
+/*    transition: opacity 0.2s;*/
+/*}*/
+
+/*.table-wrapper td:hover {*/
+/*    opacity: 0.8;*/
+/*}*/
+
+/*.cell-green {*/
+/*    background-color: #3ed347;*/
+/*    color: black;*/
+/*}*/
+
+/*.cell-red {*/
+/*    background-color: #ef4444;*/
+/*    color: white;*/
+/*}*/
+
+
+/*!* ---- Status indicators ---- *!*/
+
+/*.status {*/
+/*    color: green;*/
+/*    font-weight: bold;*/
+/*}*/
+
+/*.status.not-approved {*/
+/*    color: red;*/
+/*}*/
+
+/*.status-badge {*/
+/*    background: #f0f2f5;*/
+/*    border-radius: 20px;*/
+/*    display: inline-block;*/
+/*    font-size: 0.7rem;*/
+/*    font-weight: 500;*/
+/*    margin-top: 4px;*/
+/*    padding: 2px 8px;*/
+/*}*/
+
+/*.status-will, .status-was {*/
+/*    background-color: #e0f7ea;*/
+/*    border-left: 4px solid #2b7e3a;*/
+/*}*/
+
+/*.status-will .status-badge, .status-was .status-badge {*/
+/*    background: #c8e6d9;*/
+/*    color: #146b3a;*/
+/*}*/
+
+/*.status-wont, .status-wasnt {*/
+/*    background-color: #ffe6e5;*/
+/*    border-left: 4px solid #c7362b;*/
+/*}*/
+
+/*.status-wont .status-badge, .status-wasnt .status-badge {*/
+/*    background: #ffd9d7;*/
+/*    color: #b13a2e;*/
+/*}*/
+
+
+/*!* ---- Popups / Modals ---- *!*/
+
+/*.modal {*/
+/*    align-items: center;*/
+/*    background: rgba(0,0,0,0.5);*/
+/*    bottom: 0;*/
+/*    display: none;*/
+/*    justify-content: center;*/
+/*    left: 0;*/
+/*    position: fixed;*/
+/*    right: 0;*/
+/*    top: 0;*/
+/*}*/
+
+/*.modal-content {*/
+/*    background: white;*/
+/*    border-radius: 10px;*/
+/*    padding: 20px;*/
+/*    width: 300px;*/
+/*}*/
+
+/*.popup-overlay {*/
+/*    align-items: center;*/
+/*    background-color: rgba(0, 0, 0, 0.5);*/
+/*    display: flex;*/
+/*    height: 100%;*/
+/*    justify-content: center;*/
+/*    left: 0;*/
+/*    position: fixed;*/
+/*    top: 0;*/
+/*    width: 100%;*/
+/*    z-index: 1000;*/
+/*}*/
+
+/*.popup-content {*/
+/*    animation: slideIn 0.3s ease;*/
+/*    background-color: white;*/
+/*    border-radius: 12px;*/
+/*    box-shadow: 0 5px 25px rgba(0,0,0,0.3);*/
+/*    max-width: 90%;*/
+/*    width: 400px;*/
+/*}*/
+
+/*.popup-content-for-empty {*/
+/*    animation: slideIn 0.3s ease;*/
+/*    background-color: white;*/
+/*    border-radius: 12px;*/
+/*    box-shadow: 0 5px 25px rgba(0,0,0,0.3);*/
+/*    max-width: 90%;*/
+/*    width: 600px;*/
+/*}*/
+
+/*.popup-header {*/
+/*    align-items: center;*/
+/*    background-color: #4a90e2;*/
+/*    border-radius: 12px 12px 0 0;*/
+/*    color: white;*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    padding: 15px 20px;*/
+/*}*/
+
+/*.popup-header h3 {*/
+/*    margin: 0;*/
+/*}*/
+
+/*.popup-body {*/
+/*    border-bottom: 1px solid #eee;*/
+/*    padding: 20px;*/
+/*}*/
+
+/*.popup-body p {*/
+/*    margin: 10px 0;*/
+/*}*/
+
+/*.popup-footer {*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;*/
+/*    gap: 10px;*/
+/*    justify-content: flex-end;*/
+/*    padding: 15px 20px;*/
+/*}*/
+
+/*.popup-btn {*/
+/*    border: none;*/
+/*    border-radius: 6px;*/
+/*    cursor: pointer;*/
+/*    font-size: 14px;*/
+/*    padding: 8px 16px;*/
+/*    transition: all 0.2s;*/
+/*}*/
+
+/*.popup-close {*/
+/*    cursor: pointer;*/
+/*    font-size: 28px;*/
+/*    transition: transform 0.2s;*/
+/*}*/
+
+/*.popup-close:hover {*/
+/*    transform: scale(1.2);*/
+/*}*/
+
+
+/*!* ---- Footer links ---- *!*/
+
+/*.footer-links {*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;*/
+/*    gap: 14px;*/
+/*    justify-content: center;*/
+/*    margin-top: 10px;*/
+/*}*/
+
+/*.footer-links a {*/
+/*    color: #93c5fd;*/
+/*    text-decoration: none;*/
+/*}*/
+
+
+/*!* ---- Misc / Utilities ---- *!*/
+
+/*.error-box {*/
+/*    background: #fee2e2;*/
+/*    border: 1px solid #fecaca;*/
+/*    border-radius: 10px;*/
+/*    color: #991b1b;*/
+/*    font-weight: 600;*/
+/*    margin-bottom: 14px;*/
+/*    padding: 10px 12px;*/
+/*}*/
+
+/*.success-box {*/
+/*    background-color: lightgreen;*/
+/*    border: 1px solid green;*/
+/*    border-radius: 10px;*/
+/*    box-shadow: 3px 3px 2px lightgreen;*/
+/*    color: darkgreen;*/
+/*    font-weight: 600;*/
+/*    left: 43%;*/
+/*    margin-bottom: 14px;*/
+/*    padding: 10px 12px;*/
+/*    position: absolute;*/
+/*    top: 20px;*/
+/*}*/
+
+/*.hide {*/
+/*    animation: hide 2s ease-in-out 0s 1 normal forwards;*/
+/*    display: none;*/
+/*}*/
+
+/*.show {*/
+/*    animation: show 2s ease-in-out 0s 1 normal forwards;*/
+/*    display: block;*/
+/*    left: 40%;*/
+/*    position: absolute;*/
+/*    top: 30%;*/
+/*}*/
+
+/*.div-jump {*/
+/*    animation: jump 1.5s 0s 1 ease-in-out normal forwards;*/
+/*}*/
+
+/*.div-start {*/
+/*    background-color: lightgreen;*/
+/*    height: 200px;*/
+/*    transform: translateY(400px);*/
+/*    width: 200px;*/
+/*}*/
+
+/*.dashboard {*/
+/*    background: white;*/
+/*    border-radius: 2rem;*/
+/*    box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);*/
+/*    margin: 0 auto;*/
+/*    max-width: 1400px;*/
+/*    overflow: hidden;*/
+/*    transition: all 0.2s;*/
+/*}*/
+
+/*.date-indicator {*/
+/*    background: #eef2f5;*/
+/*    border-radius: 40px;*/
+/*    color: #0f3b4f;*/
+/*    font-size: 0.9rem;*/
+/*    font-weight: 600;*/
+/*    padding: 0.3rem 1rem;*/
+/*}*/
+
+/*.week-navigation {*/
+/*    align-items: center;*/
+/*    background: white;*/
+/*    border-bottom: 1px solid #e2edf2;*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;*/
+/*    gap: 0.75rem;*/
+/*    justify-content: space-between;*/
+/*    padding: 0.75rem 1rem;*/
+/*}*/
+
+/*.scroll-hint {*/
+/*    align-items: center;*/
+/*    color: #6c8d9c;*/
+/*    display: flex;*/
+/*    font-size: 0.75rem;*/
+/*    gap: 6px;*/
+/*}*/
+
+/*.span, .text-truncate {*/
+/*    overflow: hidden;*/
+/*    text-overflow: ellipsis;*/
+/*    white-space: nowrap;*/
+/*    width: 47.5px;*/
+/*}*/
+
+/*.lesson-card {*/
+/*    background: #fefefe;*/
+/*    border-radius: 14px;*/
+/*    box-shadow: 0 1px 2px rgba(0,0,0,0.03);*/
+/*    padding: 8px 6px;*/
+/*    text-align: center;*/
+/*    transition: transform 0.05s;*/
+/*}*/
+
+/*.empty-lesson {*/
+/*    background-color: #f2f5f7;*/
+/*    border-radius: 12px;*/
+/*    color: #8ea3b0;*/
+/*    font-size: 0.75rem;*/
+/*    font-style: italic;*/
+/*    padding: 8px 4px;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.course-check {*/
+/*    align-items: center;*/
+/*    background: #f8fafc;*/
+/*    border: 1px solid #e2e8f0;*/
+/*    border-radius: 10px;*/
+/*    display: flex;*/
+/*    gap: 8px;*/
+/*    padding: 8px 10px;*/
+/*}*/
+
+/*.course-description {*/
+/*    color: #475569;*/
+/*    margin-top: 8px;*/
+/*}*/
+
+/*.course-link {*/
+/*    color: #1d4ed8;*/
+/*    font-weight: 700;*/
+/*    text-decoration: none;*/
+/*}*/
+
+/*.course-link:hover {*/
+/*    text-decoration: underline;*/
+/*}*/
+
+/*.course-name {*/
+/*    color: #1e2f3c;*/
+/*    display: block;*/
+/*    font-size: 0.85rem;*/
+/*    font-weight: 700;*/
+/*    margin-bottom: 4px;*/
+/*}*/
+
+/*.courses-grid {*/
+/*    display: grid;*/
+/*    gap: 16px;*/
+/*    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));*/
+/*}*/
+
+/*.courses-list {*/
+/*    display: block;*/
+/*    gap: 12px;*/
+/*    max-height: 300px;*/
+/*    overflow-y: auto;*/
+/*}*/
+
+/*.coursesAndNames {*/
+/*    border: 1px solid #ccc;*/
+/*    display: grid;*/
+/*    margin: 5px;*/
+/*    max-height: 500px;*/
+/*    overflow-y: auto;*/
+/*}*/
+
+/*.newDates {*/
+/*    border: 1px solid #ccc;*/
+/*    display: grid;*/
+/*    grid-template-columns: 20px 250px;*/
+/*    height: 150px;*/
+/*    margin: 5px;*/
+/*    max-height: 500px;*/
+/*    overflow-y: auto;*/
+/*}*/
+
+/*.cta {*/
+/*    background: #e0ecff;*/
+/*    border-radius: 16px;*/
+/*    padding: 36px 16px;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.teacher-cta {*/
+/*    background: #dbeafe;*/
+/*    border-radius: 16px;*/
+/*    padding: 34px 16px;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.teachers-list, .comments-list {*/
+/*    display: grid;*/
+/*    gap: 14px;*/
+/*    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));*/
+/*}*/
+
+/*.mode-btn {*/
+/*    background: white;*/
+/*    border: 2px solid #1f5e7e;*/
+/*    border-radius: 40px;*/
+/*    color: #1f5e7e;*/
+/*    cursor: pointer;*/
+/*    font-size: 0.9rem;*/
+/*    font-weight: 600;*/
+/*    padding: 8px 24px;*/
+/*    transition: all 0.2s;*/
+/*}*/
+
+/*.mode-btn.active {*/
+/*    background: #1f5e7e;*/
+/*    color: white;*/
+/*}*/
+
+/*.mode-btn:hover {*/
+/*    box-shadow: 0 2px 8px rgba(0,0,0,0.1);*/
+/*    transform: translateY(-1px);*/
+/*}*/
+
+/*.mode-switch {*/
+/*    background: white;*/
+/*    border-bottom: 1px solid #e2edf2;*/
+/*    display: flex;*/
+/*    gap: 1rem;*/
+/*    justify-content: flex-end;*/
+/*    padding: 1rem 2rem;*/
+/*}*/
+
+
+/*!* ---- @media queries ---- *!*/
+
+/*@media (max-width: 700px) {*/
+/*    .form-grid {*/
+/*        grid-template-columns: 1fr;*/
+/*    }*/
+/*}*/
+
+/*@media (max-width: 750px) {*/
+/*    .course-name {*/
+/*        font-size: 0.75rem;*/
+/*    }*/
+/*    .hero p {*/
+/*        max-width: 100%;*/
+/*    }*/
+/*    .schedule-table td, .schedule-table th {*/
+/*        padding: 0.7rem 0.2rem;*/
+/*    }*/
+/*    body {*/
+/*        padding: 1rem;*/
+/*    }*/
+/*}*/
+
+/*@media (max-width: 768px) {*/
+/*    header .container {*/
+/*        flex-direction: column;*/
+/*        gap: 18px;*/
+/*    }*/
+/*    .menu {*/
+/*        flex-wrap: wrap;*/
+/*        gap: 18px;*/
+/*        justify-content: center;*/
+/*    }*/
+/*    form {*/
+/*        padding: 30px 25px;*/
+/*    }*/
+/*}*/
+/*card*/

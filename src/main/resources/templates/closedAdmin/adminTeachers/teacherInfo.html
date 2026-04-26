@@ -196,6 +196,29 @@
         .menu a.active {
             color: #ffffff;
         }
+        label {
+            font-weight: 600;
+        }
+
+        input,
+        textarea {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:invalid:focus,
+        textarea:invalid:focus {
+            border-color: #dc2626;
+            outline: none;
+        }
+
         .hero {
             padding: 10px 0;
             background: linear-gradient(120deg, #0f172a, #1d4ed8);

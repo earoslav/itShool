@@ -17,6 +17,7 @@
             color: #1f2937;
             line-height: 1.5;
             padding: 0px;
+            height: 100vh;
         }
 
         .container {
@@ -319,7 +320,7 @@
             <div class="error-box" th:if="${output == 'NOPASS'}">Ви не ввели пароль</div>
             <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
 
-            <form th:action="@{/admin/addStudent}" th:object="${student}" method="post">
+            <form th:action="@{/admin/addStudent/}" th:object="${student}" method="post" id="form">
                 <div class="form-grid">
                     <div class="field">
                         <label for="name">Ім'я</label>
@@ -343,18 +344,18 @@
                                pattern="^[0-9+\\-()\\s]{10,15}$" title="Введіть коректний номер телефону">
                     </div>
 
-                    <div class="field full">
-                        <label for="password">Пароль</label>
-                        <input id="password" type="password" th:field="*{user.password}" required minlength="6" maxlength="50">
-                    </div>
 
+                    <div class="password-box">
+                        Пароль:
+                    </div>
+                    <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass">
                     <div class="field full">
                         <label for="comment">Коментар</label>
                         <textarea id="comment" th:field="*{comment}" required maxlength="500"
                                   placeholder="Наприклад: зручний час занять, рівень підготовки, побажання"></textarea>
                     </div>
                 </div>
-                <button class="submit-btn" type="submit">додати</button>
+                <button onclick="managePass()" class="submit-btn" type="submit">додати</button>
             </form>
         </div>
     </div>
@@ -374,5 +375,15 @@
         </div>
     </div>
 </footer>
+<script>
+    function managePass() {
+        let pass = document.querySelector("#pass")
+        let form = document.querySelector("#form")
+        if (pass.value === "") {
+            pass.value = "NOPASS"
+        }
+        form.action = form.action + "" + pass.value
+    }
+</script>
 </body>
 </html>

@@ -902,13 +902,16 @@
             </div>
 
 
+            <div style="display: flex; gap: 20px; margin: 20px">
+                <form th:action="@{/teacher/{teachId}/lessons/addLesson/0/0/0(teachId=${teacher.id})}" method="post" id="addLessonForm">
+                    <button type="submit" id="addLessonBtnInEmptyPopup" class="popup-btn edit-btn" >Додати одне заняття</button>
+                </form>
+                <form th:action="@{/teacher/{teachId}/lessons/addCourse/0/0/0(teachId=${teacher.id})}" method="post" id="addCourseForm">
+                    <button type="submit" id="addCourseBtnInEmptyPopup" class="popup-btn edit-btn" >Додати курc з учнем</button>
+                </form>
+            </div>
 
-            <form th:action="@{/teacher/{teachId}/lessons/addLesson/0/0/0(teachId=${teacher.id})}" method="post" id="addLessonForm">
-                <button type="submit" id="addLessonBtnInEmptyPopup" class="popup-btn edit-btn" >Додати одне заняття</button>
-            </form>
-            <form th:action="@{/teacher/{teachId}/lessons/addCourse/0/0/0(teachId=${teacher.id})}" method="post" id="addCourseForm">
-                <button type="submit" id="addCourseBtnInEmptyPopup" class="popup-btn edit-btn" >Додати курc з учнем</button>
-            </form>
+
         </div>
     </div>
     </div>

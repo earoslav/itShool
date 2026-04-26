@@ -223,6 +223,28 @@
             position: sticky;
             top: 100vh; /* Позиционирует футер внизу */
         }
+        label {
+            font-weight: 600;
+        }
+
+        input,
+        textarea {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:invalid:focus,
+        textarea:invalid:focus {
+            border-color: #dc2626;
+            outline: none;
+        }
 
     </style>
     <link rel="stylesheet" href="/generalStyle.css">

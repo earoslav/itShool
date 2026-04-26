@@ -71,15 +71,16 @@ public class AdminStudentOtherActionsController {
     }
     @GetMapping("/addStudent")
     public String gotoCreateStudent(Model model) {
-        model.addAttribute("student",new Student());
+        model.addAttribute("student",studentMapper.mapStudentToStudentDTO(new Student()));
+        model.addAttribute("password", "");
         return "closedAdmin/adminStudents/addNewStudent";
     }
 
-    @PostMapping("/addStudent")
-    public String addStudent(@ModelAttribute("student") Student student, Model model) {
+    @PostMapping("/addStudent/{password}")
+    public String addStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model) {
         try {
-            if (studentService.checkIfExistsByEmail(student.getEmail())) {
-                if(student.getPassword().equals("")){
+            if (studentService.checkIfExistsByEmail(student.getUser().getEmail())) {
+                if(password.equals("")){
                     model.addAttribute("student");
                     model.addAttribute("output", "NOPASS");
                     return "closedAdmin/adminStudents/addNewStudent";
@@ -88,11 +89,11 @@ public class AdminStudentOtherActionsController {
                 model.addAttribute("student", student);
                 return "closedAdmin/adminStudents/addNewStudent";
             }
-            User user = new User(student.getName(), student.getEmail(), passwordEncoder.encode(student.getPassword()), "STUDENT");
+            User user = new User(student.getUser().getName(), student.getUser().getEmail(), passwordEncoder.encode(password), "STUDENT");
             userService.create(user);
-            student.setPassword(passwordEncoder.encode(student.getPassword()));
-            student.setUser(user);
-            studentService.create(student);
+            Student student1 = studentMapper.mapStudentDTOToStudent(student);
+            student1.setUser(user);
+            studentService.create(student1);
             return "redirect:/admin/homepage/studentAdded";
         } catch (Exception e) {
             System.out.println(e);

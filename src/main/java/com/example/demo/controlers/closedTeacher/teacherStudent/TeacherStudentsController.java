@@ -75,6 +75,17 @@ public class TeacherStudentsController {
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(id)));
         return "closedTeacher/teacherStudents/students";
     }
+    @GetMapping("/{idTeach}/students/{output}")
+    public String gotoMyStudentsWithOutput(@PathVariable("idTeach") int id, @PathVariable("output") String output, Model model) {
+        HashSet<Student> students = new HashSet<>();
+        HashSet<Student> finalStudents = students;
+        tswService.findAllByTeachId(id).stream().forEach(obj -> finalStudents.add(obj.getStudent()));
+        List<Student> retStudents = finalStudents.stream().sorted(Comparator.comparing(Student::getId)).toList();
+        model.addAttribute("output", output);
+        model.addAttribute("students", retStudents.stream().map(el -> studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(id)));
+        return "closedTeacher/teacherStudents/students";
+    }
 
     @PostMapping("/{idTeach}/student/{idSt}/delete")
     @Transactional
@@ -90,7 +101,7 @@ public class TeacherStudentsController {
         mailService.sendEmailWithThymeleafToStudentAboutTeacherRemover(mail, teacherMapper.mapTeacherToTeacherDTO(saved));
         model.addAttribute("students", studentMapper.mapStudentToStudentDTO(studentService.getById(idSt)));
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idT)));
-        return "redirect:/teacher/"+idT+"/students";
+        return "redirect:/teacher/"+idT+"/students/studentDeleted";
     }
 
 }

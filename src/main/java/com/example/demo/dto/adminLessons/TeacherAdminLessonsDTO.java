@@ -9,17 +9,10 @@ import lombok.*;
 @ToString
 public class TeacherAdminLessonsDTO {
     private int id;
-
-    private String name;
-
-
     private Integer age;
-
-
-
+    private UserAdminLessonsDTO user;
     private String comment;
-
-    private boolean approved;
+    private int approved;
     private String notTakenTimes;
 
 

@@ -15,6 +15,7 @@ import com.example.demo.services.program.LessonService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +37,11 @@ public class StudentHomepageController {
     private StudentMapper studentMapper;
     private TeacherMapper teacherMapper;
     private CourseMapper courseMapper;
+    private PasswordEncoder passwordEncoder;
 
 
-    public StudentHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, ObjectMapper objectMapper, StudentMapper studentMapper) {
+
+    public StudentHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, ObjectMapper objectMapper, StudentMapper studentMapper, PasswordEncoder passwordEncoder) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
         this.theWeekService = theWeekService;
@@ -51,31 +54,38 @@ public class StudentHomepageController {
         this.studentService = studentService;
         this.objectMapper = objectMapper;
         this.studentMapper = studentMapper;
+        this.passwordEncoder = passwordEncoder;
     }
     @GetMapping("/{idSt}/homepage")
-    public String gotoTeacher(@PathVariable("idSt") int id, Model model){
+    public String gotoStudent(@PathVariable("idSt") int id, Model model){
         Student student = studentService.getById(id);
         model.addAttribute("password", "");
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
         return "closedStudent/studentHomepage/homepage";
     }
+    @GetMapping("/{idSt}/homepage/{output}")
+    public String gotoStudentWithOutput(@PathVariable("idSt") int id,@PathVariable("output") String output, Model model){
+        Student student = studentService.getById(id);
+        model.addAttribute("output", output);
+        model.addAttribute("password", "");
+        model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
+        return "closedStudent/studentHomepage/homepage";
+    }
+
     @PostMapping("/{idSt}/homepage/{password}")
     public String updateTeacher(@ModelAttribute("student") StudentDTO student, @PathVariable("password") String password, @PathVariable("idSt") int id, Model model) {
-        if(studentService.checkIfExistsByEmail(student.getEmail()) && !studentService.getById(student.getId()).getEmail().equals(student.getEmail())){
-            model.addAttribute("error", "exists");
-
-            model.addAttribute("student", student);
-            return "closedStudent/studentHomepage/homepage";
+        if(studentService.checkIfExistsByEmail(student.getUser().getEmail()) && !studentService.getById(student.getId()).getEmail().equals(student.getUser().getEmail())){
+            return "redirect:/student/"+student.getId()+"/lessons/exists";
         }
         else{
             if(password.equals("OLDPASS")){
                 password = studentService.getById(student.getId()).getPassword();
             }
             Student retStudent = studentMapper.mapStudentDTOToStudent(student);
-            retStudent.setPassword(password);
+            retStudent.setPassword(passwordEncoder.encode(password));
             studentService.update(student.getId(), retStudent);
 
         }
-        return "redirect:/student/"+student.getId()+"/homepage";
+        return "redirect:/student/"+student.getId()+"/homepage/studentEdited";
     }
 }

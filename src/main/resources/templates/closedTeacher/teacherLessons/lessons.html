@@ -13,12 +13,27 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background: #f4f7fc;
             color: #1a2c3e;
-            padding: 2rem 1.5rem;
+            padding: 0px;
         }
 
         /* головний контейнер */
@@ -262,14 +277,7 @@
             }
         }
 
-        footer {
-            background: #f8fafc;
-            padding: 1rem 2rem;
-            font-size: 0.75rem;
-            text-align: center;
-            color: #5c7f91;
-            border-top: 1px solid #e2edf2;
-        }
+
         a {
             color: #3a3d41;
             text-decoration: none;
@@ -546,53 +554,173 @@
             margin: 5px;
             max-height: 500px
         }
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+
+
+
+
+
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: white;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
             font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+
+        .myInput {
+
+            width: 100%; /* Full-width */
+            font-size: 16px; /* Increase font-size */
+            padding: 8px 10px 8px 20px; /* Add some padding */
+            border: 1px solid #ddd; /* Add a grey border */
+            margin-bottom: 12px; /* Add some space below the input */
         }
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<div class="dashboard">
-    <div class="hero">
-        <h1><i class="fas fa-laptop-code"></i> IT Kids School</h1>
-        <div class="sub">Сучасна IT-школа для дітей та підлітків</div>
-        <p>Ми молода школа, але вже маємо амбітну команду, сильну навчальну програму та великий потенціал вирости у топовий освітній IT-центр.</p>
+<header style="background-color: #111827">
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
+            <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
+            <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
+            <a href="/logout">Вийти</a>
+        </nav>
     </div>
+</header>
 
-    <!-- контроли для гортання днями -->
+<section class="hero">
+    <div class="container">
+        <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+        <h3 style="margin-left: 35px">Уроки:</h3>
+    </div>
+</section>
     <div class="week-navigation">
-        <div class="header">
-            <h1 th:text="${teacher.name}">Викладач</h1>
-            <div class="nav-links">
-                <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
-                <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
-                <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
-            </div>
-        </div>
-        <div class="error-box" th:if="${error=='tooLate'}">Вибачте, але редагувати можна лише за 12 годин до заняття.</div>
-        <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так.</div>
-        <div class="error-box" th:if="${error == 'lessonBeforeNow'}">Вибачте, але додати урок можна тільки на майбутній час, виберіть пізнішу дату.</div>
-        <div class="error-box" th:if="${error == 'courseNotFound'}">Вибачте, але ви не вибрали курс або курс не знайдено.</div>
-        <div class="error-box" th:if="${error == 'studentNotFound'}">Вибачте, але ви не вибрали учня або учня не знайдено.</div>
-        <div class="error-box" th:if="${error == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.</div>
-        <div class="error-box" th:if="${error == 'timeNotEmpty'}">Вибачте, але час який ви вибрали у вас вже зайнятий іншим/іншими зайняттями.</div>
-        <div class="error-box" th:if="${error == 'tooEarly'}">Вибачте, але ще зарано щоб відзначити заняття "було".</div>
+        <div class="error-box" th:if="${output=='tooLate'}">Вибачте, але редагувати можна лише за 12 годин до заняття.</div>
+        <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так.</div>
+        <div class="error-box" th:if="${output == 'lessonBeforeNow'}">Вибачте, але додати урок можна тільки на майбутній час, виберіть пізнішу дату.</div>
+        <div class="error-box" th:if="${output == 'courseNotFound'}">Вибачте, але ви не вибрали курс або курс не знайдено.</div>
+        <div class="error-box" th:if="${output == 'studentNotFound'}">Вибачте, але ви не вибрали учня або учня не знайдено.</div>
+        <div class="error-box" th:if="${output == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.</div>
+        <div class="error-box" th:if="${output == 'timeNotEmpty'}">Вибачте, але час який ви вибрали у вас вже зайнятий іншим/іншими зайняттями.</div>
+        <div class="error-box" th:if="${output == 'tooEarly'}">Вибачте, але ще зарано щоб відзначити заняття "було".</div>
+        <div class="success-box" th:if="${output == 'lessonStatusChanged'}">Урок успішно позначений "було".</div>
+        <div class="success-box" th:if="${output == 'lessonAdded'}">Урок успішно додано </div>
+        <div class="success-box" th:if="${output == 'courseAdded'}">Курс успішно додано </div>
+        <div class="success-box" th:if="${output == 'lessonDeleted'}">Урок успішно видалено</div>
+        <div class="success-box" th:if="${output == 'courseDeleted'}">Курс успішно видалено</div>
+        <div class="success-box" th:if="${output == 'lessonEdited'}">Урок успішно змінено</div>
         <div class="date-indicator" id="dateRangeIndicator">
             <i class="far fa-calendar-alt"></i> <span id="rangeText">Завантаження...</span>
         </div>
         <div class="scroll-hint">
             <i class="fas fa-arrows-alt-h"></i> <span>Гортайте таблицю →</span>
         </div>
-        <!--        <div class="mode-switch">-->
-        <!--            <button class="mode-btn" id="checkModeBtn">👁️ Check Mode</button>-->
-        <!--            <button class="mode-btn" id="editModeBtn">✏️ Edit Mode</button>-->
-        <!--        </div>-->
     </div>
 
     <div class="table-wrapper" id="tableWrapper">
@@ -617,7 +745,7 @@
                     <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
 
                         <button th:if="${lesson != null and (lesson.status=='wasnt' or lesson.status=='wont')}" style="background-color: red; border: 1px solid black; border-radius: 5px; font-size: 16px; width: 46px; height: 20px;overflow: hidden; white-space: nowrap;"
-                                th:data-sn="${lesson.student.name}"
+                                th:data-sn="${lesson.student.user.name}"
                                 th:data-cn="${lesson.course.name}"
                                 th:data-hour="${hour}"
                                 th:data-date="${day}"
@@ -626,7 +754,7 @@
                             <span style="font-size: 20px" th:text="${lesson.course.name}"></span>
                         </button>
                         <button th:if="${lesson != null and (lesson.status=='was')}"  style="background-color: darkgreen;border: 1px solid black; border-radius: 5px; font-size: 16px; width: 46px; height: 20px;overflow: hidden; white-space: nowrap;"
-                                th:data-sn="${lesson.student.name}"
+                                th:data-sn="${lesson.student.user.name}"
                                 th:data-cn="${lesson.course.name}"
                                 th:data-hour="${hour}"
                                 th:data-date="${day}"
@@ -642,8 +770,8 @@
                                 th:data-tfts="${lesson.teacher.notTakenTimes}"
                                 th:date-stId="${lesson.student.id}"
                                 th:data-hour="${hour}"
-                                th:data-tn="${teacher.name}"
-                                th:data-sn="${lesson.student.name}"
+                                th:data-tn="${teacher.user.name}"
+                                th:data-sn="${lesson.student.user.name}"
                                 th:data-cn="${lesson.course.name}"
                                 th:data-tId="${teacher.id}"
                                 th:onclick="'openPopup(this)'">
@@ -745,6 +873,7 @@
                 <p><strong>Дата:</strong> <span id="popupDateInEmptyPopup"></span></p>
                 <p><strong>Час:</strong> <span id="popupTimeInEmptyPopup"></span></p>
                 <p ><strong>Курс:</strong> <span id=""></span></p>
+                <input type="text" id="myInputCourses" class="myInput" onkeyup="searchCourse()" placeholder="Search for names..">
                 <div  class="coursesAndNames">
                     <div style="display: flex">
                         <div  style="display: grid;" id="courseIds"  >
@@ -758,6 +887,7 @@
 
                 </div>
                 <p ><strong>Учень:</strong> <span id="coursesInEmptyPopup" ></span></p>
+                <input type="text" id="myInputStudents" class="myInput" onkeyup="searchStudents()" placeholder="Search for names..">
                 <div  class="coursesAndNames">
                     <div style="display: flex">
                         <div style="display: grid" id="studentIds" >
@@ -765,7 +895,7 @@
                         </div>
                         <span style="opacity: 0;">emp</span>
                         <div style="display: grid" id="studentNames" >
-                            <label th:each="student : ${students}" th:text="${student.name+' '+student.email}" style="height: 20px"></label>
+                            <label th:each="student : ${students}" th:text="${student.user.name+' '+student.user.email}" style="height: 20px"></label>
                         </div>
                     </div>
                 </div>
@@ -782,12 +912,68 @@
         </div>
     </div>
     </div>
-    <footer>
-        <i class="far fa-clock"></i> Розклад занять • Години 08:00 – 21:00 • Кольори: зелений (заняття було/буде), червоний (пропуск/не було), сірий (немає заняття)
-    </footer>
+<footer id="contacts">
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
 </div>
 
+<script>
+    function searchStudents() {
 
+        // Declare variables
+        var input, filter, ul, a,b, i, txtValue;
+        input = document.getElementById('myInputStudents');
+        let studentIds = document.getElementById('studentIds').getElementsByTagName("input");
+        let studentNames = document.getElementById('studentNames').getElementsByTagName("label");
+        filter = input.value.toUpperCase();
+        for (i = 0; i < studentNames.length; i++) {
+            a = studentNames[i];
+            b = studentIds[i]
+            txtValue = a.textContent.split(" ")[0] || a.innerText.split(" ")[0];
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+
+                studentNames[i].style.display = "";
+                studentIds[i].style.display = "";
+            } else {
+                studentNames[i].style.display = "none";
+                studentIds[i].style.display = "none";
+            }
+        }
+    }
+    function searchCourse() {
+        // Declare variables
+        var input, filter, ul, a,b, i, txtValue;
+        input = document.getElementById('myInputCourses');
+        let courseIds = document.getElementById('courseIds').getElementsByTagName("input");
+        let courseNames = document.getElementById('courseNames').getElementsByTagName("label");
+        filter = input.value.toUpperCase();
+
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < courseNames.length; i++) {
+            a = courseNames[i];
+            b = courseIds[i]
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                courseNames[i].style.display = "";
+                courseIds[i].style.display = "";
+            } else {
+                courseNames[i].style.display = "none";
+                courseIds[i].style.display = "none";
+            }
+        }
+    }
+</script>
 <script th:inline="javascript">
     let popup = document.querySelector("#lessonPopup")
     let popupDate = document.querySelector("#popupDate")

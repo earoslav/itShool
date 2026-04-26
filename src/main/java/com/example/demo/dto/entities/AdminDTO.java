@@ -13,7 +13,5 @@ import lombok.Setter;
 public class AdminDTO {
     private int id;
 
-    private String name;
-
-    private String email;
+    private UserDTO user;
 }

@@ -9,13 +9,11 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f3f4f6;
+            height: 100vh;
+            padding: 0px;
         }
 
-        .header {
-            background: linear-gradient(90deg, #0f172a, #2563eb);
-            color: white;
-            padding: 40px;
-        }
+
 
         .container {
             max-width: 1100px;
@@ -93,15 +91,7 @@
             background: #ffd9d7;
             color: #b13a2e;
         }
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
+
         .empty-lesson {
             background-color: #f2f5f7;
             border-radius: 12px;
@@ -123,22 +113,143 @@
         .nav-links a:hover {
             background-color: rgba(255,255,255,0.2);
         }
+
+
+
+
+        header {
+            background-color: #111827;
+            color: white;
+            padding: 20px;
+        }
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: white;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-
-<div class="header">
-    <h1 th:text="${student.name}">Учен</h1>
-    <div class="nav-links">
-        <a th:href="@{/student/{idSt}/homepage(idSt = ${student.id})}">Головна</a>
-        <a th:href="@{/student/{idSt}/lessons(idSt = ${student.id})}">Уроки</a>
+<header style="background-color: #111827">
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a th:href="@{/student/{idSt}/homepage(idSt = ${student.id})}">Головна</a>
+            <a th:href="@{/student/{idSt}/lessons(idSt = ${student.id})}">Уроки</a>
+            <a href="/logout">Вийти</a>
+        </nav>
     </div>
-</div>
+</header>
 
+<section class="hero">
+    <div class="container">
+        <p th:text="'Учень: '+${student.user.name}"></p>
+
+    </div>
+</section>
 
 <div class="container">
-    <div class="error-box" th:if="${error == 'exists'}">Така пошта вже зареєстрована</div>
-    <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
+    <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
+    <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
+    <div class="success-box" th:if="${output == 'studentEdited'}">Учня Успішно редаговано</div>
     <form id="form" th:action="@{/student/{idSt}/homepage(idSt=${student.id})}" th:object="${student}" method="post" onsubmit="return handleSubmit(event)">
 
         <input type="hidden" th:field="*{id}">
@@ -148,7 +259,7 @@
             <h2>Основна інформація</h2>
 
             <p>Ім'я:<br>
-                <input type="text" th:field="*{name}">
+                <input type="text" th:field="*{user.name}">
             </p>
 
             <p>Вік:<br>
@@ -156,7 +267,7 @@
             </p>
 
             <p>Email:<br>
-                <input type="text" th:field="*{email}">
+                <input type="text" th:field="*{user.email}">
             </p>
 
             <p>Телефон:<br>
@@ -179,6 +290,21 @@
     </form>
 
 </div>
+<footer id="contacts">
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
+
 <script>
     function managePass(){
         let pass = document.querySelector("#pass")
@@ -214,364 +340,3 @@
 
 </body>
 </html>
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <title>Викладач</title>-->
-
-<!--    <style>-->
-<!--        body {-->
-<!--            margin: 0;-->
-<!--            font-family: Arial, sans-serif;-->
-<!--            background: #f3f4f6;-->
-<!--        }-->
-
-<!--        /* HEADER */-->
-<!--        .header {-->
-<!--            background: linear-gradient(90deg, #0f172a, #2563eb);-->
-<!--            color: white;-->
-<!--            padding: 40px;-->
-<!--        }-->
-
-<!--        .header h1 {-->
-<!--            margin: 0;-->
-<!--            font-size: 36px;-->
-<!--        }-->
-
-<!--        .container {-->
-<!--            max-width: 1100px;-->
-<!--            margin: 30px auto;-->
-<!--            padding: 0 20px;-->
-<!--        }-->
-
-<!--        .block {-->
-<!--            background: white;-->
-<!--            padding: 20px;-->
-<!--            border-radius: 15px;-->
-<!--            margin-bottom: 20px;-->
-<!--            box-shadow: 0 5px 15px rgba(0,0,0,0.05);-->
-<!--        }-->
-
-<!--        .block h2 {-->
-<!--            margin-bottom: 15px;-->
-<!--        }-->
-
-<!--        .info p {-->
-<!--            margin: 6px 0;-->
-<!--        }-->
-
-<!--        ul {-->
-<!--            padding-left: 20px;-->
-<!--        }-->
-
-<!--        /* PASSWORD */-->
-<!--        .password-box {-->
-<!--            display: flex;-->
-<!--            align-items: center;-->
-<!--            gap: 10px;-->
-<!--        }-->
-
-<!--        .password-box input {-->
-<!--            border: none;-->
-<!--            background: #f1f5f9;-->
-<!--            padding: 6px 10px;-->
-<!--            border-radius: 8px;-->
-<!--        }-->
-
-<!--        .btn {-->
-<!--            border: none;-->
-<!--            padding: 6px 12px;-->
-<!--            border-radius: 8px;-->
-<!--            cursor: pointer;-->
-<!--            background: #2563eb;-->
-<!--            color: white;-->
-<!--        }-->
-
-<!--        .status {-->
-<!--            font-weight: bold;-->
-<!--            color: green;-->
-<!--        }-->
-
-<!--        .status.not-approved {-->
-<!--            color: red;-->
-<!--        }-->
-<!--        .table-wrapper {-->
-<!--            overflow-x: auto;-->
-<!--            position: relative;-->
-<!--            border-radius: 0 0 1.5rem 1.5rem;-->
-<!--            background: #ffffff;-->
-<!--        }-->
-
-<!--        .schedule-table {-->
-<!--            min-width: 700px;-->
-<!--            border-collapse: separate;-->
-<!--            border-spacing: 0;-->
-<!--            width: 100%;-->
-<!--            font-size: 0.85rem;-->
-<!--        }-->
-
-<!--        /* стікі заголовки днів */-->
-<!--        .schedule-table thead tr th {-->
-<!--            position: sticky;-->
-<!--            top: 0;-->
-<!--            background: #f9fbfd;-->
-<!--            z-index: 10;-->
-<!--            padding: 1rem 0.5rem;-->
-<!--            font-weight: 600;-->
-<!--            font-size: 0.9rem;-->
-<!--            border-bottom: 2px solid #dce7ed;-->
-<!--            color: #1f4e6e;-->
-<!--            text-align: center;-->
-<!--            backdrop-filter: blur(2px);-->
-<!--        }-->
-
-<!--        /* фіксована колонка часу (не гортається) */-->
-<!--        .schedule-table th.time-col,-->
-<!--        .schedule-table td.time-cell {-->
-<!--            position: sticky;-->
-<!--            left: 0;-->
-<!--            background-color: white;-->
-<!--            z-index: 5;-->
-<!--            font-weight: 600;-->
-<!--            box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05);-->
-<!--        }-->
-
-<!--        .schedule-table th.time-col {-->
-<!--            background: #f9fbfd;-->
-<!--            z-index: 15;-->
-<!--            border-right: 1px solid #e2edf2;-->
-<!--            font-weight: 700;-->
-<!--        }-->
-
-<!--        .schedule-table td.time-cell {-->
-<!--            background: white;-->
-<!--            border-right: 1px solid #e9f0f4;-->
-<!--            font-weight: 500;-->
-<!--            color: #2c5a74;-->
-<!--            text-align: center;-->
-<!--        }-->
-
-<!--        .schedule-table td, .schedule-table th {-->
-<!--            border-bottom: 1px solid #eef3f8;-->
-<!--            padding: 0.9rem 0.4rem;-->
-<!--            vertical-align: middle;-->
-<!--            transition: all 0.1s ease;-->
-<!--        }-->
-
-<!--        /* стилі комірок */-->
-<!--        .lesson-card {-->
-<!--            background: #fefefe;-->
-<!--            border-radius: 14px;-->
-<!--            padding: 8px 6px;-->
-<!--            box-shadow: 0 1px 2px rgba(0,0,0,0.03);-->
-<!--            text-align: center;-->
-<!--            transition: transform 0.05s;-->
-<!--        }-->
-
-<!--        .course-name {-->
-<!--            font-weight: 700;-->
-<!--            font-size: 0.85rem;-->
-<!--            color: #1e2f3c;-->
-<!--            display: block;-->
-<!--            margin-bottom: 4px;-->
-<!--        }-->
-
-<!--        .status-badge {-->
-<!--            font-size: 0.7rem;-->
-<!--            font-weight: 500;-->
-<!--            background: #f0f2f5;-->
-<!--            display: inline-block;-->
-<!--            padding: 2px 8px;-->
-<!--            border-radius: 20px;-->
-<!--            margin-top: 4px;-->
-<!--        }-->
-
-<!--        /* кольори статусів */-->
-<!--        .status-will, .status-was {-->
-<!--            background-color: #e0f7ea;-->
-<!--            border-left: 4px solid #2b7e3a;-->
-<!--        }-->
-<!--        .status-wont, .status-wasnt {-->
-<!--            background-color: #ffe6e5;-->
-<!--            border-left: 4px solid #c7362b;-->
-<!--        }-->
-<!--        .status-will .status-badge, .status-was .status-badge {-->
-<!--            background: #c8e6d9;-->
-<!--            color: #146b3a;-->
-<!--        }-->
-<!--        .status-wont .status-badge, .status-wasnt .status-badge {-->
-<!--            background: #ffd9d7;-->
-<!--            color: #b13a2e;-->
-<!--        }-->
-
-<!--        .empty-lesson {-->
-<!--            background-color: #f2f5f7;-->
-<!--            border-radius: 12px;-->
-<!--            padding: 8px 4px;-->
-<!--            text-align: center;-->
-<!--            color: #8ea3b0;-->
-<!--            font-size: 0.75rem;-->
-<!--            font-style: italic;-->
-<!--        }-->
-<!--        .times-table {-->
-<!--            width: 100%;-->
-<!--            border-collapse: collapse;-->
-<!--            background: #ffffff;-->
-<!--        }-->
-
-<!--        .times-table th,-->
-<!--        .times-table td {-->
-<!--            border: 1px solid #e2e8f0;-->
-<!--            padding: 8px 6px;-->
-<!--            text-align: center;-->
-<!--            vertical-align: middle;-->
-<!--            font-size: 13px;-->
-<!--        }-->
-
-<!--        .times-table th:first-child {-->
-<!--            width: 110px;-->
-<!--        }-->
-
-<!--        @media (max-width: 700px) {-->
-<!--            .form-grid {-->
-<!--                grid-template-columns: 1fr;-->
-<!--            }-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
-<!--<body>-->
-
-<!--&lt;!&ndash; HEADER &ndash;&gt;-->
-<!--<div class="header">-->
-<!--    <h1 th:text="${teacher.name}">Ім'я викладача</h1>-->
-<!--    <p>Профіль викладача</p>-->
-<!--</div>-->
-
-<!--<div class="container">-->
-
-<!--    &lt;!&ndash; Основна інформація &ndash;&gt;-->
-<!--    <div class="block info">-->
-<!--        <h2>Основна інформація</h2>-->
-
-<!--        <p><b>Вік:</b> <span th:text="${teacher.age}"></span></p>-->
-<!--        <p><b>Email:</b> <span th:text="${teacher.email}"></span></p>-->
-<!--        <p><b>Телефон:</b> <span th:text="${teacher.phoneNumber}"></span></p>-->
-<!--        <p><b>Telegram:</b> <span th:text="${teacher.tgUsername}"></span></p>-->
-<!--        <p><b>Коментар:</b> <span th:text="${teacher.comment}"></span></p>-->
-
-<!--        <p>-->
-<!--            <b>Статус:</b>-->
-<!--            <span th:classappend="${teacher.approved} ? 'status' : 'status not-approved'"-->
-<!--                  th:text="${teacher.approved ? 'Підтверджений' : 'Непідтверджений'}">-->
-<!--            </span>-->
-<!--        </p>-->
-
-<!--        &lt;!&ndash; Пароль &ndash;&gt;-->
-<!--        <div class="password-box">-->
-<!--            <b>Пароль:</b>-->
-<!--            <input type="password" id="passwordField"-->
-<!--                   th:value="${teacher.password}" readonly>-->
-<!--            <button class="btn" onclick="togglePassword()">Показати</button>-->
-<!--        </div>-->
-
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Курси &ndash;&gt;-->
-<!--    <div class="block">-->
-<!--        <h2>Курси</h2>-->
-<!--        <ul>-->
-<!--            <li th:each="tc : ${teacher.teacherCourses}"-->
-<!--                th:text="${tc.course.name}">-->
-<!--            </li>-->
-<!--        </ul>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Вільний час &ndash;&gt;-->
-<!--    <div class="block">-->
-<!--        <h2>Вільний час</h2>-->
-<!--        <table class="times-table">-->
-<!--            <thead>-->
-<!--            <tr>-->
-<!--                <th>Година</th>-->
-<!--                <th th:each="dayName : ${dayNames}" th:text="${dayName}">День</th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--            <tr th:each="hour, hourStat : ${hours}">-->
-<!--                <th th:text="${hour} + ':00'">8:00</th>-->
-<!--                <td th:each="day, dayStat : ${days}">-->
-<!--                    <input type="checkbox"-->
-<!--                           name="freeTimeIds"-->
-<!--                           th:each="ft : ${freeTimes}"-->
-<!--                           th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour and teacherFreeTimes.contains(ft.id)}"-->
-<!--                           th:value="${ft.id}"-->
-<!--                    checked/>-->
-<!--                    <input type="checkbox"-->
-<!--                           name="freeTimeIds"-->
-<!--                           th:each="ft : ${freeTimes}"-->
-<!--                           th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour and !teacherFreeTimes.contains(ft.id)}"-->
-<!--                           th:value="${ft.id}"-->
-<!--                           />-->
-<!--                </td>-->
-<!--            </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Уроки &ndash;&gt;-->
-<!--    <div class="block">-->
-<!--        <h2>Уроки</h2>-->
-<!--        <div class="table-wrapper" id="tableWrapper">-->
-<!--            <table>-->
-<!--                <thead>-->
-<!--                <tr>-->
-<!--                    <th>Час</th>-->
-<!--                    <th th:each="day : ${weekDays}"-->
-<!--                        th:text="${day}"></th>-->
-<!--                </tr>-->
-<!--                </thead>-->
-<!--                <tbody>-->
-<!--                <tr th:each="hour : ${hours}">-->
-<!--                    <td th:text="${hour}"></td>-->
-
-<!--                    <td style="height: 20px; background-color: lightgray; margin: 0px; cursor: pointer;"-->
-<!--                        th:each="day : ${weekDays}">-->
-<!--                        <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">-->
-
-<!--                            <button th:if="${lesson != null and (lesson.status=='wasnt' or lesson.status=='wont')}" style="background-color: red;">-->
-<!--                                <span style="font-size: 20px" th:text="${lesson.course.name}"></span>-->
-<!--                            </button>-->
-<!--                            <button th:if="${lesson != null and (lesson.status=='will' or lesson.status=='was')}" style="background-color: lightgreen;">-->
-<!--                                <span style="font-size: 16px" th:text="${lesson.course.name}"></span>-->
-<!--                            </button>-->
-<!--                            <button th:if="${lesson == null}">-->
-<!--                            </button>-->
-<!--                        </div>-->
-
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                </tbody>-->
-<!--            </table>-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--</div>-->
-
-<!--<script>-->
-<!--    function togglePassword() {-->
-<!--        const input = document.getElementById("passwordField");-->
-<!--        const btn = event.target;-->
-
-<!--        if (input.type === "password") {-->
-<!--            input.type = "text";-->
-<!--            btn.innerText = "Сховати";-->
-<!--        } else {-->
-<!--            input.type = "password";-->
-<!--            btn.innerText = "Показати";-->
-<!--        }-->
-<!--    }-->
-<!--</script>-->
-
-<!--</body>-->
-<!--</html>-->

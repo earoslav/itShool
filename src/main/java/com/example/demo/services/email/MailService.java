@@ -2,6 +2,8 @@ package com.example.demo.services.email;
 
 import com.example.demo.dto.entities.StudentDTO;
 import com.example.demo.dto.entities.TeacherDTO;
+import com.example.demo.dto.other.TimeOfTheWeekDTO;
+import com.example.demo.dto.programe.CourseDTO;
 import com.example.demo.dto.programe.LessonDTO;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
@@ -38,7 +40,7 @@ public class MailService  {
         this.templateEngine = templateEngine;
 
     }
-    public void sendEmailWithThymeleaf(Mail mail, Teacher teacher, List<TimeOfTheWeek> freeTimes, List<Course> courses, HashMap<String, List<String>> compiledTimes, List<Integer> timeIds, List<Integer> courseIds) throws MessagingException {
+    public void sendEmailWithThymeleaf(Mail mail, TeacherDTO teacher, String password, List<TimeOfTheWeekDTO> freeTimes, List<CourseDTO> courses, HashMap<String, List<String>> compiledTimes, String timeIds, String courseIds) throws MessagingException {
         for (String recipient : mail.getTo()) {
             Context context = new Context();
             context.setVariable("teacher", teacher);
@@ -46,6 +48,7 @@ public class MailService  {
             context.setVariable("addTeacherUrl", "http://localhost:8081/admin/addTeacher");
             context.setVariable("courses", courses);
             context.setVariable("freeTimes", freeTimes);
+            context.setVariable("password", password);
             context.setVariable("compiledTimes", compiledTimes);
             context.setVariable("timesIds", timeIds);
             context.setVariable("coursesIds", courseIds);

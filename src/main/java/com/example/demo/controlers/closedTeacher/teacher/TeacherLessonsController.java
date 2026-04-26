@@ -82,6 +82,23 @@ public class TeacherLessonsController {
         model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
         return "closedTeacher/teacherLessons/lessons";
     }
+    @GetMapping("/{id}/lessons/{output}")
+    public String gotoLessonsWithOutput(@PathVariable("id") int id,@PathVariable("output") String output, Model model){
+        Teacher teacher = teacherService.getById(id);
+        List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
+        List<Course> courses = new ArrayList<>();
+        teacher.getTeacherCourses().stream().forEach(course->courses.add(course.getCourse()));
+
+        model.addAttribute("output", output);
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("weekDays", weekDays);
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
+        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        return "closedTeacher/teacherLessons/lessons";
+    }
     @PostMapping("/{idTeach}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes) throws MessagingException {
@@ -92,7 +109,7 @@ public class TeacherLessonsController {
         Teacher teacher = teacherService.getById(idTeach);
         mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lessonService.getById(idLes).getLessonTime().getDayOfMonth()+":"+lessonService.getById(idLes).getLessonTime().getMonth(), lessonService.getById(idLes).getLessonTime().getHour());
         lessonService.deleteById(idLes);
-        return "redirect:/teacher/"+idTeach+"/lessons";
+        return "redirect:/teacher/"+idTeach+"/lessons/lessonDeleted";
     }
 
     @PostMapping("/{idTeach}/lessons/deleteCourse/{id}")
@@ -107,7 +124,7 @@ public class TeacherLessonsController {
         mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(), lesson.getLessonTime().getHour());
         lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
         tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId());
-        return "redirect:/teacher/"+idTeach+"/lessons";
+        return "redirect:/teacher/"+idTeach+"/lessons/courseDeleted";
     }
     @PostMapping("/{idTeach}/lessons/editLesson/{id}/{nTId}/{date}")
     public String editLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId,@PathVariable("date") String date, Model model) throws MessagingException {
@@ -124,17 +141,9 @@ public class TeacherLessonsController {
             mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour(), newDate.getDayOfMonth()+":"+newDate.getMonth(),newDate.getHour());
             lesson.setLessonTime(newDate);
             lessonService.update(lesson.getId(), lesson);
-            return "redirect:/teacher/"+idTeach+"/lessons";
+            return "redirect:/teacher/"+idTeach+"/lessons/lessonEdited";
         }else{
-            Teacher teacher = teacherService.getById(idTeach);
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "dateInconsistency");
-            return "closedStudent/teacherLessons/lessons";
+            return "redirect:/teacher/"+idTeach+"/lessons/dateInconsistency";
         }
 
     }
@@ -160,52 +169,16 @@ public class TeacherLessonsController {
                     mail.setBody("");
                     Teacher teacher = teacherService.getById(idTeach);
                     mailService.sendEmailWithThymeleafToStudentAboutLessonAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour());
-                    return "redirect:/teacher/"+idTeach+"/lessons";
+                    return "redirect:/teacher/"+idTeach+"/lessons/lessonAdded";
                 }else{
-                    Teacher teacher = teacherService.getById(idTeach);
-                    List<Course> courses = new ArrayList<>();
-                    teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                    List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-                    model.addAttribute("lessons", lessonHashMap);
-                    model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-                    model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-                    model.addAttribute("weekDays", weekDays);
-                    model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-                    model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-                    model.addAttribute("error", "studentNotFound");
-                    return "closedTeacher/teacherLessons/lessons";
+                    return "redirect:/teacher/"+idTeach+"/lessons/studentNotFound";
                 }
             }else{
-                Teacher teacher = teacherService.getById(idTeach);
-                List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-                List<Course> courses = new ArrayList<>();
-                teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-                model.addAttribute("lessons", lessonHashMap);
-                model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-                model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-                model.addAttribute("weekDays", weekDays);
-                model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-                model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-                model.addAttribute("error", "courseNotFound");
-                return "closedTeacher/teacherLessons/lessons";
+                return "redirect:/teacher/"+idTeach+"/lessons/courseNotFound";
             }
 
         }else{
-            Teacher teacher = teacherService.getById(idTeach);
-            List<Course> courses = new ArrayList<>();
-            teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "lessonBeforeNow");
-            return "closedTeacher/teacherLessons/lessons";
+            return "redirect:/teacher/"+idTeach+"/lessons/lessonBeforeNow";
         }
     }
     @PostMapping("/{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}")
@@ -231,7 +204,7 @@ public class TeacherLessonsController {
                     AtomicBoolean exists = new AtomicBoolean(false);
                     Lesson lesson = new Lesson();
                     LocalDateTime checkingTime = time;
-                    for(int i = 1; i<=4; i++){
+                    for(int i = 1; i<=5; i++){
                         for(Lesson les : teacherService.getById(idTeach).getLessons()){
                             if(les.getLessonTime().getMonth().getValue()==checkingTime.getMonth().getValue()&&les.getLessonTime().getDayOfMonth()==checkingTime.getDayOfMonth()&&les.getLessonTime().getHour()==checkingTime.getHour()){
                                 exists.set(true);
@@ -240,19 +213,7 @@ public class TeacherLessonsController {
                         checkingTime = checkingTime.plusWeeks(1);
                     }
                     if(exists.get() || hasCourse){
-                        Teacher teacher = teacherService.getById(idTeach);
-                        List<Course> courses = new ArrayList<>();
-                        teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                        List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-                        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-                        model.addAttribute("lessons", lessonHashMap);
-                        model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-                        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-                        model.addAttribute("weekDays", weekDays);
-                        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-                        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-                        model.addAttribute("error", "timeNotEmpty");
-                        return "closedTeacher/teacherLessons/lessons";
+                        return "redirect:/teacher/"+idTeach+"/lessons/timeNotEmpty";
                     }else {
                         for(int i = 1; i<=4; i++){
                             lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, 1, theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), "will");
@@ -269,53 +230,17 @@ public class TeacherLessonsController {
                         mail.setBody("");
                         Teacher teacher = teacherService.getById(idTeach);
                         mailService.sendEmailWithThymeleafToStudentAboutCourseAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), String.valueOf(lesson.getLessonTime().getDayOfWeek()),lesson.getLessonTime().getHour());
-                        return "redirect:/teacher/"+idTeach+"/lessons";
+                        return "redirect:/teacher/"+idTeach+"/lessons/courseAdded";
                     }
                 }else{
-                    Teacher teacher = teacherService.getById(idTeach);
-                    List<Course> courses = new ArrayList<>();
-                    teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                    List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-                    HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-                    model.addAttribute("lessons", lessonHashMap);
-                    model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-                    model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-                    model.addAttribute("weekDays", weekDays);
-                    model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-                    model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-                    model.addAttribute("error", "studentNotFound");
-                    return "closedTeacher/teacherLessons/lessons";
+                    return "redirect:/teacher/"+idTeach+"/lessons/studentNotFound";
                 }
             }else{
-                Teacher teacher = teacherService.getById(idTeach);
-                List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-                List<Course> courses = new ArrayList<>();
-                teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-                model.addAttribute("lessons", lessonHashMap);
-                model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-                model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-                model.addAttribute("weekDays", weekDays);
-                model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-                model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-                model.addAttribute("error", "courseNotFound");
-                return "closedTeacher/teacherLessons/lessons";
+                return "redirect:/teacher/"+idTeach+"/lessons/courseNotFound";
             }
 
         }else{
-            Teacher teacher = teacherService.getById(idTeach);
-            List<Course> courses = new ArrayList<>();
-            teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "lessonBeforeNow");
-            return "closedTeacher/teacherLessons/lessons";
+            return "redirect:/teacher/"+idTeach+"/lessons/lessonBeforeNow";
         }
     }
     @PostMapping("/{idTeach}/addMoneyByLesson/{lesId}")
@@ -328,21 +253,10 @@ public class TeacherLessonsController {
             teacherService.update(teachId, teacher);
             lesson.setStatus("was");
             lessonService.update(lesId, lesson);
-            return "redirect:/teacher/"+teachId+"/lessons";
+            return "redirect:/teacher/"+teachId+"/lessons/lessonStatusChanged";
         }
        else {
-            List<Course> courses = new ArrayList<>();
-            teacher.getTeacherCourses().stream().forEach(tc->courses.add(tc.getCourse()));
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "tooEarly");
-            return "closedTeacher/teacherLessons/lessons";
+            return "redirect:/teacher/"+teachId+"/lessons/tooEarly";
         }
     }
 

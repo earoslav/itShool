@@ -81,6 +81,18 @@ public class StudentLessonsController {
         model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
         return "closedStudent/studentLessons/lessons";
     }
+    @GetMapping("/{idSt}/lessons/{output}")
+    public String gotoLessonsWithOutput(Model model, @PathVariable("idSt") int id, @PathVariable("output")String output) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Student student = studentService.getById(id);
+        List<String> weekDays = (List<String>) lessonService.compileLessonsForStudent(student.getId()).get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudent(student.getId()).get(1);
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("weekDays", weekDays);
+        model.addAttribute("output", output);
+        model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
+        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        return "closedStudent/studentLessons/lessons";
+    }
     @PostMapping("/{idSt}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, Model model) throws MessagingException {
@@ -92,17 +104,9 @@ public class StudentLessonsController {
             Student student = studentService.getById(idSt);
             mailService.sendRequestWithThymeleafTeacherAboutRequestLessonRemoved(mail, studentMapper.mapStudentToStudentDTO(student),lessonService.getById(idLes).getTeacher().getId(),idLes, lessonService.getById(idLes).getLessonTime().getDayOfMonth()+":"+lessonService.getById(idLes).getLessonTime().getMonth(), lessonService.getById(idLes).getLessonTime().getHour());
 
-            return "redirect:/student/"+idSt+"/lessons";
+            return "redirect:/student/"+idSt+"/lessons/lessonDeleted";
         }else{
-            Student student = studentService.getById(idSt);
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForStudent(student.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudent(student.getId()).get(1);
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "tooLate");
-            return "closedStudent/studentLessons/lessons";
+            return "redirect:/student/"+idSt+"/lessons/tooLate";
         }
 
     }
@@ -119,7 +123,7 @@ public class StudentLessonsController {
         mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(), lesson.getLessonTime().getHour());
         lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
         tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId());
-        return "redirect:/student/"+idSt+"/lessons";
+        return "redirect:/student/"+idSt+"/lessons/courseDeleted";
     }
     @PostMapping("/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
     public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId,@PathVariable("date") String date, Model model) throws MessagingException {
@@ -138,28 +142,12 @@ public class StudentLessonsController {
                 mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour(), newDate.getDayOfMonth()+":"+newDate.getMonth(),newDate.getHour());
                 lesson.setLessonTime(newDate);
                 lessonService.update(lesson.getId(), lesson);
-                return "redirect:/student/"+idSt+"/lessons";
+                return "redirect:/student/"+idSt+"/lessons/lessonEdited";
             }else{
-                Student student = studentService.getById(idSt);
-                List<String> weekDays = (List<String>) lessonService.compileLessonsForStudent(student.getId()).get(0);
-                HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudent(student.getId()).get(1);
-                model.addAttribute("lessons", lessonHashMap);
-                model.addAttribute("weekDays", weekDays);
-                model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
-                model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-                model.addAttribute("error", "dateInconsistency");
-                return "closedStudent/studentLessons/lessons";
+                return "redirect:/student/"+idSt+"/lessons/dateInconsistency";
             }
         }else{
-            Student student = studentService.getById(idSt);
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForStudent(student.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudent(student.getId()).get(1);
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "tooLate");
-            return "closedStudent/studentLessons/lessons";
+            return "redirect:/student/"+idSt+"/lessons/tooLate";
         }
     }
 }

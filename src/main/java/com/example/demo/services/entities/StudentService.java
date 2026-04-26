@@ -3,14 +3,18 @@ package com.example.demo.services.entities;
 import com.example.demo.models.entities.Student;
 import com.example.demo.repositories.entities.StudentRepository;
 import java.util.List;
+
+import com.example.demo.repositories.entities.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
+    private UserRepository userRepository;
 
-    public StudentService(StudentRepository studentRepository) {
+    public StudentService(StudentRepository studentRepository, UserRepository userRepository) {
         this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Student> getAll() {
@@ -25,13 +29,18 @@ public class StudentService {
     public Student create(Student student) {
         return studentRepository.save(student);
     }
+    public boolean checkIfExistsByUserId(int userId){
+        return studentRepository.findByUserId(userId)!=null;
+    }
     public boolean checkIfExistsByEmail(String email){
-        if(studentRepository.findByEmail(email)!=null){
+        if(userRepository.findByEmailAndRole(email, "STUDENT")!=null){
             return true;
         }
         return false;
     }
-
+    public  Student findByUserId(int id){
+        return studentRepository.findByUserId(id);
+    }
     public Student update(Integer id, Student student) {
         Student existing = getById(id);
         existing.setName(student.getName());

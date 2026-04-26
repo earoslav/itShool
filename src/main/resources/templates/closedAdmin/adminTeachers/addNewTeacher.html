@@ -16,6 +16,7 @@
             background: #f4f7fb;
             color: #1f2937;
             line-height: 1.5;
+            padding: 0px;
         }
 
         .container {
@@ -145,16 +146,6 @@
             outline: none;
         }
 
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
-
         .hint {
             font-size: 13px;
             color: #64748b;
@@ -196,9 +187,11 @@
         }
 
         .courses-list {
-            display: flex;
+            display: block;
             gap: 12px;
             flex-wrap: wrap;
+            overflow-y: auto;
+            max-height: 200px;
         }
 
         .course-check {
@@ -235,43 +228,171 @@
                 grid-template-columns: 1fr;
             }
         }
+
+
+
+
+        header {
+            background-color: #111827;
+            color: white;
+
+        }
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: white;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .success-box {
+            border: 1px solid green;
+            background-color: lightgreen;
+            color: darkgreen;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            font-weight: 600;
+            position: absolute;
+            top: 20px;
+            left: 43%;
+            box-shadow: 3px 3px 2px lightgreen;
+        }
+        #myInput {
+
+            width: 100%; /* Full-width */
+            font-size: 16px; /* Increase font-size */
+            padding: 8px 10px 8px 20px; /* Add some padding */
+            border: 1px solid #ddd; /* Add a grey border */
+            margin-bottom: 12px; /* Add some space below the input */
+        }
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-
-<!-- NAVBAR -->
-<header>
-    <div class="container navbar">
+<header style="background-color: #111827">
+    <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
             <a href="/admin/homepage">Головна</a>
             <a href="/admin/students">Учні</a>
             <a href="/admin/teachers">Викладачі</a>
+            <a href="/logout">Вийти</a>
         </nav>
     </div>
 </header>
 
-
-
-<!-- HERO -->
-<div class="hero">
-    <h1>
-         Додати нового вчителя
-    </h1>
-</div>
+<section class="hero">
+    <div class="container">
+        <h2 >Додати вчителя:</h2>
+    </div>
+</section>
 
 <!-- FORM -->
 <div class="container">
     <div class="form-card">
-        <div class="error-box" th:if="${error == 'exists'}">Така пошта вже зареєстрована</div>
-        <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
-        <div class="error-box" th:if="${error == 'NOPASS'}">Ви не ввели пароль</div>
+        <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
+        <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
+        <div class="error-box" th:if="${output == 'NOPASS'}">Ви не ввели пароль</div>
 
-        <form id="form" th:action="@{/admin/addTeacher}" th:object="${teacher}" method="post">
+        <form id="form" action="/admin/addTeacher/" th:object="${teacher}" method="post">
             <div class="form-grid">
                 <div class="field">
                     <label for="name">ПІБ / ім'я</label>
-                    <input id="name" type="text" th:field="*{name}" required minlength="2" maxlength="100"
+                    <input id="name" type="text" th:field="*{user.name}" required minlength="2" maxlength="100"
 
                            title="Лише букви, пробіли, апостроф або дефіс">
                 </div>
@@ -283,7 +404,7 @@
 
                 <div class="field">
                     <label for="email">Пошта</label>
-                    <input id="email" type="email" th:field="*{email}" required maxlength="50">
+                    <input id="email" type="email" th:field="*{user.email}" required maxlength="50">
                 </div>
 
                 <div class="field">
@@ -304,11 +425,30 @@
                 </div>
 
                 <div class="field full" style="margin-top: 16px;">
+
                     <label>Курси</label>
-                    <div class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
+                    <input type="text" id="myInput" onkeyup="searchCourse()" placeholder="Search for names..">
+                    <div id="courses" class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
                         <div class="course-check" th:each="course : ${courses}">
-                            <input type="checkbox" name="courseIds" th:value="${course.id}" />
-                            <span th:text="${course.name}">Курс</span>
+                            <span th:if="${courseIds!=null}">
+                                <span th:if="${courseIds.contains(course.id)}">
+                                    <input type="checkbox" checked name="courseIds" th:value="${course.id}" />
+                                    <span th:text="${course.name}">Курс</span>
+                                </span>
+                                <span th:if="${!courseIds.contains(course.id)}">
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}" />
+                                    <span th:text="${course.name}">Курс</span>
+                                </span>
+                            </span>
+                            <span th:if="${courseIds==null}">
+                                <span>
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}" />
+                                    <span th:text="${course.name}">Курс</span>
+                                </span>
+
+                            </span>
+
+
                         </div>
                     </div>
                     <div class="hint" th:if="${courses == null or courses.isEmpty()}">Поки що курси не додані.</div>
@@ -327,11 +467,27 @@
                         <tr th:each="hour, hourStat : ${hours}">
                             <th th:text="${hour} + ':00'">8:00</th>
                             <td th:each="day, dayStat : ${days}">
-                                <input type="checkbox"
-                                       name="freeTimeIds"
-                                       th:each="ft : ${freeTimes}"
-                                       th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour}"
-                                       th:value="${ft.id}"/>
+                                <span th:each="ft : ${freeTimes}">
+                                    <span th:if="${freeTimeIds!=null}">
+                                        <input type="checkbox"
+                                               name="freeTimeIds"
+                                               th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour and freeTimeIds.contains(ft.id)}"
+                                               th:value="${ft.id}"
+                                               checked/>
+                                        <input type="checkbox"
+                                               name="freeTimeIds"
+                                               th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour and !freeTimeIds.contains(ft.id)}"
+                                               th:value="${ft.id}"/>
+                                    </span>
+                                    <span th:if="${freeTimeIds==null}">
+                                        <input type="checkbox"
+                                               name="freeTimeIds"
+                                               th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour}"
+                                               th:value="${ft.id}"/>
+                                    </span>
+                                </span>
+
+
                             </td>
                         </tr>
                         </tbody>
@@ -373,9 +529,26 @@
     function managePass(){
         let pass = document.querySelector("#pass")
         let form = document.querySelector("#form")
-        form.action = form.action+"/"+pass.value
+        form.action = form.action+""+pass.value
     }
 
+    function searchCourse() {
+        // Declare variables
+        var input, filter, a, i, txtValue;
+        input = document.getElementById('myInput');
+        courses = document.getElementById('courses').getElementsByTagName("div");
+        filter = input.value.toUpperCase();
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < courses.length; i++) {
+            a = courses[i].getElementsByTagName("span")[0].getElementsByTagName("span")[0].getElementsByTagName("span")[0];
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                courses[i].style.display = "";
+            } else {
+                courses[i].style.display = "none";
+            }
+        }
+    }
 </script>
 </body>
 </html>

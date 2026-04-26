@@ -15,6 +15,7 @@
             background: #f4f7fb;
             color: #1f2937;
             line-height: 1.5;
+            padding: 0px;
         }
 
         .container {
@@ -150,33 +151,124 @@
         .nav-links a:hover {
             background-color: rgba(255,255,255,0.2);
         }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .header{
+            background-color: #111827;
+        }
+
+        #myInput {
+
+            width: 100%; /* Full-width */
+            font-size: 16px; /* Increase font-size */
+            padding: 8px 10px 8px 20px; /* Add some padding */
+            border: 1px solid #ddd; /* Add a grey border */
+            margin-bottom: 12px; /* Add some space below the input */
+        }
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-
-<!-- NAVBAR -->
-<div class="header">
-    <h1 th:text="${teacher.name}">Викладач</h1>
-    <div class="nav-links">
-        <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
-        <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
-        <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
+<header style="background-color: #111827">
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
+            <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
+            <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
+            <a href="/logout">Вийти</a>
+        </nav>
     </div>
-</div>
-
-
-<!-- HERO -->
-<div class="hero">
-    <h1>
-        Мої учні
-    </h1>
-</div>
-
+</header>
+    <div class="success-box" th:if="${output == 'studentDeleted'}">Учня успішно видалено</div>
+    <section class="hero">
+        <div class="container">
+            <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+            <h3 style="margin-left: 35px">Учні:</h3>
+        </div>
+    </section>
 
 <!-- FORM -->
-<div class="container">
+<div class="container" >
     <div class="card">
-
+        <input type="text" id="myInput" onkeyup="searchStudent()" placeholder="Search for names..">
         <table>
             <thead>
             <tr>
@@ -189,12 +281,12 @@
             </tr>
             </thead>
 
-            <tbody>
+            <tbody id="students">
             <tr th:each="student : ${students}">
                 <td th:text="${student.id}">1</td>
-                <td th:text="${student.name}">Ім'я</td>
+                <td th:text="${student.user.name}">Ім'я</td>
                 <td th:text="${student.age}">15</td>
-                <td th:text="${student.email}">email</td>
+                <td th:text="${student.user.email}">email</td>
                 <td th:text="${student.phoneNumber}">+380...</td>
 
                 <td>
@@ -210,7 +302,7 @@
         </table>
 
         <!-- якщо список пустий -->
-        <div th:if="${#lists.isEmpty(students)}">
+        <div th:if="${students.isEmpty()}">
             <p>Учнів поки немає</p>
         </div>
 
@@ -231,5 +323,26 @@
         </div>
     </div>
 </footer>
+<script>
+    function searchStudent() {
+        // Declare variables
+        var input, filter, students, a, i, txtValue;
+        input = document.getElementById('myInput');
+        students = document.getElementById('students').getElementsByTagName("tr");
+        filter = input.value.toUpperCase();
+
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < students.length; i++) {
+            a = students[i].getElementsByTagName("td")[1];
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                students[i].style.display = "";
+            } else {
+                students[i].style.display = "none";
+            }
+        }
+    }
+</script>
 </body>
+
 </html>

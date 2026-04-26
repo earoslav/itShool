@@ -1,0 +1,65 @@
+/* ===== ERROR POPUP ===== */
+.error-box,
+.success-box {
+    position: fixed;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 320px;
+    max-width: 500px;
+    padding: 16px 22px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    z-index: 9999;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    animation: popupShow 0.4s ease, popupHide 0.5s ease 9.5s forwards;
+    text-align: center;
+    backdrop-filter: blur(8px);
+}
+
+/* ERROR */
+.error-box {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border: 1px solid #f87171;
+    color: #991b1b;
+}
+
+/* SUCCESS */
+.success-box {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border: 1px solid #22c55e;
+    color: #166534;
+}
+
+/* Поява */
+@keyframes popupShow {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -25px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Зникнення через 10 сек */
+@keyframes popupHide {
+    to {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+        visibility: hidden;
+    }
+}
+
+/* Мобільна адаптація */
+@media (max-width: 600px) {
+    .error-box,
+    .success-box {
+        width: 92%;
+        min-width: unset;
+        font-size: 15px;
+        padding: 14px 16px;
+    }
+}

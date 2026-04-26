@@ -15,4 +15,5 @@ public interface TeacherStudentTimeOfTheWeekRepository extends JpaRepository<Tea
     public void removeAllByTeacherIdAndStudentId(int idT, int idSt);
     public void removeAllByStudentIdAndTimeOfTheWeekId(int idSt, int idTsw);
     public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekId(int stId, int teachId, int tswId);
+    public void removeAllByStudentId(int id);
 }

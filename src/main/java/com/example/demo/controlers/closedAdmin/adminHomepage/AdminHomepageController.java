@@ -15,9 +15,11 @@ import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.StudentCourseService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -38,8 +40,10 @@ public class AdminHomepageController {
     private MailService mailService;
     private AdminService adminService;
     private AdminMapper adminMapper;
+    private PasswordEncoder passwordEncoder;
 
-    public AdminHomepageController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, AdminMapper adminMapper) {
+
+    public AdminHomepageController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, AdminMapper adminMapper, PasswordEncoder passwordEncoder) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
         this.emptyTimesForTeacherService = emptyTimesForTeacherService;
@@ -54,11 +58,27 @@ public class AdminHomepageController {
         this.mailService = mailService;
         this.adminService = adminService;
         this.adminMapper = adminMapper;
+        this.passwordEncoder = passwordEncoder;
     }
     @GetMapping("/homepage")
-    private String gotoHomepage(Model model) {
+    public String gotoHomepage(Model model) {
+
         Admin admin = adminService.getAdmin();
+        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
+        adminService.update(admin.getId(), admin);
         model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
+        return "closedAdmin/adminHomepage/homepage";
+    }
+    @GetMapping("/homepage/{output}")
+    public String gotoHomepage(Model model, @PathVariable(value = "output", required = false) String output) {
+
+        Admin admin = adminService.getAdmin();
+        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
+        adminService.update(admin.getId(), admin);
+        model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
+        if(!output.isEmpty()){
+            model.addAttribute("output", output);
+        }
         return "closedAdmin/adminHomepage/homepage";
     }
 }

@@ -18,7 +18,7 @@
             font-family: 'Inter', sans-serif;
             background: #f4f7fc;
             color: #1a2c3e;
-            padding: 2rem 1.5rem;
+            padding: 0px;
         }
 
         /* головний контейнер */
@@ -523,15 +523,7 @@
         .nav-links a:hover {
             background-color: rgba(255,255,255,0.2);
         }
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
+
         .newDates{ /* Necessary to apply height and overflow */
             height: 150px;         /* Set a fixed height */
             overflow-y: auto;      /* Adds scrollbar only when needed */
@@ -566,31 +558,147 @@
             width: 47.5px;
             overflow: hidden;
         }
+
+
+
+
+        header {
+            background-color: #111827;
+            color: white;
+
+        }
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: white;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<div class="dashboard">
-
-    <div class="hero">
-        <h1><i class="fas fa-laptop-code"></i> IT Kids School</h1>
-        <div class="sub">Сучасна IT-школа для дітей та підлітків</div>
-        <p>Ми молода школа, але вже маємо амбітну команду, сильну навчальну програму та великий потенціал вирости у топовий освітній IT-центр.</p>
+<header style="background-color: #111827">
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a href="/admin/homepage">Головна</a>
+            <a href="/admin/students">Учні</a>
+            <a href="/admin/teachers">Викладачі</a>
+            <a href="/logout">Вийти</a>
+        </nav>
     </div>
+</header>
 
-    <!-- контроли для гортання днями -->
+<section class="hero">
+    <div class="container">
+        <p th:text="'Учень: '+${student.user.name}"></p>
+        <h3 >Уроки:</h3>
+    </div>
+</section>
     <div class="week-navigation">
-        <div class="container navbar">
-            <div class="logo">IT Kids School</div>
-            <nav class="menu">
-                <a href="/admin/homepage">Головна</a>
-                <a href="/admin/students">Учні</a>
-                <a href="/admin/teachers">Викладачі</a>
-            </nav>
-        </div>
-
-        <div class="error-box" th:if="${error=='tooLate'}">Вибачте, але редагувати або видаляти можна лише за 12 годин до заняття</div>
-        <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
-        <div class="error-box" th:if="${error == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.</div>
+        <div class="error-box" th:if="${output=='tooLate'}">Вибачте, але редагувати або видаляти можна лише за 12 годин до заняття</div>
+        <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
+        <div class="error-box" th:if="${output == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.</div>
+        <div class="success-box" th:if="${output == 'lessonAdded'}">Урок успішно додано </div>
+        <div class="success-box" th:if="${output == 'lessonDeleted'}">Урок успішно видалено</div>
+        <div class="success-box" th:if="${output == 'courseDeleted'}">Курс успішно видалено</div>
+        <div class="success-box" th:if="${output == 'lessonEdited'}">Урок успішно змінено</div>
     </div>
 
     <div class="table-wrapper" id="tableWrapper">
@@ -627,7 +735,7 @@
                                 th:data-tfts="${lesson.teacher.notTakenTimes}"
                                 th:date-stId="${student.id}"
                                 th:data-hour="${hour}"
-                                th:data-tn="${lesson.teacher.name}"
+                                th:data-tn="${lesson.teacher.user.name}"
                                 th:data-cn="${lesson.course.name}"
                                 th:onclick="'openPopup(this)'">
                             <span  style="font-size: 16px;"   th:text="${lesson.course.name}"></span>
@@ -719,6 +827,20 @@
 </div>
 
 
+<footer id="contacts">
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
 <script th:inline="javascript">
     let popup = document.querySelector("#lessonPopup")
     let popupDate = document.querySelector("#popupDate")

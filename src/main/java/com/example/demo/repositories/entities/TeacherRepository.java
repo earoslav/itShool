@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
     public boolean existsByEmail(String email);
+
+    public Teacher findByUserId(int userId);
 }

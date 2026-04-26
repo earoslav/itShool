@@ -83,7 +83,7 @@ public class AdminStudentLessonsController {
         this.theWeekMapper = theWeekMapper;
     }
     @GetMapping("/student/{idSt}/lessons")
-    public String gotoStudentLessons(@PathVariable("idSt") int idSt, Model model){
+    public String gotoStudentLessons(@PathVariable("idSt") int idSt,Model model){
         List<Teacher> teachers = teacherService.getAll();
         Student student = studentService.getById(idSt);
         List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentInAdmin(student.getId()).get(0);
@@ -92,6 +92,24 @@ public class AdminStudentLessonsController {
         model.addAttribute("lessons", lessonHashMap);
         model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("weekDays", weekDays);
+        model.addAttribute("teachers", teachers.stream().map(el->teacherMapper.mapTeacherToTeacherDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
+        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        return "closedAdmin/adminStudents/studentLessons";
+    }
+    @GetMapping("/student/{idSt}/lessons/{output}")
+    public String gotoStudentLessonsWithOutput(@PathVariable("idSt") int idSt,@PathVariable(value = "output", required = false) String output, Model model){
+        List<Teacher> teachers = teacherService.getAll();
+        Student student = studentService.getById(idSt);
+        List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentInAdmin(student.getId()).get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentInAdmin(student.getId()).get(1);
+        List<Course> courses = courseService.getAll();
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("weekDays", weekDays);
+        if(!output.isEmpty()){
+            model.addAttribute("output", output);
+        }
         model.addAttribute("teachers", teachers.stream().map(el->teacherMapper.mapTeacherToTeacherDTO(el)).collect(Collectors.toList()));
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
         model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
@@ -108,7 +126,7 @@ public class AdminStudentLessonsController {
         StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
         mailService.sendEmailWithThymeleafTeacherAboutLessonRemoved(mail, student, lessonService.getById(idLes).getLessonTime().getDayOfMonth()+":"+lessonService.getById(idLes).getLessonTime().getMonth(), lessonService.getById(idLes).getLessonTime().getHour());
         lessonService.deleteById(idLes);
-        return "redirect:/admin/student/"+idSt+"/lessons";
+        return "redirect:/admin/student/"+idSt+"/lessons/lessonDeleted";
     }
 
     @PostMapping("/student/{idSt}/lessons/deleteCourse/{id}")
@@ -123,7 +141,7 @@ public class AdminStudentLessonsController {
         mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(mail, student, lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(), lesson.getLessonTime().getHour());
         lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
         tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId());
-        return "redirect:/admin/student/"+idSt+"/lessons";
+        return "redirect:/admin/student/"+idSt+"/lessons/courseDeleted";
     }
     @PostMapping("/student/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
     @Transactional
@@ -141,20 +159,9 @@ public class AdminStudentLessonsController {
             mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(mail, student, lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour(), newDate.getDayOfMonth()+":"+newDate.getMonth(),newDate.getHour());
             lesson.setLessonTime(newDate);
             lessonService.update(lesson.getId(), lesson);
-            return "redirect:/admin/student/"+idSt+"/lessons";
+            return "redirect:/admin/student/"+idSt+"/lessons/lessonEdited";
         }else{
-            List<Teacher> teachers = teacherService.getAll();
-            Student student = studentService.getById(idSt);
-            List<String> weekDays = (List<String>) lessonService.compileLessonsForStudentInAdmin(student.getId()).get(0);
-            HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForStudentInAdmin(student.getId()).get(1);
-            List<Course> courses = courseService.getAll();
-            model.addAttribute("lessons", lessonHashMap);
-            model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("teachers", teachers.stream().map(el->teacherMapper.mapTeacherToTeacherDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            return "closedAdmin/adminStudents/studentLessons";
+            return "redirect:/admin/student/"+idSt+"/lessons/dateInconsistency";
         }
     }
 }

@@ -9,6 +9,8 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f5f6fa;
+            height: 100vh;
+            padding: 0px;
         }
 
         /* 🔝 Navbar */
@@ -98,7 +100,7 @@
         }
 
         .btn-green {
-            background-color: #22c55e;
+            background-color: forestgreen;
             color: white;
         }
 
@@ -129,31 +131,149 @@
             background-color: #2563eb;
         }
 
+
+
+
+
+        header {
+            background-color: #111827;
+            color: white;
+            padding: 20px;
+        }
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: white;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+
+        }
+        .container-flex{
+            display: flex;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+
+
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
+
 </head>
 <body>
-
-<!-- 🔝 NAVBAR -->
-<div class="navbar">
-    <h2>Admin Panel</h2>
-    <div class="container navbar">
+<header style="background-color: #111827">
+    <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
             <a href="/admin/homepage">Головна</a>
             <a href="/admin/students">Учні</a>
             <a href="/admin/teachers">Викладачі</a>
+            <a href="/logout">Вийти</a>
+
         </nav>
     </div>
-</div>
+</header>
+<div class="success-box" th:if="${output == 'teacherAdded'}">Вчителя успішно додано</div>
+<div class="success-box" th:if="${output == 'studentAdded'}">Учня успішно додано </div>
 
-<!-- 🔵 HERO -->
-<div class="hero">
-    <h1>Панель адміністратора</h1>
-    <p>Керуйте учнями, викладачами та переглядайте інформацію про систему.</p>
-</div>
-
+<section class="hero">
+    <div class="container">
+        <h3 >Панель адміністратора:</h3>
+    </div>
+</section>
 <!-- 📦 ADMIN INFO -->
-<div class="container">
+<div class="container container-flex">
     <div class="card">
         <h2>Інформація про адміністратора</h2>
 
@@ -164,12 +284,12 @@
 
         <div class="info">
             <span class="label">Ім'я:</span>
-            <span th:text="${admin.name}">Admin Name</span>
+            <span th:text="${admin.user.name}">Admin Name</span>
         </div>
 
         <div class="info">
             <span class="label">Email:</span>
-            <span th:text="${admin.email}">admin@email.com</span>
+            <span th:text="${admin.user.email}">admin@email.com</span>
         </div>
 
     </div>
@@ -179,10 +299,20 @@
     <div class="buttons">
         <a th:href="@{/admin/addStudent}" class="btn btn-green">Створити учня</a>
     </div>
-    <div class="buttons">
-        <a th:href="@{/admin/students}" class="btn btn-green">Учні</a>
-    </div>
 </div>
-
+<footer id="contacts">
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

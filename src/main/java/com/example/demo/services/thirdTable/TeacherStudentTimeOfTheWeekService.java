@@ -16,7 +16,9 @@ public class TeacherStudentTimeOfTheWeekService {
     public void create(TeacherStudentTimeOfTheWeek tsw){
         tSWRepository.save(tsw);
     }
-
+    public void removeAllTswByStudentId(int id){
+        tSWRepository.removeAllByStudentId(id);
+    }
     public TeacherStudentTimeOfTheWeek getById(int id){
         return tSWRepository.findById(id).get();
     }

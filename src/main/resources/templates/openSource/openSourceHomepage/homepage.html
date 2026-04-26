@@ -15,12 +15,9 @@
             background: #f4f7fb;
             color: #1f2937;
             line-height: 1.6;
+            padding: 0px;
         }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+
         header {
             background: #111827;
             color: #ffffff;
@@ -29,73 +26,7 @@
             top: 0;
             z-index: 10;
         }
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-        }
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-        .menu a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-        .menu a:hover {
-            color: #ffffff;
-        }
-        .menu a.active {
-            color: #ffffff;
-        }
-        .hero {
-            padding: 72px 0;
-            background: linear-gradient(120deg, #0f172a, #1d4ed8);
-            color: #ffffff;
-        }
-        .hero h1 {
-            font-size: 44px;
-            margin-bottom: 14px;
-        }
-        .hero p {
-            max-width: 750px;
-            font-size: 18px;
-            color: #e5e7eb;
-            margin-bottom: 24px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 12px 18px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: #22c55e;
-            color: #04210e;
-        }
-        .btn-primary:hover {
-            background: #16a34a;
-        }
-        .btn-secondary {
-            color: #ffffff;
-            border-color: #93c5fd;
-        }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
+
         section {
             padding: 52px 0;
         }
@@ -207,7 +138,86 @@
             color: #93c5fd;
             text-decoration: none;
         }
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 72px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
 <header>
@@ -216,12 +226,15 @@
         <nav class="menu">
             <a class="active" href="/openSource/homepage">Головна</a>
             <a href="/openSource/courses">Курси</a>
-            <a href="#">Викладачі</a>
-            <a href="#">Розклад</a>
-            <a href="#">Контакти</a>
+            <a href="#teachers">Викладачі</a>
+            <a href="#schedule">Розклад</a>
+            <a href="#contacts">Контакти</a>
+            <a href="/login">Увійти як учень/вчитель</a>
         </nav>
     </div>
 </header>
+<div class="success-box" th:if="${output == 'teacherAdded'}">Вчителя успішно додано</div>
+<div class="success-box" th:if="${output == 'studentAdded'}">Учня успішно додано </div>
 <main>
     <section class="hero">
         <div class="container">
@@ -283,8 +296,7 @@
 
                 <h3>Наш підхід:</h3>
                 <ul>
-                    <li>навчання в малих групах (до 6 учнів)</li>
-                    <li>також навчання один на один</li>
+                    <li>навчання один на один</li>
                     <li>багато практики</li>
                     <li>сучасні програми навчання</li>
                     <li>підтримка викладача на кожному етапі</li>
@@ -317,10 +329,16 @@
 
                 <h3>Наша команда</h3>
                 <p>IT Kids School — це команда викладачів, які:</p>
-                <ul>
+                <ul id="schedule">
                     <li>вміють цікаво пояснювати</li>
                     <li>працюють з дітьми та розуміють їх</li>
                     <li>допомагають досягати результату</li>
+                </ul>
+                <h3 >Розклад</h3>
+                <p>IT Kids School — це компанія з гнучким розкладом:</p>
+                <ul >
+                    <li>заняття проходять 7 днів на тиждень</li>
+                    <li>коли виходить у вчителя</li>
                 </ul>
             </div>
         </div>
@@ -338,17 +356,17 @@
                     </p>
                 </div>
             </div>
-            <div class="course-item" th:if="${courses == null or courses.isEmpty()}">
+            <div  class="course-item" th:if="${courses == null or courses.isEmpty()}">
                 Поки що курси ще додаються. Скоро тут буде повний каталог.
             </div>
         </div>
     </section>
-    <section>
+    <section id="teachers">
         <div class="container">
             <h2>Наші викладачі</h2>
             <div class="teachers-list" th:if="${teachers != null and !teachers.isEmpty()}">
                 <div class="person-card" th:each="teacher : ${teachers}">
-                    <h3 th:text="${teacher.name}">Ім'я викладача</h3>
+                    <h3 th:text="${teacher.user.name}">Ім'я викладача</h3>
                     <p class="meta" th:text="'Вік: ' + ${teacher.age}">Вік</p>
                     <p class="meta teacher-description" th:data-full-text="${teacher.comment != null and !teacher.comment.isEmpty() ? teacher.comment : 'Опис викладача скоро з''явиться.'}">
                         Короткий опис викладача
@@ -377,10 +395,10 @@
                     <p th:text="${comment.commentText}">Текст коментаря</p>
                     <p class="meta">
                         Від:
-                        <span th:text="${comment.student != null and comment.student.name != null and !comment.student.name.isEmpty() ? comment.student.name : 'Анонім'}">Ім'я учня</span>
+                        <span th:text="${comment.student != null and comment.student.user.name != null and !comment.student.user.name.isEmpty() ? comment.student.user.name : 'Анонім'}">Ім'я учня</span>
                         |
                         Викладач:
-                        <span th:text="${comment.teacher != null and comment.teacher.name != null and !comment.teacher.name.isEmpty() ? comment.teacher.name : 'Не вказано'}">Ім'я викладача</span>
+                        <span th:text="${comment.teacher != null and comment.teacher.user.name != null and !comment.teacher.user.name.isEmpty() ? comment.teacher.user.name : 'Не вказано'}">Ім'я викладача</span>
                     </p>
                     <p class="meta" th:text="'Оцінка: ' + ${comment.ratingOfStars} + ' / 5'">Рейтинг</p>
                 </div>
@@ -401,7 +419,7 @@
         </div>
     </section>
 </main>
-<footer>
+<footer id="contacts">
     <div class="container">
         <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
         <div style="margin-top: 10px;">

@@ -9,6 +9,7 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f3f4f6;
+            padding: 0px;
         }
 
         .header {
@@ -93,15 +94,7 @@
             background: #ffd9d7;
             color: #b13a2e;
         }
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
+
         .empty-lesson {
             background-color: #f2f5f7;
             border-radius: 12px;
@@ -129,7 +122,7 @@
             border: 1px solid #ccc;
             display: grid;
             margin: 5px;
-            max-height: 500px
+            max-height: 200px
 
         }
         .container {
@@ -147,23 +140,151 @@
             display: flex;
             gap: 18px;
         }
+
+
+
+
+        header {
+            background-color: #111827;
+            color: white;
+            padding: 20px;
+        }
+        footer {
+            background: #111827;
+            color: #cbd5e1;
+            padding: 28px 0;
+            margin-top: 24px;
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #93c5fd;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 22px;
+            color: white;
+        }
+        .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .menu a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .menu a:hover {
+            color: #ffffff;
+        }
+        .menu a.active {
+            color: #ffffff;
+        }
+        .hero {
+            padding: 10px 0;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8);
+            color: #ffffff;
+        }
+        .hero h1 {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            max-width: 750px;
+            font-size: 18px;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #22c55e;
+            color: #04210e;
+        }
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        .btn-secondary {
+            color: #ffffff;
+            border-color: #93c5fd;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0px 20px;
+        }
+        .card{
+            margin: 20px;
+            padding: 20px 20px;
+        }
+        footer {
+            position: sticky;
+            top: 100vh; /* Позиционирует футер внизу */
+        }
+        .myInput {
+
+            width: 100%; /* Full-width */
+            font-size: 16px; /* Increase font-size */
+            padding: 8px 10px 8px 20px; /* Add some padding */
+            border: 1px solid #ddd; /* Add a grey border */
+            margin-bottom: 12px; /* Add some space below the input */
+        }
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
+<header style="background-color: #111827">
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a href="/admin/homepage">Головна</a>
+            <a href="/admin/students">Учні</a>
+            <a href="/admin/teachers">Викладачі</a>
+            <a href="/logout">Вийти</a>
+        </nav>
+    </div>
+</header>
 
-<div class="container navbar">
-    <div class="logo">IT Kids School</div>
-    <nav class="menu">
-        <a href="/admin/homepage">Головна</a>
-        <a href="/admin/students">Учні</a>
-        <a href="/admin/teachers">Викладачі</a>
-    </nav>
-</div>
+<section class="hero">
+    <div class="container">
+        <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+        <h3 >Інформація:</h3>
+    </div>
+</section>
 
 
 <div class="container">
-    <div class="error-box" th:if="${error == 'exists'}">Така пошта вже зареєстрована</div>
-    <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
+    <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
+    <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
         <input type="hidden" th:field="${teacher.id}">
         <div style="display: flex">
         <!-- Основна інформація -->
@@ -171,7 +292,7 @@
             <h2>Основна інформація</h2>
 
             <p>Ім'я:<br>
-                <input type="text" th:field="${teacher.name}">
+                <input type="text" th:field="${teacher.user.name}">
             </p>
 
             <p>Вік:<br>
@@ -179,7 +300,7 @@
             </p>
 
             <p>Email:<br>
-                <input type="text" th:field="${teacher.email}">
+                <input type="text" th:field="${teacher.user.email}">
             </p>
 
             <p>Телефон:<br>
@@ -196,8 +317,8 @@
 
             <p>
                 Статус:
-                <span th:classappend="${teacher.approved} ? 'status' : 'status not-approved'"
-                      th:text="${teacher.approved ? 'Підтверджений' : 'Непідтверджений'}">
+                <span th:classappend="${teacher.approved==1} ? 'status' : 'status not-approved'"
+                      th:text="${teacher.approved==1 ? 'Підтверджений' : 'Непідтверджений'}">
             </span>
             </p>
 
@@ -227,6 +348,7 @@
 
     <p id="teacherId" style="display: none" th:text="${teacher.id}"></p>
     <a>Уроки з учнем:</a>
+    <input type="text" id="myInputStudents" class="myInput" onkeyup="searchStudents()" placeholder="Search for names..">
     <div  class="coursesAndNames">
         <div style="display: flex">
             <div style="display: grid" id="studentIds" >
@@ -234,7 +356,7 @@
             </div>
             <span style="opacity: 0;">emp</span>
             <div style="display: grid" id="studentNames" >
-                <label th:each="student : ${students}" th:text="${student.name+' '+student.email}" style="height: 20px"></label>
+                <label th:each="student : ${students}" th:text="${student.user.name+' '+student.user.email}" style="height: 20px"></label>
             </div>
         </div>
     </div>
@@ -254,13 +376,7 @@
             </ul>
 
             <!-- select -->
-            <select id="courseSelect">
-                <option value="">Додати курс</option>
-                <option th:each="c : ${allCourses}"
-                        th:value="${c.id}"
-                        th:text="${c.name}">
-                </option>
-            </select>
+
 
             <!-- hidden inputs -->
             <div id="coursesInputs"></div>
@@ -301,6 +417,44 @@
 
 </div>
 </div>
+<footer id="contacts">
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
+<script>
+    function searchStudents() {
+        // Declare variables
+        var input, filter, ul, a,b, i, txtValue;
+        input = document.getElementById('myInputStudents');
+        let studentIds = document.getElementById('studentIds').getElementsByTagName("input");
+        let studentNames = document.getElementById('studentNames').getElementsByTagName("label");
+        filter = input.value.toUpperCase();
+
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < studentNames.length; i++) {
+            a = studentNames[i];
+            b = studentIds[i]
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                studentNames[i].style.display = "";
+                studentIds[i].style.display = "";
+            } else {
+                studentNames[i].style.display = "none";
+                studentIds[i].style.display = "none";
+            }
+        }
+    }
+</script>
 <script>
     let teachId = document.querySelector("#teacherId").innerText
     let link = document.querySelector("#link")

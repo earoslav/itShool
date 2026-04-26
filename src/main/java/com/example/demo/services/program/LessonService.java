@@ -5,6 +5,7 @@ import com.example.demo.dto.adminLessons.TeacherAdminLessonsDTO;
 import com.example.demo.dto.adminLessons.TimeOfTheWeekAdminLessonsDTO;
 import com.example.demo.mapper.programe.LessonMapper;
 import com.example.demo.mapper.univMapper.UniversalMapper;
+import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
@@ -15,8 +16,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import com.example.demo.services.entities.StudentService;
-import com.example.demo.services.other.TimeOfTheWeekService;
 import com.example.demo.services.entities.TeacherService;
+import com.example.demo.services.other.TimeOfTheWeekService;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -28,14 +29,16 @@ public class LessonService {
     private ObjectMapper objectMapper;
     private TimeOfTheWeekService tswService;
     private StudentService studentService;
+    private TimeOfTheWeekService theWeekService;
 
-    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, StudentService studentService) {
+    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, StudentService studentService, TimeOfTheWeekService theWeekService) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
         this.teacherService = teacherService;
         this.objectMapper = objectMapper;
         this.tswService = tswService;
         this.studentService = studentService;
+        this.theWeekService = theWeekService;
     }
 
     public List<Lesson> getAll() {
@@ -123,32 +126,36 @@ public class LessonService {
         lessonHashMap.values().stream().forEach(val->less.add(val)); ////////////////////
         lessonHashMap.values().stream().forEach(les->teachers.add(les.getTeacher()));
         for(TeacherAdminLessonsDTO teacher : teachers){
-
+            now2 = LocalDateTime.now();
             final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less.stream().filter(lesss -> lesss.getTeacher().equals(teacher)).toList()};
             HashMap<LocalDateTime,TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
-            teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT->{
-                if(empTFT.getTime().getDayOfTheWeek()<now2.getDayOfWeek().getValue()){
-                    t[0] = now2.minusDays(now2.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay());
-                }else if(empTFT.getTime().getDayOfTheWeek()==now2.getDayOfWeek().getValue()){
-                    if(empTFT.getTime().getTimeOfTheDay()>now2.getHour()+12){
-                        t[0] = now2.withHour(empTFT.getTime().getTimeOfTheDay());
+            for(int i = 0; i<3; i++){
+                LocalDateTime finalNow = now2;
+                teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT->{
+                if(empTFT.getTime().getDayOfTheWeek()< finalNow.getDayOfWeek().getValue()){
+                    t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay());
+                }else if(empTFT.getTime().getDayOfTheWeek()== finalNow.getDayOfWeek().getValue()){
+                    if(empTFT.getTime().getTimeOfTheDay()> finalNow.getHour()+12){
+                        t[0] = finalNow.withHour(empTFT.getTime().getTimeOfTheDay());
                     }else{
-                        t[0] = now2.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay());
+                        t[0] = finalNow.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay());
                     }
 
                 }else{
-                    if(empTFT.getTime().getDayOfTheWeek()-now2.getDayOfWeek().getValue()==1){
-                        if(now2.plusHours(12).isBefore(now2.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))){
-                            t[0] =now2.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay());
+                    if(empTFT.getTime().getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()==1){
+                        if(finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))){
+                            t[0] = finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay());
                         }else{
-                            t[0] =now2.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay());
+                            t[0] = finalNow.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay());
                         }
                     }else{
-                        t[0] = now2.plusDays(empTFT.getTime().getDayOfTheWeek()-now2.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay());
+                        t[0] = finalNow.plusDays(empTFT.getTime().getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay());
                     }
                 }
                         teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT.getTime(),TimeOfTheWeekAdminLessonsDTO.class));
-            });
+                });
+                now2 = now2.plusWeeks(1);
+            }
             for (TimeOfTheWeekAdminLessonsDTO notTakenTime : teacherfreeTimes.values().stream().toList()){
                 for(LessonAdminLessonsDTO teacherLesson : teacherLessons[0]){
                     if(notTakenTime.getDayOfTheWeek()!=null && notTakenTime.getTimeOfTheDay()!=null){
@@ -206,26 +213,30 @@ public class LessonService {
         final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{new ArrayList()};
         findAllByTeachId(idT).stream().forEach(les->teacherLessons[0].add(lessonMapper.mapLessonToLessonAdminLessonsDTO(les)));
         HashMap<LocalDateTime,TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
-        tswService.getAll().stream().forEach(empTFT->{
-            if(empTFT.getDayOfTheWeek()<now2.getDayOfWeek().getValue()){
-                t[0] = now2.minusDays(now2.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay());
-            }else if(empTFT.getDayOfTheWeek()==now2.getDayOfWeek().getValue()){
-                if(empTFT.getTimeOfTheDay()>now2.getHour()){
-                    t[0] = now2.withHour(empTFT.getTimeOfTheDay());
+        for(int i = 0; i<3; i++){
+            LocalDateTime finalNow = now2;
+            tswService.getAll().stream().forEach(empTFT->{
+            if(empTFT.getDayOfTheWeek()< finalNow.getDayOfWeek().getValue()){
+                t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay());
+            }else if(empTFT.getDayOfTheWeek()== finalNow.getDayOfWeek().getValue()){
+                if(empTFT.getTimeOfTheDay()> finalNow.getHour()){
+                    t[0] = finalNow.withHour(empTFT.getTimeOfTheDay());
                 }else{
-                    t[0] = now2.plusDays(7).withHour(empTFT.getTimeOfTheDay());
+                    t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay());
 
                 }
 
             }else{
-                if(empTFT.getDayOfTheWeek()-now2.getDayOfWeek().getValue()==1){
-                    t[0] =now2.plusDays(1).withHour(empTFT.getTimeOfTheDay());
+                if(empTFT.getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()==1){
+                    t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay());
                 }else{
-                    t[0] = now2.plusDays(empTFT.getDayOfTheWeek()-now2.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay());
+                    t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay());
                 }
             }
             teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT,TimeOfTheWeekAdminLessonsDTO.class));
-        });
+            });
+            now2 = now2.plusWeeks(1);
+        }
         for (TimeOfTheWeekAdminLessonsDTO notTakenTime : teacherfreeTimes.values().stream().toList()){
             for(LessonAdminLessonsDTO teacherLesson : teacherLessons[0]){
                 if(notTakenTime.getDayOfTheWeek()!=null && notTakenTime.getTimeOfTheDay()!=null){
@@ -281,26 +292,33 @@ public class LessonService {
 /////////
             final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less};
             HashMap<LocalDateTime,TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
-            tswService.getAll().stream().forEach(empTFT->{
-                if(empTFT.getDayOfTheWeek()<now2.getDayOfWeek().getValue()){
-                    t[0] = now2.minusDays(now2.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay());
-                }else if(empTFT.getDayOfTheWeek()==now2.getDayOfWeek().getValue()){
-                    if(empTFT.getTimeOfTheDay()>now2.getHour()){
-                        t[0] = now2.withHour(empTFT.getTimeOfTheDay());
-                    }else{
-                        t[0] = now2.plusDays(7).withHour(empTFT.getTimeOfTheDay());
+            for(int i = 0; i<3; i++){
+                LocalDateTime finalNow = now2;
+                tswService.getAll().stream().forEach(empTFT->{
+                    if(empTFT.getDayOfTheWeek()< finalNow.getDayOfWeek().getValue()){
+                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay());
+                    }else if(empTFT.getDayOfTheWeek()== finalNow.getDayOfWeek().getValue()){
+                        if(empTFT.getTimeOfTheDay()> finalNow.getHour()){
+                            t[0] = finalNow.withHour(empTFT.getTimeOfTheDay());
+                        }else{
+                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay());
 
-                    }
+                        }
 
-                }else{
-                    if(empTFT.getDayOfTheWeek()-now2.getDayOfWeek().getValue()==1){
-                        t[0] =now2.plusDays(1).withHour(empTFT.getTimeOfTheDay());
                     }else{
-                        t[0] = now2.plusDays(empTFT.getDayOfTheWeek()-now2.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay());
+                        if(empTFT.getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()==1){
+                            t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay());
+                        }else{
+                            t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay());
+                        }
                     }
-                }
-                teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT,TimeOfTheWeekAdminLessonsDTO.class));
-            });
+                    teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT,TimeOfTheWeekAdminLessonsDTO.class));
+                });
+                now2 = now2.plusWeeks(1);
+            }
+
+
+
             for (TimeOfTheWeekAdminLessonsDTO notTakenTime : teacherfreeTimes.values().stream().toList()){
                 for(LessonAdminLessonsDTO teacherLesson : teacherLessons[0]){
                     if(notTakenTime.getDayOfTheWeek()!=null && notTakenTime.getTimeOfTheDay()!=null){
@@ -354,32 +372,36 @@ public class LessonService {
         lessonHashMap.values().stream().forEach(val->less.add(val)); ////////////////////
         lessonHashMap.values().stream().forEach(les->teachers.add(les.getTeacher()));
         for(TeacherAdminLessonsDTO teacher : teachers){
-
+            now2 = LocalDateTime.now();
             final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less.stream().filter(lesss -> lesss.getTeacher().equals(teacher)).toList()};
             HashMap<LocalDateTime,TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
-            teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT->{
-                if(empTFT.getTime().getDayOfTheWeek()<now2.getDayOfWeek().getValue()){
-                    t[0] = now2.minusDays(now2.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay());
-                }else if(empTFT.getTime().getDayOfTheWeek()==now2.getDayOfWeek().getValue()){
-                    if(empTFT.getTime().getTimeOfTheDay()>now2.getHour()){
-                        t[0] = now2.withHour(empTFT.getTime().getTimeOfTheDay());
+            for(int i = 0; i<3; i++){
+                LocalDateTime finalNow = now2;
+                teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT->{
+                if(empTFT.getTime().getDayOfTheWeek()< finalNow.getDayOfWeek().getValue()){
+                    t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay());
+                }else if(empTFT.getTime().getDayOfTheWeek()== finalNow.getDayOfWeek().getValue()){
+                    if(empTFT.getTime().getTimeOfTheDay()> finalNow.getHour()){
+                        t[0] = finalNow.withHour(empTFT.getTime().getTimeOfTheDay());
                     }else{
-                        t[0] = now2.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay());
+                        t[0] = finalNow.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay());
                     }
 
                 }else{
-                    if(empTFT.getTime().getDayOfTheWeek()-now2.getDayOfWeek().getValue()==1){
-                        if(now2.plusHours(12).isBefore(now2.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))){
-                            t[0] =now2.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay());
+                    if(empTFT.getTime().getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()==1){
+                        if(finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))){
+                            t[0] = finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay());
                         }else{
-                            t[0] =now2.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay());
+                            t[0] = finalNow.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay());
                         }
                     }else{
-                        t[0] = now2.plusDays(empTFT.getTime().getDayOfTheWeek()-now2.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay());
+                        t[0] = finalNow.plusDays(empTFT.getTime().getDayOfTheWeek()- finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay());
                     }
                 }
                 teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT.getTime(),TimeOfTheWeekAdminLessonsDTO.class));
-            });
+                });
+                now2 = now2.plusWeeks(1);
+            }
             for (TimeOfTheWeekAdminLessonsDTO notTakenTime : teacherfreeTimes.values().stream().toList()){
                 for(LessonAdminLessonsDTO teacherLesson : teacherLessons[0]){
                     if(notTakenTime.getDayOfTheWeek()!=null && notTakenTime.getTimeOfTheDay()!=null){

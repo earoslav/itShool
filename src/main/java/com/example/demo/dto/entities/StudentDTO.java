@@ -16,10 +16,9 @@ import java.util.List;
 @Setter
 public class StudentDTO {
     private int id;
-    private String name;
     private Integer age;
     private String comment;
-    private String email;
+    private UserDTO user;
     private String phoneNumber;
 
 

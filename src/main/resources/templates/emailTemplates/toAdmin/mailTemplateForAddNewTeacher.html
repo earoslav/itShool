@@ -18,7 +18,7 @@
                 <tr>
                     <td style="padding:24px;">
                         <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
-                            <strong th:text="${teacher.name != null ? teacher.name : '—'}">Ім'я</strong>
+                            <strong th:text="${teacher.user.name != null ? teacher.user.name : '—'}">Ім'я</strong>
                             хоче приєднатися до школи. Нижче всі дані з анкети (як у базі: ім'я, вік, email, пароль, коментар, телефон, telegram).
                         </p>
 
@@ -33,7 +33,7 @@
                             </tr>
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Email</td>
-                                <td th:text="${teacher.email != null ? teacher.email : '—'}">—</td>
+                                <td th:text="${teacher.user.email != null ? teacher.user.email : '—'}">—</td>
                             </tr>
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Телефон</td>
@@ -45,7 +45,7 @@
                             </tr>
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Пароль (з анкети)</td>
-                                <td th:text="${teacher.password != null and !teacher.password.isEmpty() ? teacher.password : '—'}">—</td>
+                                <td th:text="${password != null and !password.isEmpty() ? password : '—'}">—</td>
                             </tr>
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;vertical-align:top;">Коментар</td>
@@ -70,36 +70,28 @@
                                 th:if="${ft.value != null and !ft.value.isEmpty()}"
                                 th:text="${ft.key} + ': ' + ${#strings.listJoin(ft.value, ', ')}">
                             </li>
-<!--                            <li th:each="ft : ${compiledTimes}" th:if="${ft != null and ft.value != null and !ft.value.isEmpty()}"  th:each="time : ${ft.value}" th:text="${ft.key} + ${time}">Понеділок:10</li>-->
-<!--                            <li th:each="ft : ${freeTimes}" th:if="${ft != null and ft.dayOfTheWeek == 2}" th:text="'Вівторок:' + ${ft.timeOfTheDay}">Вівторок:10</li>-->
-<!--                            <li th:each="ft : ${freeTimes}" th:if="${ft != null and ft.dayOfTheWeek == 3}" th:text="'Середа:' + ${ft.timeOfTheDay}">Середа:10</li>-->
-<!--                            <li th:each="ft : ${freeTimes}" th:if="${ft != null and ft.dayOfTheWeek == 4}" th:text="'Четвер:' + ${ft.timeOfTheDay}">Четвер:10</li>-->
-<!--                            <li th:each="ft : ${freeTimes}" th:if="${ft != null and ft.dayOfTheWeek == 5}" th:text="'Пʼятниця:' + ${ft.timeOfTheDay}">Пʼятниця:10</li>-->
-<!--                            <li th:each="ft : ${freeTimes}" th:if="${ft != null and ft.dayOfTheWeek == 6}" th:text="'Субота:' + ${ft.timeOfTheDay}">Субота:10</li>-->
-<!--                            <li th:each="ft : ${freeTimes}" th:if="${ft != null and ft.dayOfTheWeek == 7}" th:text="'Неділя:' + ${ft.timeOfTheDay}">Неділя:10</li>-->
                         </ul>
                         <p th:if="${freeTimes == null or freeTimes.isEmpty()}"
                            style="margin:0;font-size:14px;color:#64748b;">Немає</p>
 
                         <table role="presentation" cellspacing="0" cellpadding="0" style="margin:24px auto 0;">
                             <tr>
-<!--                                th:href="@{/homePage/myHomePage/{id}(id = ${user.id})}-->
                                 <td style="border-radius:10px;background:#2563eb;">
                                     <a th:href="@{{addTeacherUrl}(addTeacherUrl = ${addTeacherUrl})}" style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">
-<!--                                    <a th:href="@{{addTeacherUrl}/{name}/{age}/{email}/{password}/{comment}/{tgUser}/{phonenumber}/{approved}/{courseIds}/{timeIds}(-->
-<!--                                     addTeacherUrl=${addTeacherUrl},-->
-<!--                                     name=${teacher.name},-->
-<!--                                     age=${teacher.age},-->
-<!--                                     email=${teacher.email},-->
-<!--                                     password=${teacher.password},-->
-<!--                                     comment=${teacher.comment},-->
-<!--                                     tgUser=${teacher.tgUsername},-->
-<!--                                     phonenumber=${teacher.phoneNumber},-->
-<!--                                     approved=${teacher.approved},-->
-<!--                                     courseIds=${coursesIds},-->
-<!--                                     timeIds=${timesIds}-->
-<!--                                     )}"-->
-<!--                                       style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">-->
+                                    <a th:href="@{{addTeacherUrl}/{name}/{age}/{email}/{password}/{comment}/{tgUser}/{phonenumber}/{approved}/{courseIds}/{timeIds}(
+                                     addTeacherUrl=${addTeacherUrl},
+                                     name=${teacher.user.name},
+                                     age=${teacher.age},
+                                     email=${teacher.user.email},
+                                     password=${password},
+                                     comment=${teacher.comment},
+                                     tgUser=${teacher.tgUsername},
+                                     phonenumber=${teacher.phoneNumber},
+                                     approved=${teacher.approved},
+                                     courseIds=${coursesIds},
+                                     timeIds=${timesIds}
+                                     )}"
+                                       style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">
                                         Додати / перевірити вчителя
                                     </a>
                                 </td>

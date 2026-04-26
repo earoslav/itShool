@@ -15,12 +15,40 @@ public class Admin{
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name="name")
-    private String name;
-    @Column(name="email")
-    private String email;
-    @Column(name="password")
-    private String password;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id") // Зовнішній ключ
+    private User user;
 
+    public int getId() {
+        return id;
+    }
+    public String  getName() {
+        return user.getName();
+    }
+    public String getEmail(){
+        return user.getEmail();
+    }
+    public String getPassword(){
+        return user.getPassword();
+    }
+    public User getUser() {
+        return user;
+    }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+    public void setName(String name){
+        user.setName(name);
+    }
+    public void setEmail(String email){
+        user.setEmail(email);
+    }
+    public void setPassword(String password){
+        user.setPassword(password);
+    }
 }

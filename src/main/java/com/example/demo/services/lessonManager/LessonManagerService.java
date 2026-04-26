@@ -44,8 +44,8 @@ public class LessonManagerService {
             tswLessons =  tswLessons.stream().filter(lesson -> lesson.getStatus().equals("will")).collect(Collectors.toList());
             if(!tswLessons.isEmpty()){
                 if (tswLessons.get(tswLessons.size()-1).getLessonTime().isBefore(time.plusWeeks(4).minusDays(time.getDayOfWeek().getValue()).withHour(1))){
-                    for (int i = 1; i<=4; i++){
-                        if(tswLessons.get(tswLessons.size()-1).getLessonTime().isBefore(time.plusWeeks(4).minusDays(time.getDayOfWeek().getValue()).withHour(1))) {
+                    for (int i = 1; i<=5; i++){
+                        if(tswLessons.get(tswLessons.size()-1).getLessonTime().isBefore(time.plusWeeks(5).minusDays(time.getDayOfWeek().getValue()).withHour(1))) {
                             LocalDateTime lessonTime = tswLessons.get(tswLessons.size()-1).getLessonTime().minusDays(tswLessons.get(tswLessons.size()-1).getLessonTime().getDayOfWeek().getValue()).plusDays(tsw.getTimeOfTheWeek().getDayOfTheWeek()).withHour(tsw.getTimeOfTheWeek().getTimeOfTheDay()).plusWeeks(1);
                             Lesson lesson = new Lesson(student, teacher, tswLessons.get(0).getCourse(), lessonTime, 1, tsw.getTimeOfTheWeek(), "will");
                             lessonService.create(lesson);
@@ -57,25 +57,25 @@ public class LessonManagerService {
             }else{
                 Course course = tsw.getCourse();
                 if(now.getDayOfWeek().getValue()>tsw.getTimeOfTheWeek().getDayOfTheWeek()){
-                    for(int i1 = 1; i1<=4; i1++){
+                    for(int i1 = 1; i1<=5; i1++){
                         Lesson lesson = new Lesson(student, teacher, course, time.plusWeeks(i1), 1, tsw.getTimeOfTheWeek(), "will");
                         lessonService.create(lesson);
                     }
                 }else if(now.getDayOfWeek().getValue()==tsw.getTimeOfTheWeek().getDayOfTheWeek()){
                     if(now.getHour()<tsw.getTimeOfTheWeek().getTimeOfTheDay()){
-                        for(int i1 = 0; i1<=3; i1++){
+                        for(int i1 = 0; i1<=4; i1++){
                             Lesson lesson = new Lesson(student, teacher, course, time.plusWeeks(i1), 1, tsw.getTimeOfTheWeek(), "will");
                             lessonService.create(lesson);
                         }
                     }else{
-                        for(int i1 = 1; i1<=4; i1++){
+                        for(int i1 = 1; i1<=5; i1++){
                             Lesson lesson = new Lesson(student, teacher, course, time.plusWeeks(i1), 1, tsw.getTimeOfTheWeek(), "will");
                             lessonService.create(lesson);
                         }
                     }
 
                 }else{
-                    for(int i1 = 0; i1<=3; i1++){
+                    for(int i1 = 0; i1<=4; i1++){
                         Lesson lesson = new Lesson(student, teacher, course, time.plusWeeks(i1), 1, tsw.getTimeOfTheWeek(), "will");
                         lessonService.create(lesson);
                     }

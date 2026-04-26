@@ -25,6 +25,7 @@ import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import jakarta.mail.MessagingException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -54,8 +55,10 @@ public class TeacherHomepageController {
     private TeacherMapper teacherMapper;
     private CourseMapper courseMapper;
     private TimeOfTheWeekMapper theWeekMapper;
+    private PasswordEncoder passwordEncoder;
 
-    public TeacherHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper) {
+
+    public TeacherHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper, PasswordEncoder passwordEncoder) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
         this.theWeekService = theWeekService;
@@ -70,6 +73,7 @@ public class TeacherHomepageController {
         this.teacherMapper = teacherMapper;
         this.courseMapper = courseMapper;
         this.theWeekMapper = theWeekMapper;
+        this.passwordEncoder = passwordEncoder;
     }
     @GetMapping("/{idTeach}/homepage")
     public String gotoTeacher(@PathVariable("idTeach") int id, Model model){
@@ -102,6 +106,38 @@ public class TeacherHomepageController {
         //////
         return "closedTeacher/teacherHomepage/homepage";
     }
+    @GetMapping("/{idTeach}/homepage/{output}")
+    public String gotoTeacher(@PathVariable("idTeach") int id,@PathVariable("output") String output, Model model){
+        Teacher teacher = teacherService.getById(id);
+        teacher.setPassword("");
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
+        model.addAttribute("password", "");
+        List<TimeOfTheWeek> allfreeTimes = theWeekService.getAll();
+        List<Integer> teacherFreeTimes = new ArrayList<>();
+        List<Course> allCourses = new ArrayList<>();
+        List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
+        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+
+        ///////////////
+        try{
+            teacher.getEmptyTimesForTeachers().stream().forEach(time->teacherFreeTimes.add(time.getTime().getId()));
+            allCourses = courseService.getAll();
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+
+        }
+
+        model.addAttribute("output", output);
+        model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("teacherFreeTimes", teacherFreeTimes);
+        model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("dayNames", dayNames);
+        model.addAttribute("days", days);
+        //////
+        return "closedTeacher/teacherHomepage/homepage";
+    }
     @PostMapping("/{id}/homepage/{password}")
     @Transactional
     public String updateTeacher(@PathVariable("id") int id,
@@ -115,15 +151,8 @@ public class TeacherHomepageController {
                                 @RequestParam(value = "teacherFreeTimes", required = false) List<Integer> teacherFreeTimes,
                                 @RequestParam(value = "allCourses", required = false) List<CourseDTO> allCourses,
                                 Model model) throws MessagingException {
-        if(teacherService.checkIfExistsByEmail(teacher.getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getEmail())){
-            model.addAttribute("freeTimes", allfreeTimes);
-            model.addAttribute("teacherFreeTimes", teacherFreeTimes);
-            model.addAttribute("allCourses", allCourses);
-            model.addAttribute("dayNames", dayNames);
-            model.addAttribute("days", days);
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "exists");
-            return "closedTeacher/teacherHomepage/homepage";
+        if(teacherService.checkIfExistsByEmail(teacher.getUser().getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getUser().getEmail())){
+            return "redirect:/teacher/"+teacher.getId()+"/homepage/exists";
         }
         else{
             if(newCourseIds==null || newCourseIds.isEmpty()){
@@ -174,13 +203,13 @@ public class TeacherHomepageController {
 
             }
             Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
-            teacher1.setPassword(password);
+            teacher1.setPassword(passwordEncoder.encode(password));
             teacherService.update(teacher.getId(), teacher1);
 
 
 
 
         }
-        return "redirect:/teacher/"+teacher.getId()+"/homepage";
+        return "redirect:/teacher/"+teacher.getId()+"/homepage/teacherEdited";
     }
 }

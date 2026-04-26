@@ -16,6 +16,7 @@
             background: #f4f7fb;
             color: #1f2937;
             line-height: 1.5;
+            padding: 0px;
         }
 
         .container {
@@ -123,16 +124,6 @@
             outline: none;
         }
 
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
-
         .submit-btn {
             margin-top: 14px;
             border: none;
@@ -173,17 +164,15 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
 <header>
     <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
-            <a href="/openSource/openSource">Головна</a>
+            <a href="/openSource/homepage">Головна</a>
             <a href="/openSource/courses">Курси</a>
-            <a href="#">Викладачі</a>
-            <a href="#">Розклад</a>
-            <a href="#">Контакти</a>
         </nav>
     </div>
 </header>
@@ -198,15 +187,15 @@
 <main>
     <div class="container">
         <div class="form-card">
-            <div class="error-box" th:if="${error == 'exists'}">Така пошта вже зареєстрована</div>
-            <div class="error-box" th:if="${error == 'NOPASS'}">Ви не ввели пароль</div>
-            <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
+            <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
+            <div class="error-box" th:if="${output == 'NOPASS'}">Ви не ввели пароль</div>
+            <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
 
             <form id="form" th:action="@{/openSource/signUpAsStudent}" th:object="${student}" method="post">
                 <div class="form-grid">
                     <div class="field">
                         <label for="name">Ім'я</label>
-                        <input id="name" type="text" th:field="*{name}" required minlength="2" maxlength="100"
+                        <input id="name" type="text" th:field="*{user.name}" required minlength="2" maxlength="100"
                                title="Лише букви, пробіли, апостроф або дефіс">
                     </div>
 
@@ -217,7 +206,7 @@
 
                     <div class="field">
                         <label for="email">Пошта</label>
-                        <input id="email" type="email" th:field="*{email}" required maxlength="50">
+                        <input id="email" type="email" th:field="*{user.email}" required maxlength="50">
                     </div>
 
                     <div class="field">

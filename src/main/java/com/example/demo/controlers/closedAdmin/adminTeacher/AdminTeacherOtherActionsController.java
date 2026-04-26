@@ -10,6 +10,7 @@ import com.example.demo.mapper.programe.CourseMapper;
 import com.example.demo.mapper.programe.LessonMapper;
 import com.example.demo.models.email.Mail;
 import com.example.demo.models.entities.Teacher;
+import com.example.demo.models.entities.User;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.programe.Course;
 import com.example.demo.models.programe.Lesson;
@@ -24,18 +25,24 @@ import com.example.demo.services.other.CommentService;
 import com.example.demo.services.other.TimeOfTheWeekService;
 import com.example.demo.services.program.CourseService;
 import com.example.demo.services.program.LessonService;
+import com.example.demo.services.security.UserService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.StudentCourseService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import jakarta.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
@@ -56,16 +63,19 @@ public class AdminTeacherOtherActionsController {
     private AdminService adminService;
     private StudentMapper studentMapper;
     private TeacherMapper teacherMapper;
+    private final TimeOfTheWeekService weekService;
     private CourseMapper courseMapper;
     private TimeOfTheWeekMapper theWeekMapper;
-    private TimeOfTheWeekService theWeekService;
+    private PasswordEncoder passwordEncoder;
+
+    private UserService userService;
 
 
-    public AdminTeacherOtherActionsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper, TimeOfTheWeekService  theWeekService) {
+    @Autowired
+    public AdminTeacherOtherActionsController(TeacherCourseService teacherCourseService, TimeOfTheWeekService theWeekService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper, PasswordEncoder passwordEncoder, UserService userService) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
         this.emptyTimesForTeacherService = emptyTimesForTeacherService;
-
         this.courseService = courseService;
         this.studentCourseService = studentCourseService;
         this.commentService = commentService;
@@ -78,14 +88,67 @@ public class AdminTeacherOtherActionsController {
         this.studentMapper = studentMapper;
         this.teacherMapper = teacherMapper;
         this.courseMapper = courseMapper;
-
+        this.weekService = theWeekService;
         this.theWeekMapper = theWeekMapper;
-        this.theWeekService = theWeekService;
+        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
+
+        System.err.println(this);
     }
     @GetMapping("/addTeacher")
-    private String gotoCreateTeacher(
+    public String gotoCreateTeacher(Model model){
+        System.err.println(this);
+        List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
+        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+        List<Integer> hours = new ArrayList<>();
+        for (int h = 8; h <= 21; h++) {
+            hours.add(h);
+        }
+        List<TimeOfTheWeek> freeTimes = weekService.getAll();
+        List<Course> courses = courseService.getAll();
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(new Teacher()));
+        model.addAttribute("days", days);
+        model.addAttribute("dayNames", dayNames);
+        model.addAttribute("hours", hours);
+        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("freeTimes", freeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        return "closedAdmin/adminTeachers/addNewTeacher";
+    }
+    @GetMapping("/addTeacher/{output}")
+    public String gotoCreateTeacherWithOutput(@PathVariable("output") String output, Model model){
+        System.err.println(this);
+        List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
+        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+        List<Integer> hours = new ArrayList<>();
+        for (int h = 8; h <= 21; h++) {
+            hours.add(h);
+        }
+        List<TimeOfTheWeek> freeTimes = weekService.getAll();
+        List<Course> courses = courseService.getAll();
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(new Teacher()));
+        model.addAttribute("output", output);
+        model.addAttribute("days", days);
+        model.addAttribute("dayNames", dayNames);
+        model.addAttribute("hours", hours);
+        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("freeTimes", freeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        return "closedAdmin/adminTeachers/addNewTeacher";
+    }
 
-            Model model) {
+
+
+    @GetMapping("/addTeacher/{name}/{age}/{email}/{password}/{comment}/{tgUser}/{phonenumber}/{approved}/{courseIds}/{timeIds}")
+    public String gotoCreateTeacherFromEmail(Model model,
+                                              @PathVariable(value = "name", required = false) String name,
+                                              @PathVariable(value = "age", required = false) int age,
+                                              @PathVariable(value = "email", required = false) String email,
+                                              @PathVariable(value = "password", required = false) String password,
+                                              @PathVariable(value = "comment", required = false) String comment,
+                                              @PathVariable(value = "tgUser", required = false) String tgUser,
+                                              @PathVariable(value = "phonenumber", required = false) String phonenumber,
+                                              @PathVariable(value = "approved", required = false) boolean approved,
+                                              @PathVariable(value = "courseIds", required = false) String courseIds,
+                                              @PathVariable(value = "timeIds", required = false) String timeIds){
 
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
@@ -93,9 +156,25 @@ public class AdminTeacherOtherActionsController {
         for (int h = 8; h <= 21; h++) {
             hours.add(h);
         }
-        List<TimeOfTheWeek> freeTimes = theWeekService.getAll();
+        List<Integer> courseIdsInt = new ArrayList<>();
+        Arrays.stream(courseIds.replace("[", "").replace("]", "").split(", ")).forEach(num->courseIdsInt.add(Integer.valueOf(num)));
+
+        List<Integer> timeIdsInt = new ArrayList<>();
+        Arrays.stream(timeIds.replace("[", "").replace("]", "").split(", ")).forEach(num->timeIdsInt.add(Integer.valueOf(num)));
+        User user = new User(name, email, passwordEncoder.encode(password), "TEACHER");
+        Teacher t = new Teacher();
+        t.setAge(age);
+        t.setComment(comment);
+        t.setTgUsername(tgUser);
+        t.setPhoneNumber(phonenumber);
+        t.setApproved(0);
+        t.setUser(user);
+
+        List<TimeOfTheWeek> freeTimes = weekService.getAll();
         List<Course> courses = courseService.getAll();
-        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(new Teacher()));
+        model.addAttribute("freeTimeIds", timeIdsInt);
+        model.addAttribute("courseIds", courseIdsInt);
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(t));
         model.addAttribute("days", days);
         model.addAttribute("dayNames", dayNames);
         model.addAttribute("hours", hours);
@@ -106,14 +185,16 @@ public class AdminTeacherOtherActionsController {
         return "closedAdmin/adminTeachers/addNewTeacher";
     }
 
+
+
     @PostMapping("/addTeacher/{password}")
-    private String addTeacher(
+    public String addTeacher(
             @ModelAttribute("teacher") TeacherDTO teacher,
             @PathVariable("password") String password,
             @RequestParam("courseIds") List<Integer> coursesIds,
             @RequestParam("freeTimeIds") List<Integer> freeTimesIds, Model model) {
         List<Course> coursesToReload = courseService.getAll();
-        List<TimeOfTheWeek> freeTimesToReload = theWeekService.getAll();
+        List<TimeOfTheWeek> freeTimesToReload = weekService.getAll();
         List<Integer> daysToReload = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNamesToReload = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
         List<Integer> hoursToReload = new ArrayList<>();
@@ -123,8 +204,8 @@ public class AdminTeacherOtherActionsController {
         try {
 
 
-            if (teacherService.checkIfExistsByEmail(teacher.getEmail())) {
-                model.addAttribute("error", "exists");
+            if (teacherService.checkIfExistsByEmail(teacher.getUser().getEmail())) {
+                model.addAttribute("output", "exists");
                 model.addAttribute("days", daysToReload);
                 model.addAttribute("dayNames", dayNamesToReload);
                 model.addAttribute("hours", hoursToReload);
@@ -139,16 +220,19 @@ public class AdminTeacherOtherActionsController {
                 model.addAttribute("hours", hoursToReload);
                 model.addAttribute("courses", coursesToReload.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()));
                 model.addAttribute("freeTimes", freeTimesToReload.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
-                model.addAttribute("error", "NOPASS");
+                model.addAttribute("output", "NOPASS");
                 return "closedAdmin/adminTeachers/addNewTeacher";
             }
             else{
-                teacher1.setPassword(teacherService.getById(teacher.getId()).getPassword());
+                teacher1.setPassword(passwordEncoder.encode(password));
             }
-            teacher.setApproved(true);
+            User user = new User(teacher.getUser().getName(), teacher.getUser().getEmail(), passwordEncoder.encode(password), "TEACHER");
+            userService.create(user);
+            teacher1.setApproved(1);
+            teacher1.setUser(user);
             teacherService.create(teacher1);
             List<Course> courses = courseService.getCoursesThroughIds(coursesIds);
-            List<TimeOfTheWeek> freeTimes = theWeekService.getTimesOfTheWeekThroughIds(freeTimesIds);
+            List<TimeOfTheWeek> freeTimes = weekService.getTimesOfTheWeekThroughIds(freeTimesIds);
 
             for (Course course : courses) {
                 TeacherCourse teacherCourse = new TeacherCourse(course, teacher1);
@@ -161,7 +245,7 @@ public class AdminTeacherOtherActionsController {
             }
 
 
-            return "redirect:/admin/homepage";
+            return "redirect:/admin/homepage/teacherAdded";
         } catch (Exception e) {
             System.out.println(e.getMessage());
             model.addAttribute("days", daysToReload);
@@ -169,7 +253,7 @@ public class AdminTeacherOtherActionsController {
             model.addAttribute("hours", hoursToReload);
             model.addAttribute("courses", coursesToReload.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()));
             model.addAttribute("freeTimes", freeTimesToReload.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("error", "general");
+            model.addAttribute("output", "general");
             return "closedAdmin/adminTeachers/addNewTeacher";
         }
 
@@ -194,7 +278,7 @@ public class AdminTeacherOtherActionsController {
         Teacher teacher = teacherService.getById(id);
         teacher.setPassword("");
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-        List<TimeOfTheWeek> allfreeTimes = theWeekService.getAll();
+        List<TimeOfTheWeek> allfreeTimes = weekService.getAll();
         List<Integer> teacherFreeTimes = new ArrayList<>();
         List<Course> allCourses = new ArrayList<>();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
@@ -220,6 +304,38 @@ public class AdminTeacherOtherActionsController {
         //////
         return "closedAdmin/adminTeachers/editTeacher";
     }
+    @GetMapping("/teacher/{idTeach}/edit/{output}")
+    public String gotoEditTeacherWithOutput(@PathVariable("idTeach") int id,@PathVariable("output") String output, Model model){
+        Teacher teacher = teacherService.getById(id);
+        teacher.setPassword("");
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
+        List<TimeOfTheWeek> allfreeTimes = weekService.getAll();
+        List<Integer> teacherFreeTimes = new ArrayList<>();
+        List<Course> allCourses = new ArrayList<>();
+        List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
+        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+
+        ///////////////
+        try{
+            teacher.getEmptyTimesForTeachers().stream().forEach(time->teacherFreeTimes.add(time.getTime().getId()));
+            allCourses = courseService.getAll();
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+
+        }
+
+        model.addAttribute("output", output);
+        model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("teacherFreeTimes", teacherFreeTimes);
+        model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("dayNames", dayNames);
+        model.addAttribute("days", days);
+        model.addAttribute("password", "");
+        //////
+        return "closedAdmin/adminTeachers/editTeacher";
+    }
     @PostMapping("/teacher/{id}/edit/{password}")
     @Transactional
     public String updateTeacher(@PathVariable("id") int id,
@@ -233,15 +349,8 @@ public class AdminTeacherOtherActionsController {
                                 @RequestParam(value = "teacherFreeTimes", required = false) List<Integer> teacherFreeTimes,
                                 @RequestParam(value = "allCourses", required = false) List<CourseDTO> allCourses,
                                 Model model) throws MessagingException {
-        if(teacherService.checkIfExistsByEmail(teacher.getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getEmail())){
-            model.addAttribute("freeTimes", allfreeTimes);
-            model.addAttribute("teacherFreeTimes", teacherFreeTimes);
-            model.addAttribute("allCourses", allCourses);
-            model.addAttribute("dayNames", dayNames);
-            model.addAttribute("days", days);
-            model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
-            model.addAttribute("error", "exists");
-            return "closedAdmin/adminTeachers/editTeacher";
+        if(teacherService.checkIfExistsByEmail(teacher.getUser().getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getUser().getEmail())){
+            return "redirect:/admin/teacher/"+teacher.getId()+"/edit/exists";
         }
         else{
             if(newCourseIds==null || newCourseIds.isEmpty()){
@@ -268,7 +377,7 @@ public class AdminTeacherOtherActionsController {
                 emptyTimesForTeacherService.removeAllByTeacherId(teacher.getId());
                 for(int iD : freeTimeIds){
                     oldTimeIds.remove(Integer.valueOf(iD));
-                    emptyTimesForTeacherService.create(new EmptyTimesForTeacher(teacherService.getById(teacher.getId()), theWeekService.getById(iD)));
+                    emptyTimesForTeacherService.create(new EmptyTimesForTeacher(teacherService.getById(teacher.getId()), weekService.getById(iD)));
                 }
                 for(int oldId : oldTimeIds){
                     List<Lesson> lessons = lessonService.findAllByTimeOfTheWeekIdAndTeacherId(oldId, teacher.getId());
@@ -292,14 +401,14 @@ public class AdminTeacherOtherActionsController {
 
             }
             Teacher retTeach = teacherMapper.mapTeacherDTOToTeacher(teacher);
-            retTeach.setPassword(password);
+            retTeach.setPassword(passwordEncoder.encode(password));
             teacherService.update(teacher.getId(), retTeach);
 
 
 
 
         }
-        return "redirect:/admin/teacher/"+teacher.getId()+"/edit";
+        return "redirect:/admin/teacher/"+teacher.getId()+"/edit/teacherEdited";
     }
     @PostMapping("/teacher/{id}/delete")
     public String deleteTeacher(@PathVariable("id") int id, Model model){
@@ -325,7 +434,7 @@ public class AdminTeacherOtherActionsController {
     public String gotoInfo(@PathVariable("teachId") int id, Model model){
         Teacher teacher = teacherService.getById(id);
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-        List<TimeOfTheWeek> allfreeTimes = theWeekService.getAll();
+        List<TimeOfTheWeek> allfreeTimes = weekService.getAll();
         List<Integer> teacherFreeTimes = new ArrayList<>();
         List<Course> allCourses = new ArrayList<>();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first

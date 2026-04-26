@@ -22,20 +22,17 @@ public class Student {
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name="name")
-    private String name;
-    @Column(name="email")
-    private String email;
-    @Column(name="password")
-    private String password;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
     @OneToMany(mappedBy = "student")
     private List<TeacherStudentTimeOfTheWeek> tswList;
 
 
     @Column(name = "age")
     private Integer age;
-
-
 
 
     @Column(name = "phone_number", length = 15)
@@ -54,5 +51,30 @@ public class Student {
     @OneToMany(mappedBy = "student")
     private List<Lesson> lessons;
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+    public void setName(String name){
+        user.setName(name);
+    }
+    public void setEmail(String email){
+        user.setEmail(email);
+    }
+    public void setPassword(String password){
+        user.setPassword(password);
+    }
+    public String getName(){
+        return user.getName();
+    }
+    public String getPassword(){
+        return user.getPassword();
+    }
+    public String getEmail(){
+        return user.getEmail();
+    }
 
 }

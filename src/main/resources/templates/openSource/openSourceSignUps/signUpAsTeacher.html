@@ -16,6 +16,7 @@
             background: #f4f7fb;
             color: #1f2937;
             line-height: 1.5;
+            padding: 0px;
         }
 
         .container {
@@ -174,9 +175,11 @@
         }
 
         .courses-list {
-            display: flex;
+            display: block;
             gap: 12px;
             flex-wrap: wrap;
+            overflow-y: auto;
+            max-height: 300px;
         }
 
         .course-check {
@@ -213,6 +216,14 @@
                 grid-template-columns: 1fr;
             }
         }
+        #myInput {
+
+            width: 100%; /* Full-width */
+            font-size: 16px; /* Increase font-size */
+            padding: 8px 10px 8px 20px; /* Add some padding */
+            border: 1px solid #ddd; /* Add a grey border */
+            margin-bottom: 12px; /* Add some space below the input */
+        }
     </style>
 </head>
 <body>
@@ -220,11 +231,8 @@
     <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
-            <a href="/openSource/openSource">Головна</a>
+            <a href="/openSource/homepage">Головна</a>
             <a href="/openSource/courses">Курси</a>
-            <a href="#">Викладачі</a>
-            <a href="#">Розклад</a>
-            <a href="#">Контакти</a>
         </nav>
     </div>
 </header>
@@ -239,15 +247,15 @@
 <main>
     <div class="container">
         <div class="form-card">
-            <div class="error-box" th:if="${error == 'exists'}">Така пошта вже зареєстрована</div>
-            <div class="error-box" th:if="${error == 'NOPASS'}">Ви не ввели пароль</div>
-            <div class="error-box" th:if="${error == 'general'}">Упс, щось пішло не так</div>
+            <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
+            <div class="error-box" th:if="${output == 'NOPASS'}">Ви не ввели пароль</div>
+            <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
 
             <form id="form" th:action="@{/openSource/signUpAsTeacher}" th:object="${teacher}" method="post">
                 <div class="form-grid">
                     <div class="field">
                         <label for="name">ПІБ / ім'я</label>
-                        <input id="name" type="text" th:field="*{name}" required minlength="2" maxlength="100"
+                        <input id="name" type="text" th:field="*{user.name}" required minlength="2" maxlength="100"
 
                                title="Лише букви, пробіли, апостроф або дефіс">
                     </div>
@@ -259,7 +267,7 @@
 
                     <div class="field">
                         <label for="email">Пошта</label>
-                        <input id="email" type="email" th:field="*{email}" required maxlength="50">
+                        <input id="email" type="email" th:field="*{user.email}" required maxlength="50">
                     </div>
 
                     <div class="field">
@@ -274,17 +282,38 @@
                                placeholder="@username">
                     </div>
 
-                    <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass">
+
                     <div class="password-box">
                         Пароль:
                     </div>
+                    <input type="password"  name="password" placeholder="Введіть пароль" id="pass">
+
 
                     <div class="field full" style="margin-top: 16px;">
+
                         <label>Курси</label>
-                    <div class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
+                        <input type="text" id="myInput" onkeyup="searchCourse()" placeholder="Search for names..">
+                        <div id="courses" class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
                             <div class="course-check" th:each="course : ${courses}">
-                                <input type="checkbox" name="courseIds" th:value="${course.id}" />
-                                <span th:text="${course.name}">Курс</span>
+                            <span th:if="${courseIds!=null}">
+                                <span th:if="${courseIds.contains(course.id)}">
+                                    <input type="checkbox" checked name="courseIds" th:value="${course.id}" />
+                                    <span th:text="${course.name}">Курс</span>
+                                </span>
+                                <span th:if="${!courseIds.contains(course.id)}">
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}" />
+                                    <span th:text="${course.name}">Курс</span>
+                                </span>
+                            </span>
+                                <span th:if="${courseIds==null}">
+                                <span>
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}" />
+                                    <span th:text="${course.name}">Курс</span>
+                                </span>
+
+                            </span>
+
+
                             </div>
                         </div>
                         <div class="hint" th:if="${courses == null or courses.isEmpty()}">Поки що курси не додані.</div>
@@ -347,13 +376,38 @@
     </div>
 </footer>
 <script>
+    function managePass() {
+        let pass = document.querySelector("#pass")
+        let form = document.querySelector("#form")
+        if (pass.value === "") {
+            pass.value = "NOPASS"
+        }
+        form.action = form.action + "/" + pass.value
+    }
+
+
     function managePass(){
         let pass = document.querySelector("#pass")
         let form = document.querySelector("#form")
-        if(pass.value===""){
-            pass.value="NOPASS"
-        }
         form.action = form.action+"/"+pass.value
+    }
+
+    function searchCourse() {
+        // Declare variables
+        var input, filter, a, i, txtValue;
+        input = document.getElementById('myInput');
+        courses = document.getElementById('courses').getElementsByTagName("div");
+        filter = input.value.toUpperCase();
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < courses.length; i++) {
+            a = courses[i].getElementsByTagName("span")[0].getElementsByTagName("span")[0].getElementsByTagName("span")[0];
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                courses[i].style.display = "";
+            } else {
+                courses[i].style.display = "none";
+            }
+        }
     }
 
 </script>

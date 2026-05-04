@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -66,39 +67,54 @@ public class TeacherLessonsController {
         this.teacherMapper = teacherMapper;
         this.courseMapper = courseMapper;
     }
-    @GetMapping("/{id}/lessons")
-    public String gotoLessons(@PathVariable("id") int id, Model model){
-        Teacher teacher = teacherService.getById(id);
-        List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-        List<Course> courses = new ArrayList<>();
-        teacher.getTeacherCourses().stream().forEach(course->courses.add(course.getCourse()));
 
+    @GetMapping("/{id}/lessons")
+    public String gotoLessons(@PathVariable("id") int id, Model model) {
+        Teacher teacher = teacherService.getById(id);
+        List<Object> values = lessonService.compileLessonsForTeacher(teacher.getId());
+        List<String> weekDays = (List<String>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+
+        List<Course> courses = new ArrayList<>();
+        teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
+
+        model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("lessons", lessonHashMap);
-        model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("students", studentService.getAll().stream().map(el -> studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("courses", courses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("weekDays", weekDays);
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedTeacher/teacherLessons/lessons";
     }
-    @GetMapping("/{id}/lessons/{output}")
-    public String gotoLessonsWithOutput(@PathVariable("id") int id,@PathVariable("output") String output, Model model){
-        Teacher teacher = teacherService.getById(id);
-        List<String> weekDays = (List<String>) lessonService.compileLessonsForTeacher(teacher.getId()).get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) lessonService.compileLessonsForTeacher(teacher.getId()).get(1);
-        List<Course> courses = new ArrayList<>();
-        teacher.getTeacherCourses().stream().forEach(course->courses.add(course.getCourse()));
 
+    @PostMapping("/{idTeach}/lessons/editLesson/notPicked")
+    public String editLessoneFromTeacherWithNotPicked(@PathVariable("idTeach") int idTeach) {
+        return "redirect:/teacher/" + idTeach + "/lessons/itemNotPicked";
+    }
+
+    @GetMapping("/{id}/lessons/{output}")
+    public String gotoLessonsWithOutput(@PathVariable("id") int id, @PathVariable("output") String output, Model model) {
+        Teacher teacher = teacherService.getById(id);
+
+        List<Object> values = lessonService.compileLessonsForTeacher(teacher.getId());
+        List<String> weekDays = (List<String>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<Course> courses = new ArrayList<>();
+        teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
+        model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("output", output);
         model.addAttribute("lessons", lessonHashMap);
-        model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
-        model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("students", studentService.getAll().stream().map(el -> studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("courses", courses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("weekDays", weekDays);
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
-        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedTeacher/teacherLessons/lessons";
     }
+
     @PostMapping("/{idTeach}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes) throws MessagingException {
@@ -107,9 +123,9 @@ public class TeacherLessonsController {
         mail.setSubject("Лист про відміну заняття");
         mail.setBody("");
         Teacher teacher = teacherService.getById(idTeach);
-        mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lessonService.getById(idLes).getLessonTime().getDayOfMonth()+":"+lessonService.getById(idLes).getLessonTime().getMonth(), lessonService.getById(idLes).getLessonTime().getHour());
+        mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lessonService.getById(idLes).getLessonTime(), lessonService.getById(idLes).getDuration());
         lessonService.deleteById(idLes);
-        return "redirect:/teacher/"+idTeach+"/lessons/lessonDeleted";
+        return "redirect:/teacher/" + idTeach + "/lessons/lessonDeleted";
     }
 
     @PostMapping("/{idTeach}/lessons/deleteCourse/{id}")
@@ -121,107 +137,248 @@ public class TeacherLessonsController {
         mail.setSubject("Лист про відміну заняття");
         mail.setBody("");
         Teacher teacher = teacherService.getById(idTeach);
-        mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(), lesson.getLessonTime().getHour());
+        mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), lesson.getDuration());
         lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
         tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId());
-        return "redirect:/teacher/"+idTeach+"/lessons/courseDeleted";
+        return "redirect:/teacher/" + idTeach + "/lessons/courseDeleted";
     }
+
     @PostMapping("/{idTeach}/lessons/editLesson/{id}/{nTId}/{date}")
-    public String editLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId,@PathVariable("date") String date, Model model) throws MessagingException {
+    public String editLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
         TimeOfTheWeek newTime = theWeekService.getById(newTimeId);
         Lesson lesson = lessonService.getById(idLes);
+        float dur = lesson.getDuration();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime newDate = LocalDateTime.now().withYear(Integer.parseInt(date.split("\\.")[2])).withMonth(Integer.parseInt(date.split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split("\\.")[0])).withHour(newTime.getTimeOfTheDay()).withMinute(0).withSecond(0);
-        if(newDate.getDayOfWeek().getValue()==newTime.getDayOfTheWeek()){
-            Mail mail = new Mail();
-            mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
-            mail.setSubject("Лист про зміну часу одного заняття");
-            mail.setBody("");
-            Teacher teacher = teacherService.getById(idTeach);
-            mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour(), newDate.getDayOfMonth()+":"+newDate.getMonth(),newDate.getHour());
-            lesson.setLessonTime(newDate);
-            lessonService.update(lesson.getId(), lesson);
-            return "redirect:/teacher/"+idTeach+"/lessons/lessonEdited";
-        }else{
-            return "redirect:/teacher/"+idTeach+"/lessons/dateInconsistency";
-        }
+        LocalDateTime newDate = LocalDateTime.now().withYear(Integer.parseInt(date.split("\\.")[2].split("-")[0])).withMonth(Integer.parseInt(date.split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split("\\.")[0])).withHour(newTime.getTimeOfTheDay()).withMinute(Integer.parseInt(date.split("-")[1])).withSecond(0);
+        LocalDateTime time = newDate;
+        if (newDate.getDayOfWeek().getValue() == newTime.getDayOfTheWeek()) {
+            LocalDateTime lessonFinish = time;
+            if (dur == (long) dur) {
+                lessonFinish = lessonFinish.plusHours((long) dur);
+            } else {
+                lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
+            }
+            if (lessonFinish.isBefore(time.withHour(22).withMinute(1))) {
+                AtomicBoolean overlap = new AtomicBoolean(false);
+                List<Lesson> teacherLessons = lessonService.findAllByTeachId(idTeach);
+                LocalDateTime finalLessonFinish = lessonFinish;
+                LocalDateTime finalTime = time;
+                teacherLessons.stream().filter(les->les.getId()!=lesson.getId()).forEach(l -> {
+                    LocalDateTime lFinish = l.getLessonTime();
+                    float lDur = l.getDuration();
+                    if (lDur == (long) lDur) {
+                        lFinish = lFinish.plusHours((long) lDur);
+                    } else {
+                        lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+                    }
+                    if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
+                        overlap.set(true);
+                    }
+                });
 
-    }
-    @PostMapping("/{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}")
-    public String addLesson(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId,@PathVariable("retDate") String date, Model model) throws MessagingException {
-        int dayOfMonth = Integer.parseInt(date.split(" ")[1].split("\\.")[0]);
-        int month = Integer.parseInt(date.split(" ")[1].split("\\.")[1]);
-        int hour = Integer.parseInt(date.split(" ")[2]);
-        LocalDateTime time = LocalDateTime.now();
-        if(time.getMonth().getValue()==12 && month==1){
-            time = time.withYear(time.getYear()+1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
-        }else{
-            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0);
-        }
-        if(time.isAfter(LocalDateTime.now())){
-            if(cId!=0){
-                if(stId!=0){
-                    Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, 1, theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), "will");
-                    lessonService.create(lesson);
+
+                List<Lesson> studentLessons = lessonService.findAllByStudentId(lesson.getStudent().getId());
+                studentLessons.stream().filter(les->les.getId()!=lesson.getId()).forEach(l -> {
+                    LocalDateTime lFinish = l.getLessonTime();
+                    float lDur = l.getDuration();
+                    if (lDur == (long) lDur) {
+                        lFinish = lFinish.plusHours((long) lDur);
+                    } else {
+                        lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+                    }
+                    if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
+                        overlap.set(true);
+                    }
+                });
+                if (!overlap.get()) {
                     Mail mail = new Mail();
                     mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
-                    mail.setSubject("Лист про додання одного заняття");
+                    mail.setSubject("Лист про зміну часу одного заняття");
                     mail.setBody("");
                     Teacher teacher = teacherService.getById(idTeach);
-                    mailService.sendEmailWithThymeleafToStudentAboutLessonAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime().getDayOfMonth()+":"+lesson.getLessonTime().getMonth(),lesson.getLessonTime().getHour());
-                    return "redirect:/teacher/"+idTeach+"/lessons/lessonAdded";
-                }else{
-                    return "redirect:/teacher/"+idTeach+"/lessons/studentNotFound";
+                    mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), newDate, dur);
+                    lesson.setLessonTime(newDate);
+                    lessonService.update(lesson.getId(), lesson);
+                    return "redirect:/teacher/" + idTeach + "/lessons/lessonEdited";
+                } else {
+                    return "redirect:/teacher/" + idTeach + "/lessons/lessonOverlap";
                 }
-            }else{
-                return "redirect:/teacher/"+idTeach+"/lessons/courseNotFound";
+            } else {
+                return "redirect:/teacher/" + idTeach + "/lessons/lessonAfterAcceptedTime";
             }
-
-        }else{
-            return "redirect:/teacher/"+idTeach+"/lessons/lessonBeforeNow";
+        } else {
+            return "redirect:/teacher/" + idTeach + "/lessons/dateInconsistency";
         }
+
     }
-    @PostMapping("/{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}")
-    public String addCourse(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId,@PathVariable("retDate") String date, Model model) throws MessagingException {
+
+    @PostMapping("/{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}/{dur}")
+    public String addLesson(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId, @PathVariable("retDate") String date, @PathVariable("dur") float dur, Model model) throws MessagingException {
         int dayOfMonth = Integer.parseInt(date.split(" ")[1].split("\\.")[0]);
         int month = Integer.parseInt(date.split(" ")[1].split("\\.")[1]);
-        int hour = Integer.parseInt(date.split(" ")[2]);
+        int hour = Integer.parseInt(date.split(" ")[2].split(":")[0]);
+        int minute = Integer.parseInt(date.split(" ")[2].split(":")[1]);
         LocalDateTime time = LocalDateTime.now();
-        if(time.getMonth().getValue()==12 && month==1){
-            time = time.withYear(time.getYear()+1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0).withNano(0);
-        }else{
-            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(0).withSecond(0).withNano(0);
+        if (time.getMonth().getValue() == 12 && month == 1) {
+            time = time.withYear(time.getYear() + 1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(minute).withSecond(0);
+        } else {
+            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(minute).withSecond(0);
+        }
+        if (time.isAfter(LocalDateTime.now())) {
+            if (cId != 0) {
+                if (stId != 0) {
+                    LocalDateTime lessonFinish = time;
+                    if (dur == (long) dur) {
+                        lessonFinish = lessonFinish.plusHours((long) dur);
+                    } else {
+                        lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
+                    }
+                    if (lessonFinish.isBefore(time.withHour(22).withMinute(1))) {
+                        AtomicBoolean overlap = new AtomicBoolean(false);
+                        List<Lesson> teacherLessons = lessonService.findAllByTeachId(idTeach);
+                        LocalDateTime finalLessonFinish = lessonFinish;
+                        LocalDateTime finalTime = time;
+                        teacherLessons.stream().forEach(l -> {
+                            LocalDateTime lFinish = l.getLessonTime();
+                            float lDur = l.getDuration();
+                            if (lDur == (long) lDur) {
+                                lFinish = lFinish.plusHours((long) lDur);
+                            } else {
+                                lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+                            }
+                            if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
+                                overlap.set(true);
+                            }
+
+                        });
+                        List<Lesson> studentLessons = lessonService.findAllByStudentId(stId);
+                        studentLessons.stream().forEach(l -> {
+                            LocalDateTime lFinish = l.getLessonTime();
+                            float lDur = l.getDuration();
+                            if (lDur == (long) lDur) {
+                                lFinish = lFinish.plusHours((long) lDur);
+                            } else {
+                                lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+                            }
+                            if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
+                                overlap.set(true);
+                            }
+                        });
+                        if (!overlap.get()) {
+                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "will");
+                            lessonService.create(lesson);
+                            Mail mail = new Mail();
+                            mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
+                            mail.setSubject("Лист про додання одного заняття");
+                            mail.setBody("");
+                            Teacher teacher = teacherService.getById(idTeach);
+                            mailService.sendEmailWithThymeleafToStudentAboutLessonAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), dur);
+                            return "redirect:/teacher/" + idTeach + "/lessons/lessonAdded";
+                        } else {
+                            return "redirect:/teacher/" + idTeach + "/lessons/lessonOverlap";
+                        }
+
+
+                    } else {
+                        return "redirect:/teacher/" + idTeach + "/lessons/lessonAfterAcceptedTime";
+                    }
+                } else {
+                    return "redirect:/teacher/" + idTeach + "/lessons/studentNotFound";
+                }
+            } else {
+                return "redirect:/teacher/" + idTeach + "/lessons/courseNotFound";
+            }
+
+        } else {
+            return "redirect:/teacher/" + idTeach + "/lessons/lessonBeforeNow";
+        }
+    }
+
+    @PostMapping("/{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}/{dur}")
+    public String addCourse(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId, @PathVariable("retDate") String date, @PathVariable("dur") float dur, Model model) throws MessagingException {
+        int dayOfMonth = Integer.parseInt(date.split(" ")[1].split("\\.")[0]);
+        int month = Integer.parseInt(date.split(" ")[1].split("\\.")[1]);
+        int hour = Integer.parseInt(date.split(" ")[2].split(":")[0]);
+        int minut = Integer.parseInt(date.split(" ")[2].split(":")[1]);
+        LocalDateTime time = LocalDateTime.now();
+        if (time.getMonth().getValue() == 12 && month == 1) {
+            time = time.withYear(time.getYear() + 1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(minut).withSecond(0).withNano(0);
+        } else {
+            time = time.withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(minut).withSecond(0).withNano(0);
         }
         boolean hasCourse = false;
-        for(TeacherStudentTimeOfTheWeek tsw : tswService.findAllByTeachId(idTeach)){
-            if(tsw.getTimeOfTheWeek().getDayOfTheWeek()==time.getDayOfWeek().getValue() && tsw.getTimeOfTheWeek().getTimeOfTheDay()==time.getHour()){
+        for (TeacherStudentTimeOfTheWeek tsw : tswService.findAllByTeachId(idTeach)) {
+            if (tsw.getTimeOfTheWeek().getDayOfTheWeek() == time.getDayOfWeek().getValue() && tsw.getTimeOfTheWeek().getTimeOfTheDay() == time.getHour()) {
                 hasCourse = true;
             }
         }
-        if(time.isAfter(LocalDateTime.now())){
-            if(cId!=0){
-                if(stId!=0){
+        LocalDateTime lessonFinish = time;
+        if (dur == (long) dur) {
+            lessonFinish = lessonFinish.plusHours((long) dur);
+        } else {
+            lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
+        }
+        if (lessonFinish.isAfter(time.withHour(22).withMinute(1))) {
+            return "redirect:/teacher/" + idTeach + "/lessons/lessonAfterAcceptedTime";
+        }
+        if (time.isAfter(LocalDateTime.now())) {
+            if (cId != 0) {
+                if (stId != 0) {
                     AtomicBoolean exists = new AtomicBoolean(false);
                     Lesson lesson = new Lesson();
                     LocalDateTime checkingTime = time;
-                    for(int i = 1; i<=5; i++){
-                        for(Lesson les : teacherService.getById(idTeach).getLessons()){
-                            if(les.getLessonTime().getMonth().getValue()==checkingTime.getMonth().getValue()&&les.getLessonTime().getDayOfMonth()==checkingTime.getDayOfMonth()&&les.getLessonTime().getHour()==checkingTime.getHour()){
+                    AtomicBoolean overlap = new AtomicBoolean(false);
+
+                    for (int i = 1; i <= 5; i++) {
+                        LocalDateTime finalLessonFinish = lessonFinish;
+                        LocalDateTime finalTime = checkingTime;
+                        for (Lesson les : teacherService.getById(idTeach).getLessons()) {
+
+                            if (les.getLessonTime().truncatedTo(ChronoUnit.MINUTES).isEqual(checkingTime.truncatedTo(ChronoUnit.MINUTES))) {
                                 exists.set(true);
+                            } else {
+                                LocalDateTime lFinish = les.getLessonTime();
+                                float lDur = les.getDuration();
+                                if (lDur == (long) lDur) {
+                                    lFinish = lFinish.plusHours((long) lDur);
+                                } else {
+                                    lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+                                }
+                                if ((les.getLessonTime().isAfter(finalTime) && les.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(les.getLessonTime()))) {
+                                    overlap.set(true);
+                                }
                             }
+
                         }
+                        List<Lesson> studentLessons = lessonService.findAllByStudentId(stId);
+                        studentLessons.stream().forEach(l -> {
+                            LocalDateTime lFinish = l.getLessonTime();
+                            float lDur = l.getDuration();
+                            if (lDur == (long) lDur) {
+                                lFinish = lFinish.plusHours((long) lDur);
+                            } else {
+                                lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+                            }
+                            if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
+                                overlap.set(true);
+                            }
+                        });
                         checkingTime = checkingTime.plusWeeks(1);
+                        lessonFinish = lessonFinish.plusWeeks(1);
                     }
-                    if(exists.get() || hasCourse){
-                        return "redirect:/teacher/"+idTeach+"/lessons/timeNotEmpty";
-                    }else {
-                        for(int i = 1; i<=4; i++){
-                            lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, 1, theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), "will");
+                    if (overlap.get()) {
+                        return "redirect:/teacher/" + idTeach + "/lessons/lessonOverlap";
+                    }
+                    if (exists.get() || hasCourse) {
+                        return "redirect:/teacher/" + idTeach + "/lessons/timeNotEmpty";
+                    } else {
+                        for (int i = 1; i <= 4; i++) {
+                            lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "will");
                             lessonService.create(lesson);
 
                             time = time.plusWeeks(1);
                         }
-                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDay(time.getDayOfWeek().getValue(),time.getHour()), courseService.getById(cId));
+                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), courseService.getById(cId));
                         tswService.create(tsw);
 
                         Mail mail = new Mail();
@@ -229,34 +386,34 @@ public class TeacherLessonsController {
                         mail.setSubject("Лист про додання курсу занять");
                         mail.setBody("");
                         Teacher teacher = teacherService.getById(idTeach);
-                        mailService.sendEmailWithThymeleafToStudentAboutCourseAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), String.valueOf(lesson.getLessonTime().getDayOfWeek()),lesson.getLessonTime().getHour());
-                        return "redirect:/teacher/"+idTeach+"/lessons/courseAdded";
+                        mailService.sendEmailWithThymeleafToStudentAboutCourseAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), time, dur);
+                        return "redirect:/teacher/" + idTeach + "/lessons/courseAdded";
                     }
-                }else{
-                    return "redirect:/teacher/"+idTeach+"/lessons/studentNotFound";
+                } else {
+                    return "redirect:/teacher/" + idTeach + "/lessons/studentNotFound";
                 }
-            }else{
-                return "redirect:/teacher/"+idTeach+"/lessons/courseNotFound";
+            } else {
+                return "redirect:/teacher/" + idTeach + "/lessons/courseNotFound";
             }
 
-        }else{
-            return "redirect:/teacher/"+idTeach+"/lessons/lessonBeforeNow";
+        } else {
+            return "redirect:/teacher/" + idTeach + "/lessons/lessonBeforeNow";
         }
     }
+
     @PostMapping("/{idTeach}/addMoneyByLesson/{lesId}")
-    public String addMoney(@PathVariable("idTeach") int teachId, @PathVariable("lesId") int lesId, Model model){
+    public String addMoney(@PathVariable("idTeach") int teachId, @PathVariable("lesId") int lesId, Model model) {
         Teacher teacher = teacherService.getById(teachId);
         Lesson lesson = lessonService.getById(lesId);
-        if(LocalDateTime.now().isAfter(lesson.getLessonTime())){
-            float sum = lesson.getDuration()*lesson.getCourse().getTeacherShare();
-            teacher.setUnpaidMoney(teacher.getUnpaidMoney()+sum);
+        if (LocalDateTime.now().isAfter(lesson.getLessonTime())) {
+            float sum = lesson.getDuration() * lesson.getCourse().getTeacherShare();
+            teacher.setUnpaidMoney(teacher.getUnpaidMoney() + sum);
             teacherService.update(teachId, teacher);
             lesson.setStatus("was");
             lessonService.update(lesId, lesson);
-            return "redirect:/teacher/"+teachId+"/lessons/lessonStatusChanged";
-        }
-       else {
-            return "redirect:/teacher/"+teachId+"/lessons/tooEarly";
+            return "redirect:/teacher/" + teachId + "/lessons/lessonStatusChanged";
+        } else {
+            return "redirect:/teacher/" + teachId + "/lessons/tooEarly";
         }
     }
 

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Нова заявка від викладача</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#1f2937;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f7fb;padding:24px 12px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,0.08);">
+                <tr>
+                    <td style="background:linear-gradient(120deg,#0f172a,#1d4ed8);padding:20px 24px;color:#ffffff;">
+                        <h1 style="margin:0;font-size:22px;">IT Kids School</h1>
+                        <p style="margin:8px 0 0;font-size:14px;opacity:0.9;">Новий викладач — заявка на приєднання</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:24px;">
+                        <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
+                            <strong th:text="${teacher.user.name != null ? teacher.user.name : '—'}">Ім'я</strong>
+                            хоче приєднатися до школи. Нижче всі дані з анкети (як у базі: ім'я, вік, email, пароль, коментар, телефон, telegram).
+                        </p>
+
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="8" style="font-size:14px;border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;width:42%;">ID</td>
+                                <td th:text="${teacher.id != null ? teacher.id : '— (новий запис)'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;">Вік</td>
+                                <td th:text="${teacher.age != null ? teacher.age : '—'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;">Email</td>
+                                <td th:text="${teacher.user.email != null ? teacher.user.email : '—'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;">Телефон</td>
+                                <td th:text="${teacher.phoneNumber != null ? teacher.phoneNumber : '—'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;">Telegram</td>
+                                <td th:text="${teacher.tgUsername != null ? teacher.tgUsername : '—'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;">Пароль (з анкети)</td>
+                                <td th:text="${password != null and !password.isEmpty() ? password : '—'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;vertical-align:top;">Коментар</td>
+                                <td th:text="${teacher.comment != null and !teacher.comment.isEmpty() ? teacher.comment : '—'}">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #e2e8f0;">
+                                <td style="color:#64748b;">Схвалено (approved)</td>
+                                <td th:text="${approved}">false</td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:18px 0 8px;font-size:13px;color:#64748b;"><strong>Курси (teacherCourses)</strong></p>
+                        <ul th:if="${courses != null and !courses.isEmpty()}" style="margin:0;padding-left:20px;font-size:14px;">
+                            <li th:each="tc : ${courses}" th:text="${tc != null ? tc.name : '—'}">Курс</li>
+                        </ul>
+                        <p th:if="${courses == null or courses.isEmpty()}" style="margin:0;font-size:14px;color:#64748b;">Немає</p>
+
+                        <p style="margin:18px 0 8px;font-size:13px;color:#64748b;"><strong>Вільні слоти (emptyTimesForTeachers)</strong></p>
+                        <ul th:if="${freeTimes != null and !freeTimes.isEmpty() and compiledTimes != null and !compiledTimes.isEmpty()}"
+                            style="margin:0;padding-left:20px;font-size:14px;">
+                            <li th:each="ft : ${compiledTimes}"
+                                th:if="${ft.value != null and !ft.value.isEmpty()}"
+                                th:text="${ft.key} + ': ' + ${#strings.listJoin(ft.value, ', ')}">
+                            </li>
+                        </ul>
+                        <p th:if="${freeTimes == null or freeTimes.isEmpty()}"
+                           style="margin:0;font-size:14px;color:#64748b;">Немає</p>
+
+                        <table role="presentation" cellspacing="0" cellpadding="0" style="margin:24px auto 0;">
+                            <tr>
+                                <td style="border-radius:10px;background:#2563eb;">
+                                    <a th:href="@{{addTeacherUrl}(addTeacherUrl = ${addTeacherUrl})}" style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">
+                                    <a th:href="@{{addTeacherUrl}/{name}/{age}/{email}/{password}/{comment}/{tgUser}/{phonenumber}/{approved}/{courseIds}/{timeIds}(
+                                     addTeacherUrl=${addTeacherUrl},
+                                     name=${teacher.user.name},
+                                     age=${teacher.age},
+                                     email=${teacher.user.email},
+                                     password=${password},
+                                     comment=${teacher.comment},
+                                     tgUser=${teacher.tgUsername},
+                                     phonenumber=${teacher.phoneNumber},
+                                     approved=${teacher.approved},
+                                     courseIds=${coursesIds},
+                                     timeIds=${timesIds}
+                                     )}"
+                                       style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">
+                                        Додати / перевірити вчителя
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

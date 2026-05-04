@@ -27,6 +27,8 @@ public class TimeOfTheWeek {
 
     @Column(name = "day_of_the_week")
     private Integer dayOfTheWeek;
+    @Column(name = "minute")
+    private Integer minute;
 
     @Column(name = "time_of_the_day")
     private Integer timeOfTheDay;
@@ -45,4 +47,5 @@ public class TimeOfTheWeek {
         this.emptyTimesForTeachers = emptyTimesForTeachers;
         this.lessons = lessons;
     }
+
 }

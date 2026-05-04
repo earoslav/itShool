@@ -18,11 +18,10 @@
                 <tr>
                     <td style="padding:24px;">
                         <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
-                            Учень
-                            <strong th:text="${student.user.name != null ? student.user.name : '—'}">Ім'я</strong>
-                            видалив подальші уроки з вами в <span th:text="${day}"></span> : <span th:text="${hour}"></span>. Якщо бажаєте зв'яжіться з ним та відновіть заняття в інший час.
+                            Припинено всі подальші уроки з учнем <strong th:text="${student.user.name != null ? student.user.name : '—'}">Ім'я</strong> НАЗАВЖДИ. Час курсу ЩОТИЖНЯ.
+                            Час: <strong th:text="${time}"></strong>.
+                            Тривалість: <span th:text="${duration}"></span> год.
                         </p>
-
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="8" style="font-size:14px;border-collapse:collapse;">
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Email</td>
@@ -33,7 +32,6 @@
                                 <td th:text="${student.phoneNumber != null ? student.phoneNumber : '—'}">—</td>
                             </tr>
                         </table>
-
                     </td>
                 </tr>
             </table>

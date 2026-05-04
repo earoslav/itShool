@@ -4,227 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Kids School - Реєстрація викладача</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            background: #f4f7fb;
-            color: #1f2937;
-            line-height: 1.5;
-            padding: 0px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        header {
-            background: #111827;
-            color: #ffffff;
-            padding: 16px 0;
-        }
-
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-        }
-
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-
-        .menu a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .menu a:hover {
-            color: #ffffff;
-        }
-
-        .hero {
-            padding: 56px 0;
-            background: linear-gradient(120deg, #0f172a, #1d4ed8);
-            color: #ffffff;
-        }
-
-        .hero h1 {
-            font-size: 38px;
-            margin-bottom: 8px;
-        }
-
-        .hero p {
-            color: #e5e7eb;
-        }
-
-        main {
-            padding: 48px 0;
-        }
-
-        .form-card {
-            max-width: 700px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-weight: 600;
-        }
-
-        input,
-        textarea {
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 15px;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        input:invalid:focus,
-        textarea:invalid:focus {
-            border-color: #dc2626;
-            outline: none;
-        }
-
-        .error-box {
-            border: 1px solid #fecaca;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
-
-        .hint {
-            font-size: 13px;
-            color: #64748b;
-            margin-top: 4px;
-        }
-
-        .submit-btn {
-            margin-top: 14px;
-            border: none;
-            background: #2563eb;
-            color: #ffffff;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .submit-btn:hover {
-            background: #1d4ed8;
-        }
-
-        footer {
-            background: #111827;
-            color: #cbd5e1;
-            padding: 28px 0;
-            margin-top: 24px;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .footer-links a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-
-        .courses-list {
-            display: block;
-            gap: 12px;
-            flex-wrap: wrap;
-            overflow-y: auto;
-            max-height: 300px;
-        }
-
-        .course-check {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            padding: 8px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            background: #f8fafc;
-        }
-
-        .times-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #ffffff;
-        }
-
-        .times-table th,
-        .times-table td {
-            border: 1px solid #e2e8f0;
-            padding: 8px 6px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 13px;
-        }
-
-        .times-table th:first-child {
-            width: 110px;
-        }
-
-        @media (max-width: 700px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        #myInput {
-
-            width: 100%; /* Full-width */
-            font-size: 16px; /* Increase font-size */
-            padding: 8px 10px 8px 20px; /* Add some padding */
-            border: 1px solid #ddd; /* Add a grey border */
-            margin-bottom: 12px; /* Add some space below the input */
-        }
-    </style>
+    <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
 <header>
@@ -273,7 +53,7 @@
                     <div class="field">
                         <label for="phoneNumber">Номер телефону</label>
                         <input id="phoneNumber" type="tel" th:field="*{phoneNumber}" required maxlength="15"
-                               pattern="^[0-9+\\-()\\s]{10,15}$" title="Введіть коректний номер телефону">
+                               title="Введіть коректний номер телефону">
                     </div>
 
                     <div class="field full">
@@ -289,26 +69,26 @@
                     <input type="password"  name="password" placeholder="Введіть пароль" id="pass">
 
 
-                    <div class="field full" style="margin-top: 16px;">
+                    <div class="mt-16 field full">
 
                         <label>Курси</label>
-                        <input type="text" id="myInput" onkeyup="searchCourse()" placeholder="Search for names..">
+                        <input type="text" id="myInput" onkeyup="searchCourseInDivs()" placeholder="Search for names..">
                         <div id="courses" class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
                             <div class="course-check" th:each="course : ${courses}">
                             <span th:if="${courseIds!=null}">
-                                <span th:if="${courseIds.contains(course.id)}">
-                                    <input type="checkbox" checked name="courseIds" th:value="${course.id}" />
-                                    <span th:text="${course.name}">Курс</span>
+                                <span th:if="${courseIds.contains(course.id)}" class="span-course">
+                                    <input type="checkbox" checked name="courseIds" th:value="${course.id}"/>
+                                    <span class="span-course-name" th:text="${course.name}">Курс</span>
                                 </span>
-                                <span th:if="${!courseIds.contains(course.id)}">
-                                    <input type="checkbox" name="courseIds" th:value="${course.id}" />
-                                    <span th:text="${course.name}">Курс</span>
+                                <span th:if="${!courseIds.contains(course.id)}" class="span-course">
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}"/>
+                                    <span class="span-course-name" th:text="${course.name}">Курс</span>
                                 </span>
                             </span>
                                 <span th:if="${courseIds==null}">
-                                <span>
-                                    <input type="checkbox" name="courseIds" th:value="${course.id}" />
-                                    <span th:text="${course.name}">Курс</span>
+                                <span class="span-course">
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}"/>
+                                    <span th:text="${course.name}" class="span-course-name">Курс</span>
                                 </span>
 
                             </span>
@@ -319,31 +99,32 @@
                         <div class="hint" th:if="${courses == null or courses.isEmpty()}">Поки що курси не додані.</div>
                     </div>
 
-                    <div class="field full" style="margin-top: 16px;">
-                        <label>Free times</label>
+                    <div class="block">
+                        <h2>Вільний час</h2>
+
                         <table class="times-table">
                             <thead>
                             <tr>
                                 <th>Година</th>
-                                <th th:each="dayName : ${dayNames}" th:text="${dayName}">День</th>
+                                <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
                             </tr>
                             </thead>
+
                             <tbody>
-                            <tr th:each="hour, hourStat : ${hours}">
-                                <th th:text="${hour} + ':00'">8:00</th>
-                                <td th:each="day, dayStat : ${days}">
+                            <tr th:each="hour : ${hours}">
+                                <th th:text="${hour}"></th>
+
+                                <td th:each="day : ${days}">
                                     <input type="checkbox"
+                                           class="freeTimeCheckbox"
                                            name="freeTimeIds"
                                            th:each="ft : ${freeTimes}"
-                                           th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour}"
-                                           th:value="${ft.id}"/>
+                                           th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0') }"
+                                           th:value="${ft.id}">
                                 </td>
                             </tr>
                             </tbody>
                         </table>
-                        <div class="hint" style="margin-top: 10px;">
-                            Оберіть зручні слоти (день зверху, година зліва).
-                        </div>
                     </div>
                     <div class="field full">
                         <label for="comment">Про себе / досвід</label>
@@ -355,7 +136,7 @@
 
 
                 <p class="hint">Поле «схвалено» заповнює лише адміністратор після перевірки заявки.</p>
-                <button onclick="managePass()" class="submit-btn" type="submit">Надіслати заявку</button>
+                <button onclick="managePassSignUp()" class="submit-btn" type="submit">Надіслати заявку</button>
             </form>
         </div>
     </div>
@@ -364,7 +145,7 @@
 <footer>
     <div class="container">
         <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div style="margin-top: 10px;">
+        <div class="mt-10">
             Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
         </div>
         <div class="footer-links">
@@ -375,41 +156,42 @@
         </div>
     </div>
 </footer>
-<script>
-    function managePass() {
-        let pass = document.querySelector("#pass")
-        let form = document.querySelector("#form")
-        if (pass.value === "") {
-            pass.value = "NOPASS"
-        }
-        form.action = form.action + "/" + pass.value
-    }
+<!--<script>-->
+<!--    function managePass() {-->
+<!--        let pass = document.querySelector("#pass")-->
+<!--        let form = document.querySelector("#form")-->
+<!--        if (pass.value === "") {-->
+<!--            pass.value = "NOPASS"-->
+<!--        }-->
+<!--        form.action = form.action + "/" + pass.value-->
+<!--    }-->
 
 
-    function managePass(){
-        let pass = document.querySelector("#pass")
-        let form = document.querySelector("#form")
-        form.action = form.action+"/"+pass.value
-    }
+<!--    function managePass(){-->
+<!--        let pass = document.querySelector("#pass")-->
+<!--        let form = document.querySelector("#form")-->
+<!--        form.action = form.action+"/"+pass.value-->
+<!--    }-->
 
-    function searchCourse() {
-        // Declare variables
-        var input, filter, a, i, txtValue;
-        input = document.getElementById('myInput');
-        courses = document.getElementById('courses').getElementsByTagName("div");
-        filter = input.value.toUpperCase();
-        // Loop through all list items, and hide those who don't match the search query
-        for (i = 0; i < courses.length; i++) {
-            a = courses[i].getElementsByTagName("span")[0].getElementsByTagName("span")[0].getElementsByTagName("span")[0];
-            txtValue = a.textContent || a.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                courses[i].style.display = "";
-            } else {
-                courses[i].style.display = "none";
-            }
-        }
-    }
+<!--    function searchCourse() {-->
+<!--        // Declare variables-->
+<!--        var input, filter, a, i, txtValue;-->
+<!--        input = document.getElementById('myInput');-->
+<!--        courses = document.getElementById('courses').getElementsByTagName("div");-->
+<!--        filter = input.value.toUpperCase();-->
+<!--        // Loop through all list items, and hide those who don't match the search query-->
+<!--        for (i = 0; i < courses.length; i++) {-->
+<!--            a = courses[i].getElementsByTagName("span")[0].getElementsByTagName("span")[0].getElementsByTagName("span")[0];-->
+<!--            txtValue = a.textContent || a.innerText;-->
+<!--            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
+<!--                courses[i].style.display = "";-->
+<!--            } else {-->
+<!--                courses[i].style.display = "none";-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
 
-</script>
+<!--</script>-->
+<script src="/mainSrcipt.js"></script>
 </body>
 </html>

@@ -46,7 +46,7 @@ public class LessonManagerService {
                 if (tswLessons.get(tswLessons.size()-1).getLessonTime().isBefore(time.plusWeeks(4).minusDays(time.getDayOfWeek().getValue()).withHour(1))){
                     for (int i = 1; i<=5; i++){
                         if(tswLessons.get(tswLessons.size()-1).getLessonTime().isBefore(time.plusWeeks(5).minusDays(time.getDayOfWeek().getValue()).withHour(1))) {
-                            LocalDateTime lessonTime = tswLessons.get(tswLessons.size()-1).getLessonTime().minusDays(tswLessons.get(tswLessons.size()-1).getLessonTime().getDayOfWeek().getValue()).plusDays(tsw.getTimeOfTheWeek().getDayOfTheWeek()).withHour(tsw.getTimeOfTheWeek().getTimeOfTheDay()).plusWeeks(1);
+                            LocalDateTime lessonTime = tswLessons.get(tswLessons.size()-1).getLessonTime().minusDays(tswLessons.get(tswLessons.size()-1).getLessonTime().getDayOfWeek().getValue()).plusDays(tsw.getTimeOfTheWeek().getDayOfTheWeek()).withHour(tsw.getTimeOfTheWeek().getTimeOfTheDay()).withMinute(tsw.getTimeOfTheWeek().getMinute()).plusWeeks(1);
                             Lesson lesson = new Lesson(student, teacher, tswLessons.get(0).getCourse(), lessonTime, 1, tsw.getTimeOfTheWeek(), "will");
                             lessonService.create(lesson);
                             tswLessons.add(lesson);

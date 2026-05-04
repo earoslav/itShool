@@ -17,6 +17,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
     public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekIdAndLessonTimeAfter(int stId,int teachId, int tswId, LocalDateTime now);
     public void removeAllByTimeOfTheWeekId(int id);
     public List<Lesson> findAllByTeacherIdAndLessonTime(int id, LocalDateTime time);
+    public List<Lesson> findByStudentId(int stId);
     public Lesson searchByLessonTimeAndTeacherId(LocalDateTime time, int id);
     public Lesson findByLessonTime(LocalDateTime time);
     public List<Lesson> findAllByTeacherIdAndStudentIdAndTimeOfTheWeekId(int teachId, int stId, int weekId);

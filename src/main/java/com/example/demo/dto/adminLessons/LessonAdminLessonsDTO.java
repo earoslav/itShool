@@ -25,7 +25,7 @@ public class LessonAdminLessonsDTO {
 
     private LocalDateTime lessonTime;
 
-    private int duration;
+    private float duration;
 
     private String status;
 

@@ -16,4 +16,5 @@ public class TimeOfTheWeekDTO {
     private int id;
     private Integer dayOfTheWeek;
     private Integer timeOfTheDay;
+    private Integer minute;
 }

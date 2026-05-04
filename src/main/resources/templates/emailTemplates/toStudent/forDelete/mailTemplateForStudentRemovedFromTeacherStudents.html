@@ -12,17 +12,16 @@
                 <tr>
                     <td style="background:linear-gradient(120deg,#0f172a,#1d4ed8);padding:20px 24px;color:#ffffff;">
                         <h1 style="margin:0;font-size:22px;">IT Kids School</h1>
-                        <p style="margin:8px 0 0;font-size:14px;opacity:0.9;">Лист про припинення всіх водальших зайнять з вчителем</p>
+                        <p style="margin:8px 0 0;font-size:14px;opacity:0.9;">Лист про припинення занять</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding:24px;">
                         <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
-                            Витель
-                            <strong th:text="${teacher.user.name != null ? teacher.user.name : '—'}">Ім'я</strong>
-                            припинив усі подальші зайняття з вами. Якщо бажаєте зв'яжіться з ним та відновіть заняття
+                            Скасовано всі ваші подальші заняття з вчителем
+                            <strong th:text="${teacher.user.name != null ? teacher.user.name : '—'}">Ім'я</strong>.
+                            Якщо бажаєте — зв'яжіться з вчителем та відновіть заняття.
                         </p>
-
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="8" style="font-size:14px;border-collapse:collapse;">
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Email</td>
@@ -37,7 +36,6 @@
                                 <td th:text="${teacher.tgUsername != null ? teacher.tgUsername : '—'}">—</td>
                             </tr>
                         </table>
-
                     </td>
                 </tr>
             </table>

@@ -100,16 +100,12 @@ public class AdminTeacherOtherActionsController {
         System.err.println(this);
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
-        List<Integer> hours = new ArrayList<>();
-        for (int h = 8; h <= 21; h++) {
-            hours.add(h);
-        }
         List<TimeOfTheWeek> freeTimes = weekService.getAll();
         List<Course> courses = courseService.getAll();
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(new Teacher()));
         model.addAttribute("days", days);
         model.addAttribute("dayNames", dayNames);
-        model.addAttribute("hours", hours);
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("freeTimes", freeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         return "closedAdmin/adminTeachers/addNewTeacher";
@@ -191,37 +187,21 @@ public class AdminTeacherOtherActionsController {
     public String addTeacher(
             @ModelAttribute("teacher") TeacherDTO teacher,
             @PathVariable("password") String password,
-            @RequestParam("courseIds") List<Integer> coursesIds,
-            @RequestParam("freeTimeIds") List<Integer> freeTimesIds, Model model) {
-        List<Course> coursesToReload = courseService.getAll();
-        List<TimeOfTheWeek> freeTimesToReload = weekService.getAll();
-        List<Integer> daysToReload = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
-        List<String> dayNamesToReload = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
-        List<Integer> hoursToReload = new ArrayList<>();
-        for (int h = 8; h <= 21; h++) {
-            hoursToReload.add(h);
-        }
+            @RequestParam(value = "courseIds", required = false) List<Integer> coursesIds,
+            @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimesIds, Model model) {
         try {
-
-
-            if (teacherService.checkIfExistsByEmail(teacher.getUser().getEmail())) {
-                model.addAttribute("output", "exists");
-                model.addAttribute("days", daysToReload);
-                model.addAttribute("dayNames", dayNamesToReload);
-                model.addAttribute("hours", hoursToReload);
-                model.addAttribute("courses", coursesToReload);
-                model.addAttribute("freeTimes", freeTimesToReload.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
-                return "closedAdmin/adminTeachers/addNewTeacher";
+            if(userService.checkIfExistsByEmail(teacher.getUser().getEmail())){
+                return "redirect:/admin/addTeacher/exists";
+            }
+            if(coursesIds==null || coursesIds.isEmpty()){
+                return "redirect:/admin/addTeacher/noCourses";
+            }
+            if(freeTimesIds==null || freeTimesIds.isEmpty()){
+                return "redirect:/admin/addTeacher/noFreeTimes";
             }
             Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
             if(password.equals("NOPASS")){
-                model.addAttribute("days", daysToReload);
-                model.addAttribute("dayNames", dayNamesToReload);
-                model.addAttribute("hours", hoursToReload);
-                model.addAttribute("courses", coursesToReload.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()));
-                model.addAttribute("freeTimes", freeTimesToReload.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
-                model.addAttribute("output", "NOPASS");
-                return "closedAdmin/adminTeachers/addNewTeacher";
+                return "redirect:/admin/addTeacher/NOPASS";
             }
             else{
                 teacher1.setPassword(passwordEncoder.encode(password));
@@ -247,14 +227,7 @@ public class AdminTeacherOtherActionsController {
 
             return "redirect:/admin/homepage/teacherAdded";
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            model.addAttribute("days", daysToReload);
-            model.addAttribute("dayNames", dayNamesToReload);
-            model.addAttribute("hours", hoursToReload);
-            model.addAttribute("courses", coursesToReload.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()));
-            model.addAttribute("freeTimes", freeTimesToReload.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
-            model.addAttribute("output", "general");
-            return "closedAdmin/adminTeachers/addNewTeacher";
+            return "redirect:/admin/addTeacher/general";
         }
 
 
@@ -297,7 +270,7 @@ public class AdminTeacherOtherActionsController {
         model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         model.addAttribute("teacherFreeTimes", teacherFreeTimes);
         model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         model.addAttribute("dayNames", dayNames);
         model.addAttribute("days", days);
         model.addAttribute("password", "");
@@ -329,7 +302,7 @@ public class AdminTeacherOtherActionsController {
         model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         model.addAttribute("teacherFreeTimes", teacherFreeTimes);
         model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         model.addAttribute("dayNames", dayNames);
         model.addAttribute("days", days);
         model.addAttribute("password", "");
@@ -352,23 +325,13 @@ public class AdminTeacherOtherActionsController {
         if(teacherService.checkIfExistsByEmail(teacher.getUser().getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getUser().getEmail())){
             return "redirect:/admin/teacher/"+teacher.getId()+"/edit/exists";
         }
-        else{
-            if(newCourseIds==null || newCourseIds.isEmpty()){
-                ///
-            }else{
-                for (int cId : newCourseIds){
+            if(newCourseIds!=null && !newCourseIds.isEmpty()) {
+                for (int cId : newCourseIds) {
                     teacherCourseService.create(new TeacherCourse(courseService.getById(cId), teacherMapper.mapTeacherDTOToTeacher(teacher)));
                 }
             }
-
-
-
-
-
-
-            //////
-            if(password.equals("OLDPASS")){
-                password = teacherService.getById(teacher.getId()).getPassword();
+            if(freeTimeIds==null || freeTimeIds.isEmpty()){
+                freeTimeIds = new ArrayList<>();
             }
             List<Integer> oldTimeIds = new ArrayList<>();
 
@@ -379,26 +342,33 @@ public class AdminTeacherOtherActionsController {
                     oldTimeIds.remove(Integer.valueOf(iD));
                     emptyTimesForTeacherService.create(new EmptyTimesForTeacher(teacherService.getById(teacher.getId()), weekService.getById(iD)));
                 }
-                for(int oldId : oldTimeIds){
-                    List<Lesson> lessons = lessonService.findAllByTimeOfTheWeekIdAndTeacherId(oldId, teacher.getId());
+//                for(int oldId : oldTimeIds){
+//                    List<Lesson> lessons = lessonService.findAllByTimeOfTheWeekIdAndTeacherId(oldId, teacher.getId());
+//
+//                    for(Lesson l : lessons){
+//                        if(l.getLessonTime().isAfter(LocalDateTime.now())){
+//                            lessonService.deleteById(l.getId());
+//                        }
+//                    }
+//                    if(!lessons.isEmpty()){
+//                        Mail mail = new Mail();
+//                        mail.setTo(Collections.singletonList(lessons.get(0).getStudent().getEmail()));
+//                        mail.setSubject("Лист про відміну заняття");
+//                        mail.setBody("");
+//                        Teacher saved = teacherService.getById(teacher.getId());
+//                        mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(saved), String.valueOf(lessons.get(0).getLessonTime().getDayOfWeek()), lessons.get(0).getLessonTime().getHour());
+//                    }
+//
+//
+//                }
 
-                    for(Lesson l : lessons){
-                        if(l.getLessonTime().isAfter(LocalDateTime.now())){
-                            lessonService.deleteById(l.getId());
-                        }
-                    }
-                    if(!lessons.isEmpty()){
-                        Mail mail = new Mail();
-                        mail.setTo(Collections.singletonList(lessons.get(0).getStudent().getEmail()));
-                        mail.setSubject("Лист про відміну заняття");
-                        mail.setBody("");
-                        Teacher saved = teacherService.getById(teacher.getId());
-                        mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(saved), String.valueOf(lessons.get(0).getLessonTime().getDayOfWeek()), lessons.get(0).getLessonTime().getHour());
-                    }
-
-
-                }
-
+            }
+            if(password.equals("OLDPASS")){
+                password = teacherService.getById(teacher.getId()).getPassword();
+                Teacher retTeach = teacherMapper.mapTeacherDTOToTeacher(teacher);
+                retTeach.setPassword(password);
+                teacherService.update(teacher.getId(), retTeach);
+                return "redirect:/admin/teacher/"+teacher.getId()+"/edit/teacherEdited";
             }
             Teacher retTeach = teacherMapper.mapTeacherDTOToTeacher(teacher);
             retTeach.setPassword(passwordEncoder.encode(password));
@@ -407,7 +377,7 @@ public class AdminTeacherOtherActionsController {
 
 
 
-        }
+
         return "redirect:/admin/teacher/"+teacher.getId()+"/edit/teacherEdited";
     }
     @PostMapping("/teacher/{id}/delete")
@@ -451,8 +421,8 @@ public class AdminTeacherOtherActionsController {
         }
         int[] allTeachersEarnings = {0};
         int[] ourShare = {0};
-        lessonService.findAllByTeachId(id).stream().filter(lesson -> lesson.getStatus().equals("was")).forEach(lesson -> ourShare[0] = ourShare[0] +(lesson.getDuration()*lesson.getCourse().getCostPerLesson()));
-        lessonService.findAllByTeachId(id).stream().filter(lesson -> lesson.getStatus().equals("was")).forEach(lesson -> allTeachersEarnings[0] = allTeachersEarnings[0] +(lesson.getDuration()*lesson.getCourse().getTeacherShare()));
+        lessonService.findAllByTeachId(id).stream().filter(lesson -> lesson.getStatus().equals("was")).forEach(lesson -> ourShare[0] = (int) (ourShare[0] +(lesson.getDuration()*lesson.getCourse().getCostPerLesson())));
+        lessonService.findAllByTeachId(id).stream().filter(lesson -> lesson.getStatus().equals("was")).forEach(lesson -> allTeachersEarnings[0] = (int) (allTeachersEarnings[0] +(lesson.getDuration()*lesson.getCourse().getTeacherShare())));
         ourShare[0] = ourShare[0]-allTeachersEarnings[0];
         model.addAttribute("allEarnings", allTeachersEarnings[0]);
         model.addAttribute("ourShare", ourShare[0]);
@@ -460,7 +430,44 @@ public class AdminTeacherOtherActionsController {
         model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
         model.addAttribute("teacherFreeTimes", teacherFreeTimes);
         model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
-        model.addAttribute("hours", Arrays.asList(8,9,10,11,12,13,14,15,16,17,18,19,20,21));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
+        model.addAttribute("dayNames", dayNames);
+        model.addAttribute("days", days);
+        //////
+        return "closedAdmin/adminTeachers/teacherInfo";
+    }
+    @GetMapping("/teacher/{teachId}/info/{output}")
+    public String gotoInfoWithOutput(@PathVariable("teachId") int id,@PathVariable("output") String output, Model model){
+        Teacher teacher = teacherService.getById(id);
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
+        List<TimeOfTheWeek> allfreeTimes = weekService.getAll();
+        List<Integer> teacherFreeTimes = new ArrayList<>();
+        List<Course> allCourses = new ArrayList<>();
+        List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
+        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+
+        ///////////////
+        try{
+            teacher.getEmptyTimesForTeachers().stream().forEach(time->teacherFreeTimes.add(time.getTime().getId()));
+            allCourses = courseService.getAll();
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+
+        }
+        int[] allTeachersEarnings = {0};
+        int[] ourShare = {0};
+        lessonService.findAllByTeachId(id).stream().filter(lesson -> lesson.getStatus().equals("was")).forEach(lesson -> ourShare[0] = (int) (ourShare[0] +(lesson.getDuration()*lesson.getCourse().getCostPerLesson())));
+        lessonService.findAllByTeachId(id).stream().filter(lesson -> lesson.getStatus().equals("was")).forEach(lesson -> allTeachersEarnings[0] = (int) (allTeachersEarnings[0] +(lesson.getDuration()*lesson.getCourse().getTeacherShare())));
+        ourShare[0] = ourShare[0]-allTeachersEarnings[0];
+        model.addAttribute("output", output);
+        model.addAttribute("allEarnings", allTeachersEarnings[0]);
+        model.addAttribute("ourShare", ourShare[0]);
+        model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("students", studentService.getAll().stream().map(el->studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("teacherFreeTimes", teacherFreeTimes);
+        model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         model.addAttribute("dayNames", dayNames);
         model.addAttribute("days", days);
         //////

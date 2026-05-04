@@ -12,6 +12,7 @@ import com.example.demo.services.entities.TeacherService;
 import com.example.demo.services.other.TimeOfTheWeekService;
 import com.example.demo.services.program.CourseService;
 import com.example.demo.services.program.LessonService;
+import com.example.demo.services.security.UserService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
@@ -38,10 +39,11 @@ public class StudentHomepageController {
     private TeacherMapper teacherMapper;
     private CourseMapper courseMapper;
     private PasswordEncoder passwordEncoder;
+    private UserService userService;
 
 
 
-    public StudentHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, ObjectMapper objectMapper, StudentMapper studentMapper, PasswordEncoder passwordEncoder) {
+    public StudentHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, ObjectMapper objectMapper, StudentMapper studentMapper, PasswordEncoder passwordEncoder, UserService userService) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
         this.theWeekService = theWeekService;
@@ -55,6 +57,7 @@ public class StudentHomepageController {
         this.objectMapper = objectMapper;
         this.studentMapper = studentMapper;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
     @GetMapping("/{idSt}/homepage")
     public String gotoStudent(@PathVariable("idSt") int id, Model model){
@@ -73,19 +76,24 @@ public class StudentHomepageController {
     }
 
     @PostMapping("/{idSt}/homepage/{password}")
-    public String updateTeacher(@ModelAttribute("student") StudentDTO student, @PathVariable("password") String password, @PathVariable("idSt") int id, Model model) {
-        if(studentService.checkIfExistsByEmail(student.getUser().getEmail()) && !studentService.getById(student.getId()).getEmail().equals(student.getUser().getEmail())){
-            return "redirect:/student/"+student.getId()+"/lessons/exists";
+    public String updateStudent(@ModelAttribute("student") StudentDTO student, @PathVariable("password") String password, @PathVariable("idSt") int id, Model model) {
+        if(userService.checkIfExistsByEmail(student.getUser().getEmail()) && !studentService.getById(id).getEmail().equals(student.getUser().getEmail())){
+            return "redirect:/student/"+id+"/homepage/exists";
         }
         else{
             if(password.equals("OLDPASS")){
-                password = studentService.getById(student.getId()).getPassword();
+                password = studentService.getById(id).getPassword();
+                Student retStudent = studentMapper.mapStudentDTOToStudent(student);
+                retStudent.setPassword(password);
+                studentService.update(id, retStudent);
+                return "redirect:/student/"+id+"/homepage/studentEdited";
+
             }
             Student retStudent = studentMapper.mapStudentDTOToStudent(student);
             retStudent.setPassword(passwordEncoder.encode(password));
-            studentService.update(student.getId(), retStudent);
+            studentService.update(id, retStudent);
 
         }
-        return "redirect:/student/"+student.getId()+"/homepage/studentEdited";
+        return "redirect:/student/"+id+"/homepage/studentEdited";
     }
 }

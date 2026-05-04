@@ -18,7 +18,7 @@ public class LessonDTO {
     private TeacherDTO teacher;
     private CourseDTO course;
     private LocalDateTime lessonTime;
-    private int duration;
+    private float duration;
     private String status;
 
 }

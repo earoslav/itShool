@@ -2,257 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Редагування викладача</title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            padding: 0px;
-        }
-
-        header {
-            background-color: #111827;
-            color: white;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .block {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .block h2 {
-            margin-bottom: 15px;
-        }
-
-        input, select {
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-top: 5px;
-        }
-
-        .btn {
-            border: none;
-            padding: 10px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            background: #2563eb;
-            color: white;
-            margin-top: 15px;
-        }
-
-        .password-box {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .status {
-            font-weight: bold;
-            color: green;
-        }
-
-        .status.not-approved {
-            color: red;
-        }
-
-        .times-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .times-table th, .times-table td {
-            border: 1px solid #e2e8f0;
-            padding: 6px;
-            text-align: center;
-        }
-        .status-will, .status-was {
-            background-color: #e0f7ea;
-            border-left: 4px solid #2b7e3a;
-        }
-        .status-wont, .status-wasnt {
-            background-color: #ffe6e5;
-            border-left: 4px solid #c7362b;
-        }
-        .status-will .status-badge, .status-was .status-badge {
-            background: #c8e6d9;
-            color: #146b3a;
-        }
-        .status-wont .status-badge, .status-wasnt .status-badge {
-            background: #ffd9d7;
-            color: #b13a2e;
-        }
-        .empty-lesson {
-            background-color: #f2f5f7;
-            border-radius: 12px;
-            padding: 8px 4px;
-            text-align: center;
-            color: #8ea3b0;
-            font-size: 0.75rem;
-            font-style: italic;
-        }
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        footer {
-            background: #111827;
-            color: #cbd5e1;
-            padding: 28px 0;
-            margin-top: 24px;
-            position: sticky;
-            top: 100vh; /* Позиционирует футер внизу */
-        }
-        .footer-links {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .footer-links a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-        .nav-links a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-            color: white;
-        }
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-        .menu a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-        .menu a:hover {
-            color: #ffffff;
-        }
-        .menu a.active {
-            color: #ffffff;
-        }
-        .hero {
-            padding: 10px 0;
-            background: linear-gradient(120deg, #0f172a, #1d4ed8);
-            color: #ffffff;
-        }
-        .hero h1 {
-            font-size: 44px;
-            margin-bottom: 14px;
-        }
-        .hero p {
-            max-width: 750px;
-            font-size: 18px;
-            color: #e5e7eb;
-            margin-bottom: 24px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: #22c55e;
-            color: #04210e;
-        }
-        .btn-primary:hover {
-            background: #16a34a;
-        }
-        .btn-secondary {
-            color: #ffffff;
-            border-color: #93c5fd;
-        }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0px 20px;
-        }
-        .card{
-            margin: 20px;
-            padding: 20px 20px;
-        }
-        footer {
-            position: sticky;
-            top: 100vh; /* Позиционирует футер внизу */
-        }
-
-        #myInput {
-
-            width: 100%; /* Full-width */
-            font-size: 16px; /* Increase font-size */
-            padding: 8px 10px 8px 20px; /* Add some padding */
-            border: 1px solid #ddd; /* Add a grey border */
-            margin-bottom: 12px; /* Add some space below the input */
-        }
-        label {
-            font-weight: 600;
-        }
-
-        input,
-        textarea {
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 15px;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        input:invalid:focus,
-        textarea:invalid:focus {
-            border-color: #dc2626;
-            outline: none;
-        }
-
-    </style>
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header style="background-color: #111827">
+<header>
     <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
@@ -267,10 +22,9 @@
 <section class="hero">
     <div class="container">
         <p th:text="'Вчитель: '+${teacher.user.name}"></p>
-        <h3 style="margin-left: 35px">Уроки:</h3>
+        <h3 class="ml-35">Уроки:</h3>
     </div>
 </section>
-
 
 
 <div class="container">
@@ -279,110 +33,119 @@
     <div class="success-box" th:if="${output == 'teacherEdited'}">Вчителя Успішно редаговано</div>
     <div class="success-box" th:if="${output == 'deleteAccepted'}">Видалення уроку успішно прийнято</div>
     <div class="success-box" th:if="${output == 'deleteDenyed'}">Видалення уроку успішно відхилено</div>
-    <form id="form" th:action="@{/teacher/{id}/homepage(id=${teacher.id})}" th:object="${teacher}" method="post" onsubmit="return handleSubmit(event)">
-
+    <p class="d-none" th:text="${teacher.id}" id="id"></p>
+    <form id="form" th:action="@{/teacher/{id}/homepage/OLDPASS(id=${teacher.id})}" th:object="${teacher}"
+          method="post">
         <input type="hidden" th:field="*{id}">
+        <div class="form-grid">
 
-        <!-- Основна інформація -->
-        <div class="block">
-            <h2>Основна інформація</h2>
+            <div class="field">
+                <label>Ім'я:</label>
+                <input required maxlength="50" th:field="${teacher.user.name}">
+            </div>
 
-            <p>Ім'я:<br>
-                <input type="text" th:field="*{user.name}">
-            </p>
+            <div class="field">
+                <label>Вік:</label>
+                <input required min="18" type="number" th:field="${teacher.age}">
+            </div>
 
-            <p>Вік:<br>
-                <input type="number" th:field="*{age}">
-            </p>
+            <div class="field">
+                <label>Email:</label>
+                <input required maxlength="50" type="email" th:field="${teacher.user.email}">
+            </div>
 
-            <p>Email:<br>
-                <input type="text" th:field="*{user.email}">
-            </p>
+            <div class="field">
+                <label>Телефон:</label>
+                <input required maxlength="15" type="text" th:field="${teacher.phoneNumber}">
+            </div>
 
-            <p>Телефон:<br>
-                <input type="text" th:field="*{phoneNumber}">
-            </p>
+            <div class="field">
+                <label>Telegram:</label>
+                <input required type="text" th:field="${teacher.tgUsername}">
+            </div>
 
-            <p>Telegram:<br>
-                <input type="text" th:field="*{tgUsername}">
-            </p>
+            <div class="field">
+                <label>Коментар:</label>
+                <input required maxlength="500" type="text" th:field="${teacher.comment}">
+            </div>
+            <div class="field">
+                <lable>Пароль(якщо бажаєте змінити):</lable>
+                <input type="password" minlength="6" name="password" placeholder="Введіть новий пароль" id="pass">
+            </div>
+            <div class="field">
+                <label>Статус:</label>
+                <p th:classappend="${teacher.approved==1} ? 'status' : 'status not-approved'"
+                   th:text="${teacher.approved==1 ? 'Підтверджений' : 'Непідтверджений'}"></p>
+            </div>
 
-            <p>Коментар:<br>
-                <input type="text" th:field="*{comment}">
-            </p>
-            <p>
-                Статус:
-                <span th:classappend="${teacher.approved==1} ? 'status' : 'status not-approved'"
-                      th:text="${teacher.approved==1 ? 'Підтверджений' : 'Непідтверджений'}">
-            </span>
-            </p>
+            <!-- Курси -->
+            <div class="block">
+                <h2>Курси</h2>
 
-            <!-- Пароль -->
-            <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass">
-            <div class="password-box">
-                Пароль(якщо бажаєте змінити):
+                <!-- список -->
+                <ul id="coursesList">
+                    <li th:each="tc : ${teacher.teacherCourses}"
+                        th:text="${tc.course.name}">
+                    </li>
+                    <li class="d-none" th:each="tc : ${teacher.teacherCourses}"
+                        th:text="${tc.course.id}">
+                    </li>
+                </ul>
+                <input type="text" id="myInput" onkeyup="searchCourseSelect()" placeholder="Search for names..">
+                <!-- select -->
+                <select id="courseSelect">
+                    <option value="">Додати курс</option>
+                    <option th:each="c : ${allCourses}"
+                            th:value="${c.id}"
+                            th:text="${c.name}">
+                    </option>
+                </select>
+
+                <!-- hidden inputs -->
+                <div id="coursesInputs"></div>
+            </div>
+            <!-- Вільний час -->
+            <div class="d-flex">
+                <div class="block">
+                    <div class="field">
+                        <label>Зарплата (ще не виплачена):</label>
+                        <input readonly type="text" th:field="${teacher.unpaidMoney}">
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                <h2>Вільний час</h2>
+
+                <table class="times-table">
+                    <thead>
+                    <tr>
+                        <th>Година</th>
+                        <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="hour : ${hours}">
+                        <th th:text="${hour}"></th>
+
+                        <td th:each="day : ${days}">
+                            <input type="checkbox"
+                                   class="freeTimeCheckbox"
+                                   name="freeTimeIds"
+                                   th:each="ft : ${freeTimes}"
+                                   th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0') }"
+                                   th:value="${ft.id}"
+                                   th:checked="${teacherFreeTimes.contains(ft.id)}">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Курси -->
-        <div class="block">
-            <h2>Курси</h2>
 
-            <!-- список -->
-            <ul id="coursesList">
-                <li th:each="tc : ${teacher.teacherCourses}"
-                    th:text="${tc.course.name}">
-                </li>
-                <li th:each="tc : ${teacher.teacherCourses}"
-                    th:text="${tc.course.id}"
-                style="display: none">
-                </li>
-            </ul>
-
-            <input type="text" id="myInput" onkeyup="searchCourse()" placeholder="Search for names..">
-            <select id="courseSelect">
-                <option value="">Додати курс</option>
-                <option th:each="c : ${allCourses}"
-                        th:value="${c.id}"
-                        th:text="${c.name}">
-                </option>
-            </select>
-
-            <!-- hidden inputs -->
-            <div id="coursesInputs"></div>
-        </div>
-
-        <!-- Вільний час -->
-        <div class="block">
-            <h2>Вільний час</h2>
-
-            <table class="times-table">
-                <thead>
-                <tr>
-                    <th>Година</th>
-                    <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr th:each="hour : ${hours}">
-                    <th th:text="${hour} + ':00'"></th>
-
-                    <td th:each="day : ${days}">
-                        <input type="checkbox"
-                               class="freeTimeCheckbox"
-                               name="freeTimeIds"
-                               th:each="ft : ${freeTimes}"
-                               th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour}"
-                               th:value="${ft.id}"
-                               th:checked="${teacherFreeTimes.contains(ft.id)}">
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <button onclick="managePass()" class="btn" type="submit">Зберегти</button>
+        <button onclick="managePassTeacher()" class="btn-small btn btn-green" type="submit">Зберегти
+        </button>
 
     </form>
 
@@ -390,7 +153,7 @@
 <footer id="contacts">
     <div class="container">
         <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div style="margin-top: 10px;">
+        <div class="mt-10">
             Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
         </div>
         <div class="footer-links">
@@ -401,464 +164,123 @@
         </div>
     </div>
 </footer>
-<script>
-    function searchCourse() {
-        // Declare variables
-        var input, filter, ul, a, i, txtValue;
-        input = document.getElementById('myInput');
-        courses = document.getElementById('courseSelect').getElementsByTagName("option");
-        filter = input.value.toUpperCase();
+<!--<script>-->
+<!--    function searchCourse() {-->
+<!--        // Declare variables-->
+<!--        var input, filter, ul, a, i, txtValue;-->
+<!--        input = document.getElementById('myInput');-->
+<!--        courses = document.getElementById('courseSelect').getElementsByTagName("option");-->
+<!--        filter = input.value.toUpperCase();-->
 
-        // Loop through all list items, and hide those who don't match the search query
-        for (i = 0; i < courses.length; i++) {
-            a = courses[i];
-            txtValue = a.textContent || a.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                courses[i].style.display = "";
-            } else {
-                courses[i].style.display = "none";
-            }
-        }
-    }
-    function managePass(){
-        let pass = document.querySelector("#pass")
-        let form = document.querySelector("#form")
-        if(pass.value===""){
-            pass.value = "OLDPASS"
-        }
-        form.action = form.action+"/"+pass.value
-    }
-
-</script>
-<script>
-    const select = document.getElementById("courseSelect");
-    const list = document.getElementById("coursesList");
-    const inputsDiv = document.getElementById("coursesInputs");
-
-    // щоб не додавати дублікати
-    let addedCourses = new Set();
-
-    select.addEventListener("change", function () {
-        const selectedOption = select.options[select.selectedIndex];
-        const courseId = selectedOption.value;
-        const courseName = selectedOption.text;
-
-        if (!courseId) return;
-        let present = false
-
-        for(let i = 0; i<list.getElementsByTagName("li").length;i++){
-            console.log(list.getElementsByTagName("li")[i].innerText)
-            console.log(courseId)
-            console.log(" ")
-            if(list.getElementsByTagName("li")[i].innerText==courseId){
-                present = true;
-            }
-        }
-        console.log(present)
-        if (addedCourses.has(courseId) || present) {
-            alert("Цей курс вже доданий");
-            return;
-        }
-
-        // додаємо в список
-        const li = document.createElement("li");
-        li.innerText = courseName;
-        list.appendChild(li);
-        const liId = document.createElement("li");
-        liId.innerText = courseId;
-        liId.style.display = "none"
-        list.appendChild(liId);
-
-        // додаємо hidden input для бекенду
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "newCourseIds";
-        input.value = courseId;
-        inputsDiv.appendChild(input);
-
-        addedCourses.add(courseId);
-
-        // скидаємо select
-        select.value = "";
-    });
-</script>
-<script>
-    let freeTimeChanged = false;
-
-    document.querySelectorAll('.freeTimeCheckbox').forEach(cb => {
-        cb.addEventListener('change', () => {
-            freeTimeChanged = true;
-        });
-    });
-
-    function handleSubmit(event) {
-        if (freeTimeChanged) {
-            return confirm("Якщо ви змінете свої вільні часи то ваші заняття з учнями на ці часи будуть видалені. Продовжити?");
-        }
-        return true;
-    }
-
-    function togglePassword() {
-        const input = document.getElementById("passwordField");
-        const btn = event.target;
-
-        if (input.type === "password") {
-            input.type = "text";
-            btn.innerText = "Сховати";
-        } else {
-            input.type = "password";
-            btn.innerText = "Показати";
-        }
-    }
-</script>
-
-</body>
-</html>
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <title>Викладач</title>-->
-
-<!--    <style>-->
-<!--        body {-->
-<!--            margin: 0;-->
-<!--            font-family: Arial, sans-serif;-->
-<!--            background: #f3f4f6;-->
-<!--        }-->
-
-<!--        /* HEADER */-->
-<!--        .header {-->
-<!--            background: linear-gradient(90deg, #0f172a, #2563eb);-->
-<!--            color: white;-->
-<!--            padding: 40px;-->
-<!--        }-->
-
-<!--        .header h1 {-->
-<!--            margin: 0;-->
-<!--            font-size: 36px;-->
-<!--        }-->
-
-<!--        .container {-->
-<!--            max-width: 1100px;-->
-<!--            margin: 30px auto;-->
-<!--            padding: 0 20px;-->
-<!--        }-->
-
-<!--        .block {-->
-<!--            background: white;-->
-<!--            padding: 20px;-->
-<!--            border-radius: 15px;-->
-<!--            margin-bottom: 20px;-->
-<!--            box-shadow: 0 5px 15px rgba(0,0,0,0.05);-->
-<!--        }-->
-
-<!--        .block h2 {-->
-<!--            margin-bottom: 15px;-->
-<!--        }-->
-
-<!--        .info p {-->
-<!--            margin: 6px 0;-->
-<!--        }-->
-
-<!--        ul {-->
-<!--            padding-left: 20px;-->
-<!--        }-->
-
-<!--        /* PASSWORD */-->
-<!--        .password-box {-->
-<!--            display: flex;-->
-<!--            align-items: center;-->
-<!--            gap: 10px;-->
-<!--        }-->
-
-<!--        .password-box input {-->
-<!--            border: none;-->
-<!--            background: #f1f5f9;-->
-<!--            padding: 6px 10px;-->
-<!--            border-radius: 8px;-->
-<!--        }-->
-
-<!--        .btn {-->
-<!--            border: none;-->
-<!--            padding: 6px 12px;-->
-<!--            border-radius: 8px;-->
-<!--            cursor: pointer;-->
-<!--            background: #2563eb;-->
-<!--            color: white;-->
-<!--        }-->
-
-<!--        .status {-->
-<!--            font-weight: bold;-->
-<!--            color: green;-->
-<!--        }-->
-
-<!--        .status.not-approved {-->
-<!--            color: red;-->
-<!--        }-->
-<!--        .table-wrapper {-->
-<!--            overflow-x: auto;-->
-<!--            position: relative;-->
-<!--            border-radius: 0 0 1.5rem 1.5rem;-->
-<!--            background: #ffffff;-->
-<!--        }-->
-
-<!--        .schedule-table {-->
-<!--            min-width: 700px;-->
-<!--            border-collapse: separate;-->
-<!--            border-spacing: 0;-->
-<!--            width: 100%;-->
-<!--            font-size: 0.85rem;-->
-<!--        }-->
-
-<!--        /* стікі заголовки днів */-->
-<!--        .schedule-table thead tr th {-->
-<!--            position: sticky;-->
-<!--            top: 0;-->
-<!--            background: #f9fbfd;-->
-<!--            z-index: 10;-->
-<!--            padding: 1rem 0.5rem;-->
-<!--            font-weight: 600;-->
-<!--            font-size: 0.9rem;-->
-<!--            border-bottom: 2px solid #dce7ed;-->
-<!--            color: #1f4e6e;-->
-<!--            text-align: center;-->
-<!--            backdrop-filter: blur(2px);-->
-<!--        }-->
-
-<!--        /* фіксована колонка часу (не гортається) */-->
-<!--        .schedule-table th.time-col,-->
-<!--        .schedule-table td.time-cell {-->
-<!--            position: sticky;-->
-<!--            left: 0;-->
-<!--            background-color: white;-->
-<!--            z-index: 5;-->
-<!--            font-weight: 600;-->
-<!--            box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05);-->
-<!--        }-->
-
-<!--        .schedule-table th.time-col {-->
-<!--            background: #f9fbfd;-->
-<!--            z-index: 15;-->
-<!--            border-right: 1px solid #e2edf2;-->
-<!--            font-weight: 700;-->
-<!--        }-->
-
-<!--        .schedule-table td.time-cell {-->
-<!--            background: white;-->
-<!--            border-right: 1px solid #e9f0f4;-->
-<!--            font-weight: 500;-->
-<!--            color: #2c5a74;-->
-<!--            text-align: center;-->
-<!--        }-->
-
-<!--        .schedule-table td, .schedule-table th {-->
-<!--            border-bottom: 1px solid #eef3f8;-->
-<!--            padding: 0.9rem 0.4rem;-->
-<!--            vertical-align: middle;-->
-<!--            transition: all 0.1s ease;-->
-<!--        }-->
-
-<!--        /* стилі комірок */-->
-<!--        .lesson-card {-->
-<!--            background: #fefefe;-->
-<!--            border-radius: 14px;-->
-<!--            padding: 8px 6px;-->
-<!--            box-shadow: 0 1px 2px rgba(0,0,0,0.03);-->
-<!--            text-align: center;-->
-<!--            transition: transform 0.05s;-->
-<!--        }-->
-
-<!--        .course-name {-->
-<!--            font-weight: 700;-->
-<!--            font-size: 0.85rem;-->
-<!--            color: #1e2f3c;-->
-<!--            display: block;-->
-<!--            margin-bottom: 4px;-->
-<!--        }-->
-
-<!--        .status-badge {-->
-<!--            font-size: 0.7rem;-->
-<!--            font-weight: 500;-->
-<!--            background: #f0f2f5;-->
-<!--            display: inline-block;-->
-<!--            padding: 2px 8px;-->
-<!--            border-radius: 20px;-->
-<!--            margin-top: 4px;-->
-<!--        }-->
-
-<!--        /* кольори статусів */-->
-<!--        .status-will, .status-was {-->
-<!--            background-color: #e0f7ea;-->
-<!--            border-left: 4px solid #2b7e3a;-->
-<!--        }-->
-<!--        .status-wont, .status-wasnt {-->
-<!--            background-color: #ffe6e5;-->
-<!--            border-left: 4px solid #c7362b;-->
-<!--        }-->
-<!--        .status-will .status-badge, .status-was .status-badge {-->
-<!--            background: #c8e6d9;-->
-<!--            color: #146b3a;-->
-<!--        }-->
-<!--        .status-wont .status-badge, .status-wasnt .status-badge {-->
-<!--            background: #ffd9d7;-->
-<!--            color: #b13a2e;-->
-<!--        }-->
-
-<!--        .empty-lesson {-->
-<!--            background-color: #f2f5f7;-->
-<!--            border-radius: 12px;-->
-<!--            padding: 8px 4px;-->
-<!--            text-align: center;-->
-<!--            color: #8ea3b0;-->
-<!--            font-size: 0.75rem;-->
-<!--            font-style: italic;-->
-<!--        }-->
-<!--        .times-table {-->
-<!--            width: 100%;-->
-<!--            border-collapse: collapse;-->
-<!--            background: #ffffff;-->
-<!--        }-->
-
-<!--        .times-table th,-->
-<!--        .times-table td {-->
-<!--            border: 1px solid #e2e8f0;-->
-<!--            padding: 8px 6px;-->
-<!--            text-align: center;-->
-<!--            vertical-align: middle;-->
-<!--            font-size: 13px;-->
-<!--        }-->
-
-<!--        .times-table th:first-child {-->
-<!--            width: 110px;-->
-<!--        }-->
-
-<!--        @media (max-width: 700px) {-->
-<!--            .form-grid {-->
-<!--                grid-template-columns: 1fr;-->
+<!--        // Loop through all list items, and hide those who don't match the search query-->
+<!--        for (i = 0; i < courses.length; i++) {-->
+<!--            a = courses[i];-->
+<!--            txtValue = a.textContent || a.innerText;-->
+<!--            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
+<!--                courses[i].style.display = "";-->
+<!--            } else {-->
+<!--                courses[i].style.display = "none";-->
 <!--            }-->
 <!--        }-->
-<!--    </style>-->
-<!--</head>-->
-<!--<body>-->
+<!--    }-->
 
-<!--&lt;!&ndash; HEADER &ndash;&gt;-->
-<!--<div class="header">-->
-<!--    <h1 th:text="${teacher.name}">Ім'я викладача</h1>-->
-<!--    <p>Профіль викладача</p>-->
-<!--</div>-->
+<!--    function managePass() {-->
+<!--        let id = document.getElementById("id").innerText-->
+<!--        let pass = document.querySelector("#pass")-->
+<!--        let form = document.querySelector("#form")-->
+<!--        if (pass.value === "") {-->
+<!--            form.action = "/teacher/" + id + "/homepage/OLDPASS"-->
+<!--        } else {-->
+<!--            form.action = "/teacher/" + id + "/homepage/" + pass.value-->
+<!--        }-->
 
-<!--<div class="container">-->
+<!--    }-->
 
-<!--    &lt;!&ndash; Основна інформація &ndash;&gt;-->
-<!--    <div class="block info">-->
-<!--        <h2>Основна інформація</h2>-->
 
-<!--        <p><b>Вік:</b> <span th:text="${teacher.age}"></span></p>-->
-<!--        <p><b>Email:</b> <span th:text="${teacher.email}"></span></p>-->
-<!--        <p><b>Телефон:</b> <span th:text="${teacher.phoneNumber}"></span></p>-->
-<!--        <p><b>Telegram:</b> <span th:text="${teacher.tgUsername}"></span></p>-->
-<!--        <p><b>Коментар:</b> <span th:text="${teacher.comment}"></span></p>-->
-
-<!--        <p>-->
-<!--            <b>Статус:</b>-->
-<!--            <span th:classappend="${teacher.approved} ? 'status' : 'status not-approved'"-->
-<!--                  th:text="${teacher.approved ? 'Підтверджений' : 'Непідтверджений'}">-->
-<!--            </span>-->
-<!--        </p>-->
-
-<!--        &lt;!&ndash; Пароль &ndash;&gt;-->
-<!--        <div class="password-box">-->
-<!--            <b>Пароль:</b>-->
-<!--            <input type="password" id="passwordField"-->
-<!--                   th:value="${teacher.password}" readonly>-->
-<!--            <button class="btn" onclick="togglePassword()">Показати</button>-->
-<!--        </div>-->
-
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Курси &ndash;&gt;-->
-<!--    <div class="block">-->
-<!--        <h2>Курси</h2>-->
-<!--        <ul>-->
-<!--            <li th:each="tc : ${teacher.teacherCourses}"-->
-<!--                th:text="${tc.course.name}">-->
-<!--            </li>-->
-<!--        </ul>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Вільний час &ndash;&gt;-->
-<!--    <div class="block">-->
-<!--        <h2>Вільний час</h2>-->
-<!--        <table class="times-table">-->
-<!--            <thead>-->
-<!--            <tr>-->
-<!--                <th>Година</th>-->
-<!--                <th th:each="dayName : ${dayNames}" th:text="${dayName}">День</th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--            <tr th:each="hour, hourStat : ${hours}">-->
-<!--                <th th:text="${hour} + ':00'">8:00</th>-->
-<!--                <td th:each="day, dayStat : ${days}">-->
-<!--                    <input type="checkbox"-->
-<!--                           name="freeTimeIds"-->
-<!--                           th:each="ft : ${freeTimes}"-->
-<!--                           th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour and teacherFreeTimes.contains(ft.id)}"-->
-<!--                           th:value="${ft.id}"-->
-<!--                    checked/>-->
-<!--                    <input type="checkbox"-->
-<!--                           name="freeTimeIds"-->
-<!--                           th:each="ft : ${freeTimes}"-->
-<!--                           th:if="${ft.dayOfTheWeek == day and ft.timeOfTheDay == hour and !teacherFreeTimes.contains(ft.id)}"-->
-<!--                           th:value="${ft.id}"-->
-<!--                           />-->
-<!--                </td>-->
-<!--            </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash; Уроки &ndash;&gt;-->
-<!--    <div class="block">-->
-<!--        <h2>Уроки</h2>-->
-<!--        <div class="table-wrapper" id="tableWrapper">-->
-<!--            <table>-->
-<!--                <thead>-->
-<!--                <tr>-->
-<!--                    <th>Час</th>-->
-<!--                    <th th:each="day : ${weekDays}"-->
-<!--                        th:text="${day}"></th>-->
-<!--                </tr>-->
-<!--                </thead>-->
-<!--                <tbody>-->
-<!--                <tr th:each="hour : ${hours}">-->
-<!--                    <td th:text="${hour}"></td>-->
-
-<!--                    <td style="height: 20px; background-color: lightgray; margin: 0px; cursor: pointer;"-->
-<!--                        th:each="day : ${weekDays}">-->
-<!--                        <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">-->
-
-<!--                            <button th:if="${lesson != null and (lesson.status=='wasnt' or lesson.status=='wont')}" style="background-color: red;">-->
-<!--                                <span style="font-size: 20px" th:text="${lesson.course.name}"></span>-->
-<!--                            </button>-->
-<!--                            <button th:if="${lesson != null and (lesson.status=='will' or lesson.status=='was')}" style="background-color: lightgreen;">-->
-<!--                                <span style="font-size: 16px" th:text="${lesson.course.name}"></span>-->
-<!--                            </button>-->
-<!--                            <button th:if="${lesson == null}">-->
-<!--                            </button>-->
-<!--                        </div>-->
-
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                </tbody>-->
-<!--            </table>-->
-<!--        </div>-->
-<!--    </div>-->
-
-<!--</div>-->
-
+<!--</script>-->
 <!--<script>-->
+<!--    const select = document.getElementById("courseSelect");-->
+<!--    const list = document.getElementById("coursesList");-->
+<!--    const inputsDiv = document.getElementById("coursesInputs");-->
+
+<!--    // щоб не додавати дублікати-->
+<!--    let addedCourses = new Set();-->
+
+<!--    select.addEventListener("change", function () {-->
+<!--        const selectedOption = select.options[select.selectedIndex];-->
+<!--        const courseId = selectedOption.value;-->
+<!--        const courseName = selectedOption.text;-->
+
+<!--        if (!courseId) return;-->
+<!--        let present = false-->
+
+<!--        for (let i = 0; i < list.getElementsByTagName("li").length; i++) {-->
+<!--            console.log(list.getElementsByTagName("li")[i].innerText)-->
+<!--            console.log(courseId)-->
+<!--            console.log(" ")-->
+<!--            if (list.getElementsByTagName("li")[i].innerText == courseId) {-->
+<!--                present = true;-->
+<!--            }-->
+<!--        }-->
+<!--        console.log(present)-->
+<!--        if (addedCourses.has(courseId) || present) {-->
+<!--            alert("Цей курс вже доданий");-->
+<!--            return;-->
+<!--        }-->
+
+<!--        // додаємо в список-->
+<!--        const li = document.createElement("li");-->
+<!--        li.innerText = courseName;-->
+<!--        list.appendChild(li);-->
+<!--        const liId = document.createElement("li");-->
+<!--        liId.innerText = courseId;-->
+<!--        liId.style.display = "none"-->
+<!--        list.appendChild(liId);-->
+
+<!--        // додаємо hidden input для бекенду-->
+<!--        const input = document.createElement("input");-->
+<!--        input.type = "hidden";-->
+<!--        input.name = "newCourseIds";-->
+<!--        input.value = courseId;-->
+<!--        inputsDiv.appendChild(input);-->
+
+<!--        addedCourses.add(courseId);-->
+
+<!--        // скидаємо select-->
+<!--        select.value = "";-->
+<!--    });-->
+<!--</script>-->
+<!--<script>-->
+<!--    let freeTimeChanged = false;-->
+
+<!--    let isMouseDown = false;-->
+
+<!--    // Відстежуємо, чи натиснута кнопка миші в цілому на документі-->
+<!--    document.body.onmousedown = () => (isMouseDown = true);-->
+<!--    document.body.onmouseup = () => (isMouseDown = false);-->
+
+<!--    // Додаємо обробники для кожного чекбоксу-->
+<!--    document.querySelectorAll('.freeTimeCheckbox').forEach(checkbox => {-->
+<!--        checkbox.addEventListener('mouseover', () => {-->
+<!--            if (isMouseDown) {-->
+<!--                checkbox.checked = !checkbox.checked;-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+
+<!--    document.querySelectorAll('.freeTimeCheckbox').forEach(cb => {-->
+<!--        cb.addEventListener('change', () => {-->
+<!--            freeTimeChanged = true;-->
+<!--        });-->
+<!--    });-->
+
+<!--    function handleSubmit(event) {-->
+<!--        if (freeTimeChanged) {-->
+<!--            return confirm("Якщо ви змінете свої вільні часи то ваші заняття з учнями на ці часи будуть видалені. Продовжити?");-->
+<!--        }-->
+<!--        return true;-->
+<!--    }-->
+
 <!--    function togglePassword() {-->
 <!--        const input = document.getElementById("passwordField");-->
 <!--        const btn = event.target;-->
@@ -872,6 +294,6 @@
 <!--        }-->
 <!--    }-->
 <!--</script>-->
-
-<!--</body>-->
-<!--</html>-->
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>

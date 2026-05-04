@@ -23,9 +23,11 @@ public class TimeOfTheWeekService {
     }
 
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour){
-        return timeOfTheWeekRepository.findByDayOfTheWeekAndTimeOfTheDay(day,hour);
+        return timeOfTheWeekRepository.findFirstByDayOfTheWeekAndTimeOfTheDay(day,hour);
     }
-
+    public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute){
+        return timeOfTheWeekRepository.findByDayOfTheWeekAndTimeOfTheDayAndMinute( day, hour, minute);
+    }
     public List<TimeOfTheWeek> getAll() {
         return timeOfTheWeekRepository.findAll();
     }

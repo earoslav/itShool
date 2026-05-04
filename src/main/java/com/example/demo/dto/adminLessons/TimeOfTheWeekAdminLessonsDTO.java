@@ -13,7 +13,7 @@ public class TimeOfTheWeekAdminLessonsDTO {
     private int id;
     private Integer dayOfTheWeek;
 
-
+    private Integer minute;
     private Integer timeOfTheDay;
 
 

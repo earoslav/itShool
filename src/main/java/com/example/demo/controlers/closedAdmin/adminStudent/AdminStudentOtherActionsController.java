@@ -80,7 +80,7 @@ public class AdminStudentOtherActionsController {
     public String addStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model) {
         try {
             if (studentService.checkIfExistsByEmail(student.getUser().getEmail())) {
-                if(password.equals("")){
+                if(password.equals("NOPASS")){
                     model.addAttribute("student");
                     model.addAttribute("output", "NOPASS");
                     return "closedAdmin/adminStudents/addNewStudent";
@@ -143,13 +143,16 @@ public class AdminStudentOtherActionsController {
             Model model) {
 
         try {
-            if (studentService.checkIfExistsByEmail(student.getUser().getEmail()) && !studentService.getById(id).getEmail().equals(student.getUser().getEmail())) {
+            if (userService.checkIfExistsByEmail(student.getUser().getEmail()) && !studentService.getById(id).getEmail().equals(student.getUser().getEmail())) {
                 return "redirect:/admin/student/"+id+"/edit/exists";
             }
 
-            Student student1 = studentService.getById(student.getId());
+            Student student1 = studentMapper.mapStudentDTOToStudent(student);
             if(password.equals("OLDPASS")){
                 password = studentService.getById(student.getId()).getPassword();
+                student1.setPassword(password);
+                studentService.update(id, student1);
+                return "redirect:/admin/student/"+id+"/edit/studentEdited";
             }
             student1.setPassword(passwordEncoder.encode(password));
             studentService.update(id, student1);

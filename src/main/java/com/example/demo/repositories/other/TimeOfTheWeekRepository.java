@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 @EnableJpaRepositories
 public interface TimeOfTheWeekRepository extends JpaRepository<TimeOfTheWeek, Integer> {
     public TimeOfTheWeek findById(int id);
-    public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour);
+    public TimeOfTheWeek findFirstByDayOfTheWeekAndTimeOfTheDay(int day, int hour);
+    public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute);
 }

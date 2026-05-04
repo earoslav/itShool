@@ -4,299 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Kids School - Реєстрація студента</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            background: #f4f7fb;
-            color: #1f2937;
-            line-height: 1.5;
-            padding: 0px;
-            height: 100vh;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        header {
-            background: #111827;
-            color: #ffffff;
-            padding: 16px 0;
-        }
-
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-        }
-
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-
-        .menu a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .menu a:hover {
-            color: #ffffff;
-        }
-
-        .hero {
-            padding: 56px 0;
-            background: linear-gradient(120deg, #0f172a, #1d4ed8);
-            color: #ffffff;
-        }
-
-        .hero h1 {
-            font-size: 38px;
-            margin-bottom: 8px;
-        }
-
-        .hero p {
-            color: #e5e7eb;
-        }
-
-        main {
-            padding: 48px 0;
-        }
-
-        .form-card {
-            max-width: 700px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-weight: 600;
-        }
-
-        input,
-        textarea {
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 15px;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        input:invalid:focus,
-        textarea:invalid:focus {
-            border-color: #dc2626;
-            outline: none;
-        }
-
-
-        .submit-btn {
-            margin-top: 14px;
-            border: none;
-            background: #2563eb;
-            color: #ffffff;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .submit-btn:hover {
-            background: #1d4ed8;
-        }
-
-        footer {
-            background: #111827;
-            color: #cbd5e1;
-            padding: 28px 0;
-            margin-top: 24px;
-        }
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .footer-links a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-
-        @media (max-width: 700px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        .navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-        }
-
-
-
-
-        header {
-            background-color: #111827;
-            color: white;
-
-        }
-        footer {
-            background: #111827;
-            color: #cbd5e1;
-            padding: 28px 0;
-            margin-top: 24px;
-            position: sticky;
-            top: 100vh; /* Позиционирует футер внизу */
-        }
-        .footer-links {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .footer-links a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-        .nav-links a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-            color: white;
-        }
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-        .menu a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-        .menu a:hover {
-            color: #ffffff;
-        }
-        .menu a.active {
-            color: #ffffff;
-        }
-        .hero {
-            padding: 10px 0;
-            background: linear-gradient(120deg, #0f172a, #1d4ed8);
-            color: #ffffff;
-        }
-        .hero h1 {
-            font-size: 44px;
-            margin-bottom: 14px;
-        }
-        .hero p {
-            max-width: 750px;
-            font-size: 18px;
-            color: #e5e7eb;
-            margin-bottom: 24px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: #22c55e;
-            color: #04210e;
-        }
-        .btn-primary:hover {
-            background: #16a34a;
-        }
-        .btn-secondary {
-            color: #ffffff;
-            border-color: #93c5fd;
-        }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0px 20px;
-        }
-        .card{
-            margin: 20px;
-            padding: 20px 20px;
-        }
-        footer {
-            position: sticky;
-            top: 100vh; /* Позиционирует футер внизу */
-        }
-
-
-    </style>
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header style="background-color: #111827">
+<header>
     <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
@@ -341,21 +52,22 @@
                     <div class="field">
                         <label for="phoneNumber">Номер телефону</label>
                         <input id="phoneNumber" type="tel" th:field="*{phoneNumber}" required maxlength="15"
-                               pattern="^[0-9+\\-()\\s]{10,15}$" title="Введіть коректний номер телефону">
+                               title="Введіть коректний номер телефону">
                     </div>
 
 
-                    <div class="password-box">
-                        Пароль:
+                    <div class="field">
+                         <label for="phoneNumber">Пароль:</label>
+                        <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass" required>
                     </div>
-                    <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass">
+
                     <div class="field full">
                         <label for="comment">Коментар</label>
                         <textarea id="comment" th:field="*{comment}" required maxlength="500"
                                   placeholder="Наприклад: зручний час занять, рівень підготовки, побажання"></textarea>
                     </div>
                 </div>
-                <button onclick="managePass()" class="submit-btn" type="submit">додати</button>
+                <button onclick="managePassNew()" class="btn-small submit-btn" type="submit">додати</button>
             </form>
         </div>
     </div>
@@ -364,7 +76,7 @@
 <footer>
     <div class="container">
         <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div style="margin-top: 10px;">
+        <div class="mt-10">
             Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
         </div>
         <div class="footer-links">
@@ -375,15 +87,6 @@
         </div>
     </div>
 </footer>
-<script>
-    function managePass() {
-        let pass = document.querySelector("#pass")
-        let form = document.querySelector("#form")
-        if (pass.value === "") {
-            pass.value = "NOPASS"
-        }
-        form.action = form.action + "" + pass.value
-    }
-</script>
+<script src="/mainSrcipt.js"></script>
 </body>
 </html>

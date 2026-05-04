@@ -18,11 +18,10 @@
                 <tr>
                     <td style="padding:24px;">
                         <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
-                            Вчитель
-                            <strong th:text="${teacher.user.name != null ? teacher.user.name : '—'}">Ім'я</strong>
-                            відхилив ваш запит на видалення уроку в <span th:text="${day}"></span>   <span th:text="${hour+':00'}"></span>. Якщо бажаєте зв'яжіться з ним.
+                            Відхилено запит на скасування уроку з вчителем <strong th:text="${teacher.user.name != null ? teacher.user.name : '—'}">Ім'я</strong>.
+                            Час: <strong th:text="${time}"></strong>.
+                            Тривалість: <span th:text="${duration}"></span> год.
                         </p>
-
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="8" style="font-size:14px;border-collapse:collapse;">
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Email</td>
@@ -37,7 +36,6 @@
                                 <td th:text="${teacher.tgUsername != null ? teacher.tgUsername : '—'}">—</td>
                             </tr>
                         </table>
-
                     </td>
                 </tr>
             </table>

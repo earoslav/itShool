@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Homepage</title>
+
+    <style>
+
+    </style>
+    <link rel="stylesheet" href="/generalStyle.css">
+
+</head>
+<body>
+<header style="background-color: #111827">
+    <div class="container nav">
+        <div class="logo">IT Kids School</div>
+        <nav class="menu">
+            <a href="/admin/homepage">Головна</a>
+            <a href="/admin/students">Учні</a>
+            <a href="/admin/teachers">Викладачі</a>
+            <a href="/logout">Вийти</a>
+
+        </nav>
+    </div>
+</header>
+<div class="success-box" th:if="${output == 'teacherAdded'}">Вчителя успішно додано</div>
+<div class="success-box" th:if="${output == 'studentAdded'}">Учня успішно додано </div>
+
+<section class="hero">
+    <div class="container">
+        <h3 >Панель адміністратора:</h3>
+    </div>
+</section>
+<!-- 📦 ADMIN INFO -->
+<div class="container container-flex">
+    <div class="card">
+        <h2>Інформація про адміністратора</h2>
+
+        <div class="info">
+            <span class="label">ID:</span>
+            <span th:text="${admin.id}">1</span>
+        </div>
+
+        <div class="info">
+            <span class="label">Ім'я:</span>
+            <span th:text="${admin.user.name}">Admin Name</span>
+        </div>
+
+        <div class="info">
+            <span class="label">Email:</span>
+            <span th:text="${admin.user.email}">admin@email.com</span>
+        </div>
+
+    </div>
+    <div class="buttons">
+    <a th:href="@{/admin/addTeacher}" class="btn btn-green">Створити вчителя</a>
+    </div>
+    <div class="buttons">
+        <a th:href="@{/admin/addStudent}" class="btn btn-green">Створити учня</a>
+    </div>
+</div>
+<footer id="contacts">
+    <div class="container">
+        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
+        <div style="margin-top: 10px;">
+            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
+        </div>
+        <div class="footer-links">
+            <a href="#">Instagram</a>
+            <a href="#">Telegram</a>
+            <a href="#">Facebook</a>
+            <a href="#">Політика конфіденційності</a>
+        </div>
+    </div>
+</footer>
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>

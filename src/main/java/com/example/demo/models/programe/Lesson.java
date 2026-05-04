@@ -41,7 +41,7 @@ public class Lesson {
     private LocalDateTime lessonTime;
 
     @Column(name = "duration")
-    private int duration;
+    private float duration;
 
     @ManyToOne
     @JoinColumn(name = "planed_date_id")
@@ -51,7 +51,7 @@ public class Lesson {
     private String status;
 
 
-    public Lesson(Student student, Teacher teacher, Course course, LocalDateTime lessonTime, int duration, TimeOfTheWeek timeOfTheWeek, String status) {
+    public Lesson(Student student, Teacher teacher, Course course, LocalDateTime lessonTime, float duration, TimeOfTheWeek timeOfTheWeek, String status) {
         this.student = student;
         this.teacher = teacher;
         this.course = course;

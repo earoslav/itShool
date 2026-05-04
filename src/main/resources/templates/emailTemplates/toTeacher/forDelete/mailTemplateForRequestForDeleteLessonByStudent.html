@@ -2,7 +2,7 @@
 <html lang="uk" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Запит на зміну в вашому графіку</title>
+    <title>Запит на скасування уроку</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#1f2937;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f7fb;padding:24px 12px;">
@@ -12,17 +12,17 @@
                 <tr>
                     <td style="background:linear-gradient(120deg,#0f172a,#1d4ed8);padding:20px 24px;color:#ffffff;">
                         <h1 style="margin:0;font-size:22px;">IT Kids School</h1>
-                        <p style="margin:8px 0 0;font-size:14px;opacity:0.9;">Лист про зміни в вашому графіку</p>
+                        <p style="margin:8px 0 0;font-size:14px;opacity:0.9;">Запит на скасування уроку</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding:24px;">
                         <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
-                            Учень
-                            <strong th:text="${student.user.name != null ? student.user.name : '—'}">Ім'я</strong>
-                            запрошує видалення уроку з вами в <span th:text="${day}"></span> : <span th:text="${hour}"></span>.
+                            Учень <strong th:text="${student.user.name != null ? student.user.name : '—'}">Ім'я</strong>
+                            надіслав запит на скасування уроку.
+                            Час: <strong th:text="${time}"></strong>.
+                            Тривалість: <span th:text="${duration}"></span> год.
                         </p>
-
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="8" style="font-size:14px;border-collapse:collapse;">
                             <tr style="border-bottom:1px solid #e2e8f0;">
                                 <td style="color:#64748b;">Email</td>
@@ -33,11 +33,20 @@
                                 <td th:text="${student.phoneNumber != null ? student.phoneNumber : '—'}">—</td>
                             </tr>
                         </table>
-
-                        <form th:method="post" th:action="@{http://localhost:8081/teacher/{teacherId}/acceptLessonDelete/{lessonId}(teacherId=${idTeach}, lessonId=${idLess})}">
-                            <button type="submit">Прийняти</button>
-                        </form>
-                        <a th:href="@{http://localhost:8081/teacher/{teacherId}/denyLessonDelete/{lessonId}(teacherId=${idTeach}, lessonId=${idLess})}">відхилити</a>
+                        <table role="presentation" cellspacing="0" cellpadding="0" style="margin:20px 0 0;">
+                            <tr>
+                                <td style="border-radius:8px;background:#2563eb;margin-right:8px;">
+                                    <form th:method="post" th:action="@{http://localhost:8081/teacher/{teacherId}/acceptLessonDelete/{lessonId}(teacherId=${idTeach}, lessonId=${idLess})}">
+                                        <button type="submit" style="padding:10px 20px;color:#fff;font-weight:700;font-size:14px;border:none;background:transparent;cursor:pointer;">Прийняти</button>
+                                    </form>
+                                </td>
+                                <td style="width:12px;"></td>
+                                <td style="border-radius:8px;background:#e2e8f0;">
+                                    <a th:href="@{http://localhost:8081/teacher/{teacherId}/denyLessonDelete/{lessonId}(teacherId=${idTeach}, lessonId=${idLess})}"
+                                       style="display:inline-block;padding:10px 20px;color:#1f2937;font-weight:700;font-size:14px;text-decoration:none;">Відхилити</a>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             </table>

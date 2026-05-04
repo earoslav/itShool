@@ -28,10 +28,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -93,19 +90,21 @@ public class OpenSourceSignUps {
     @PostMapping("/signUpAsStudent/{password}")
     public String signUpAsStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model){
         try{
+            if(password.equals("NOPASS")){
+            return "redirect:/openSource/signUpAsStudent/NOPASS";
+            }
             if(!studentService.checkIfExistsByEmail(student.getUser().getEmail())){
                 Student student1 = studentMapper.mapStudentDTOToStudent(student);
-                if(password.equals("NOPASS")){
-                    return "redirect:/openSource/signUpAsStudent/NOPASS";
-                }
+
                 User user = new User(student.getUser().getName(), student.getUser().getEmail(), passwordEncoder.encode(password), "STUDENT");
                 userService.create(user);
                 student1.setUser(user);
                 studentService.create(student1);
+                return "redirect:/openSource/homepage/studentAdded";
             }else{
                 return "redirect:/openSource/signUpAsStudent/exists";
             }
-            return "redirect:/openSource/homepage/studentAdded";
+
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
@@ -119,10 +118,7 @@ public class OpenSourceSignUps {
         List<TimeOfTheWeek> freeTimes = new ArrayList<>();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
-        List<Integer> hours = new ArrayList<>();
-        for (int h = 8; h <= 21; h++) {
-            hours.add(h);
-        }
+
         try{
             courses = courseService.getAll();
             freeTimes = timeWeekService.getAll();
@@ -136,7 +132,7 @@ public class OpenSourceSignUps {
         model.addAttribute("password", "");
         model.addAttribute("days", days);
         model.addAttribute("dayNames", dayNames);
-        model.addAttribute("hours", hours);
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "openSource/openSourceSignUps/signUpAsTeacher";
     }
     @GetMapping("/signUpAsTeacher/{output}")
@@ -146,10 +142,7 @@ public class OpenSourceSignUps {
         List<TimeOfTheWeek> freeTimes = new ArrayList<>();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
-        List<Integer> hours = new ArrayList<>();
-        for (int h = 8; h <= 21; h++) {
-            hours.add(h);
-        }
+
         try{
             courses = courseService.getAll();
             freeTimes = timeWeekService.getAll();
@@ -164,7 +157,7 @@ public class OpenSourceSignUps {
         model.addAttribute("password", "");
         model.addAttribute("days", days);
         model.addAttribute("dayNames", dayNames);
-        model.addAttribute("hours", hours);
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "openSource/openSourceSignUps/signUpAsTeacher";
     }
     @PostMapping("/signUpAsTeacher/{password}")
@@ -173,8 +166,6 @@ public class OpenSourceSignUps {
                                   @RequestParam(value = "courseIds",required = false) List<Integer> courses,
                                   @RequestParam(value = "freeTimeIds",required = false) List<Integer> freeTimes,
                                   Model model) {
-        List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
-        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
         List<Integer> hours = new ArrayList<>();
         for (int h = 8; h <= 21; h++) {
             hours.add(h);

@@ -2,255 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Редагування викладача</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
-            height: 100vh;
-            padding: 0px;
-        }
-
-
-
-        .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .block {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .block h2 {
-            margin-bottom: 15px;
-        }
-
-        input, select {
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-top: 5px;
-        }
-
-        .btn {
-            border: none;
-            padding: 10px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            background: #2563eb;
-            color: white;
-            margin-top: 15px;
-        }
-
-        .password-box {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .status {
-            font-weight: bold;
-            color: green;
-        }
-
-        .status.not-approved {
-            color: red;
-        }
-
-        .times-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .times-table th, .times-table td {
-            border: 1px solid #e2e8f0;
-            padding: 6px;
-            text-align: center;
-        }
-        .status-will, .status-was {
-            background-color: #e0f7ea;
-            border-left: 4px solid #2b7e3a;
-        }
-        .status-wont, .status-wasnt {
-            background-color: #ffe6e5;
-            border-left: 4px solid #c7362b;
-        }
-        .status-will .status-badge, .status-was .status-badge {
-            background: #c8e6d9;
-            color: #146b3a;
-        }
-        .status-wont .status-badge, .status-wasnt .status-badge {
-            background: #ffd9d7;
-            color: #b13a2e;
-        }
-
-        .empty-lesson {
-            background-color: #f2f5f7;
-            border-radius: 12px;
-            padding: 8px 4px;
-            text-align: center;
-            color: #8ea3b0;
-            font-size: 0.75rem;
-            font-style: italic;
-        }
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-
-
-
-
-        header {
-            background-color: #111827;
-            color: white;
-            padding: 20px;
-        }
-        footer {
-            background: #111827;
-            color: #cbd5e1;
-            padding: 28px 0;
-            margin-top: 24px;
-            position: sticky;
-            top: 100vh; /* Позиционирует футер внизу */
-        }
-        .footer-links {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .footer-links a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-        .nav-links a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            font-weight: 700;
-            font-size: 22px;
-            color: white;
-        }
-        .menu {
-            display: flex;
-            gap: 18px;
-        }
-        .menu a {
-            color: #d1d5db;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s;
-        }
-        .menu a:hover {
-            color: #ffffff;
-        }
-        .menu a.active {
-            color: #ffffff;
-        }
-        .hero {
-            padding: 10px 0;
-            background: linear-gradient(120deg, #0f172a, #1d4ed8);
-            color: #ffffff;
-        }
-        .hero h1 {
-            font-size: 44px;
-            margin-bottom: 14px;
-        }
-        .hero p {
-            max-width: 750px;
-            font-size: 18px;
-            color: #e5e7eb;
-            margin-bottom: 24px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: #22c55e;
-            color: #04210e;
-        }
-        .btn-primary:hover {
-            background: #16a34a;
-        }
-        .btn-secondary {
-            color: #ffffff;
-            border-color: #93c5fd;
-        }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0px 20px;
-        }
-        .card{
-            margin: 20px;
-            padding: 20px 20px;
-        }
-        footer {
-            position: sticky;
-            top: 100vh; /* Позиционирует футер внизу */
-        }
-        label {
-            font-weight: 600;
-        }
-
-        input,
-        textarea {
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 15px;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        input:invalid:focus,
-        textarea:invalid:focus {
-            border-color: #dc2626;
-            outline: none;
-        }
-
-    </style>
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header style="background-color: #111827">
+<header>
     <div class="container nav">
         <div class="logo">IT Kids School</div>
         <nav class="menu">
@@ -272,50 +30,59 @@
     <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
     <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
     <div class="success-box" th:if="${output == 'studentEdited'}">Учня Успішно редаговано</div>
-    <form id="form" th:action="@{/student/{idSt}/homepage(idSt=${student.id})}" th:object="${student}" method="post" onsubmit="return handleSubmit(event)">
+    <p class="d-none" id="idSt" th:text="${student.id}"></p>
+    <div class="card">
+        <form  id="form" th:action="@{/student/{idSt}/homepage/(idSt=${student.id})}" th:object="${student}" method="post" onsubmit="return handleSubmit(event)">
 
-        <input type="hidden" th:field="*{id}">
+            <p class="d-none" id="id" th:text="${student.id}"></p>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Ім'я</label>
+                    <input type="text" th:field="*{user.name}" required minlength="2" maxlength="50"
+                           title="Лише букви, пробіли, апостроф або дефіс">
+                </div>
 
-        <!-- Основна інформація -->
-        <div class="block">
-            <h2>Основна інформація</h2>
+                <div class="form-group">
+                    <label>Вік</label>
+                    <input type="number" th:field="*{age}" required min="7" max="17">
+                </div>
 
-            <p>Ім'я:<br>
-                <input type="text" th:field="*{user.name}">
-            </p>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" th:field="*{user.email}" required maxlength="50">
+                </div>
 
-            <p>Вік:<br>
-                <input type="number" th:field="*{age}">
-            </p>
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input type="text" th:field="*{phoneNumber}" required maxlength="15">
+                </div>
 
-            <p>Email:<br>
-                <input type="text" th:field="*{user.email}">
-            </p>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="text" name="password" minlength="6" maxlength="50" id="pass">
+                </div>
 
-            <p>Телефон:<br>
-                <input type="text" th:field="*{phoneNumber}">
-            </p>
 
-            <p>Коментар:<br>
-                <input type="text" th:field="*{comment}">
-            </p>
-            <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass">
-            <div class="password-box">
-                Пароль(якщо бажаєте змінити):
+                <div class="form-group">
+                    <label>Коментар</label>
+                    <textarea th:field="*{comment}" maxlength="500" required
+                              placeholder="Наприклад: зручний час занять, рівень підготовки, побажання"></textarea>
+                </div>
             </div>
 
-            <!-- Пароль -->
-        </div>
 
-        <button onclick="managePass()" class="btn" type="submit">Зберегти</button>
+            <button onclick="managePassStudent()" type="submit" class="btn-small btn btn-green">
+                Зберегти
+            </button>
 
-    </form>
 
+        </form>
+    </div>
 </div>
 <footer id="contacts">
     <div class="container">
         <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div style="margin-top: 10px;">
+        <div class="mt-10">
             Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
         </div>
         <div class="footer-links">
@@ -327,38 +94,41 @@
     </div>
 </footer>
 
-<script>
-    function managePass(){
-        let pass = document.querySelector("#pass")
-        let form = document.querySelector("#form")
-        if(pass.value===""){
-            pass.value = "OLDPASS";
-        }
-        form.action = form.action+"/"+pass.value
-    }
+<!--<script>-->
+<!--    function managePass(){-->
+<!--        let id = document.getElementById("idSt")-->
+<!--        let pass = document.querySelector("#pass")-->
+<!--        let form = document.querySelector("#form")-->
+<!--        if(pass.value===""){-->
+<!--            form.action = "/student/"+id.innerText+"/homepage/OLDPASS"-->
+<!--        }else{-->
+<!--            form.action = "/student/"+id.innerText+"/homepage/"+pass.value-->
+<!--        }-->
 
-</script>
-<script>
-    let freeTimeChanged = false;
+<!--    }-->
 
-    function handleSubmit(event) {
-        return confirm("Змінити данні?");
+<!--</script>-->
+<!--<script>-->
+<!--    let freeTimeChanged = false;-->
 
-    }
+<!--    function handleSubmit(event) {-->
+<!--        return confirm("Змінити данні?");-->
 
-    function togglePassword() {
-        const input = document.getElementById("passwordField");
-        const btn = event.target;
+<!--    }-->
 
-        if (input.type === "password") {
-            input.type = "text";
-            btn.innerText = "Сховати";
-        } else {
-            input.type = "password";
-            btn.innerText = "Показати";
-        }
-    }
-</script>
+<!--    function togglePassword() {-->
+<!--        const input = document.getElementById("passwordField");-->
+<!--        const btn = event.target;-->
 
+<!--        if (input.type === "password") {-->
+<!--            input.type = "text";-->
+<!--            btn.innerText = "Сховати";-->
+<!--        } else {-->
+<!--            input.type = "password";-->
+<!--            btn.innerText = "Показати";-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
+<script src="/mainSrcipt.js"></script>
 </body>
 </html>

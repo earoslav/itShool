@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+// DTO TeacherDTO переносить дані модуля «викладачі» між контролерами, формами та шаблонами.
+// Клас не містить бізнес-логіки, а лише поля, які потрібні веб-рівню для показу або прийому даних.
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -24,7 +26,8 @@ public class TeacherDTO {
     public float unpaidMoney;
     private String phoneNumber;
     private String tgUsername;
-
+    // Отримує через Spring залежності Integer, String, int, List<TeacherCourseDTO>, List<EmptyTimesForTeacherDTO>, UserDTO, float.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
     public TeacherDTO(Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, List<EmptyTimesForTeacherDTO> emptyTimesForTeachers, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername) {
         this.age = age;
         this.comment = comment;
@@ -36,7 +39,8 @@ public class TeacherDTO {
         this.phoneNumber = phoneNumber;
         this.tgUsername = tgUsername;
     }
-
+    // Отримує через Spring залежності Integer, String, int.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
     public TeacherDTO(Integer age, String comment, int approved, String phoneNumber, String tgUsername) {
 
         this.age = age;

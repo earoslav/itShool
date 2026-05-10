@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+// DTO StudentDTO переносить дані модуля «студенти» між контролерами, формами та шаблонами.
+// Клас не містить бізнес-логіки, а лише поля, які потрібні веб-рівню для показу або прийому даних.
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

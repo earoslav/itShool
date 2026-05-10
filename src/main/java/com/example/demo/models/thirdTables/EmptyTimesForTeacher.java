@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// Модель EmptyTimesForTeacher описує сутність модуля «вільний час викладача» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +37,8 @@ public class EmptyTimesForTeacher {
     @ManyToOne
     @JoinColumn(name = "time_id")
     private TimeOfTheWeek time;
-
+    // Отримує через Spring залежності Teacher, TimeOfTheWeek.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «вільний час викладача» без ручного створення об’єктів.
     public EmptyTimesForTeacher(Teacher teacher, TimeOfTheWeek time) {
         this.teacher = teacher;
         this.time = time;

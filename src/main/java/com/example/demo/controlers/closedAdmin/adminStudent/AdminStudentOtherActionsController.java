@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Controller
 @RequestMapping("/admin")
 public class
@@ -51,7 +52,8 @@ AdminStudentOtherActionsController {
     private PasswordEncoder passwordEncoder;
     private UserService userService;
     private AdminMapper adminMapper;
-
+    // Конструктор підключає до AdminStudentOtherActionsController залежності TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService та інші.
+    // Ці об’єкти далі використовуються в методах для роботи з модулем «студенти», тому клас не створює їх вручну.
     public AdminStudentOtherActionsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, StudentMapper studentMapper, PasswordEncoder passwordEncoder, UserService userService, AdminMapper adminMapper) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
@@ -71,13 +73,16 @@ AdminStudentOtherActionsController {
         this.userService = userService;
         this.adminMapper = adminMapper;
     }
+    // Метод відкриває адміну форму додавання студента і кладе в Model порожній StudentDTO.
+    // У Model записуються "student", "password", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/addNewStudent".
     @GetMapping("/addStudent")
     public String gotoCreateStudent(Model model) {
         model.addAttribute("student",studentMapper.mapStudentToStudentDTO(new Student()));
         model.addAttribute("password", "");
         return "closedAdmin/adminStudents/addNewStudent";
     }
-
+    // Метод створює студента з адмінської форми, кодує пароль через PasswordEncoder і зберігає Student разом із User-акаунтом.
+    // У Model записуються "student", "output", "error", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/addNewStudent", "redirect:/admin/homepage/STUDENT_ADDED".
     @PostMapping("/addStudent/{password}")
     public String addStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model) {
         try {
@@ -106,8 +111,8 @@ AdminStudentOtherActionsController {
 
 
     }
-
-
+    // Метод показує список студентів: адміну всі записи Student, а викладачу лише тих учнів, які прив’язані до нього.
+    // У Model записуються "students", "output", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/students".
     @GetMapping("/students/{output}")
     public String gotoStudents(@PathVariable("output") String output, Model model) {
         List<StudentDTO> students = studentService.getAll().stream().map(student -> studentMapper.mapStudentToStudentDTO(student)).collect(Collectors.toList());
@@ -115,13 +120,16 @@ AdminStudentOtherActionsController {
         model.addAttribute("output", output);
         return "closedAdmin/adminStudents/students";
     }
+    // Метод показує список студентів: адміну всі записи Student, а викладачу лише тих учнів, які прив’язані до нього.
+    // У Model записуються "students", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/students".
     @GetMapping("/students")
     public String gotoStudents(Model model) {
         List<StudentDTO> students = studentService.getAll().stream().map(student -> studentMapper.mapStudentToStudentDTO(student)).collect(Collectors.toList());
         model.addAttribute("students", students);
         return "closedAdmin/adminStudents/students";
     }
-
+    // Метод відкриває форму редагування конкретного студента, знаходить Student за id і передає його DTO у шаблон.
+    // У Model записуються "password", "student", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/editStudent".
     @GetMapping("/student/{id}/edit")
     public String gotoEditStudent(@PathVariable("id") int id, Model model) {
 
@@ -129,6 +137,8 @@ AdminStudentOtherActionsController {
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(studentService.getById(id)));
         return "closedAdmin/adminStudents/editStudent";
     }
+    // Метод відкриває форму редагування конкретного студента, знаходить Student за id і передає його DTO у шаблон.
+    // У Model записуються "output", "password", "student", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/editStudent".
     @GetMapping("/student/{id}/edit/{output}")
     public String gotoEditStudentWithOutput(@PathVariable("id") int id,@PathVariable("output") String output, Model model) {
         model.addAttribute("output", output);
@@ -136,7 +146,8 @@ AdminStudentOtherActionsController {
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(studentService.getById(id)));
         return "closedAdmin/adminStudents/editStudent";
     }
-
+    // Метод оновлює дані студента, його User-поля і пароль, якщо замість OLDPASS/NOPASS прийшло нове значення.
+    // Для роботи метод викликає userService.checkIfExistsByEmail, studentService.getById, studentMapper.mapStudentDTOToStudent, studentService.update і завершується переходом "redirect:/admin/student/".
     @PostMapping("/student/{id}/edit/{password}")
     public String editStudent(
             @PathVariable("id") int id,
@@ -164,7 +175,8 @@ AdminStudentOtherActionsController {
         }
 
     }
-
+    // Метод видаляє студента або прибирає його зі списку конкретного викладача разом із пов’язаними уроками та курсами.
+    // Для роботи метод викликає studentService.getById, tswService.removeAllTswByStudentId, lessonService.deleteAllLessonsByStudent, studentCourseService.deleteAllCoursesByStudent, commentService.deleteAllByStudent та інші і завершується переходом "redirect:/admin/students/STUDENT_DELETED".
     @PostMapping("/student/delete")
     @Transactional
     public String deleteStudent(@RequestParam("studentId") int id) {

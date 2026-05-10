@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Контролер TeacherHomepageController обслуговує веб-сторінки модуля «викладачі».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/teacher")
 public class TeacherHomepageController {
@@ -58,8 +60,8 @@ public class TeacherHomepageController {
     private TimeOfTheWeekMapper theWeekMapper;
     private PasswordEncoder passwordEncoder;
     private UserService userService;
-
-
+    // Отримує через Spring залежності TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
     public TeacherHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper, PasswordEncoder passwordEncoder, UserService userService) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
@@ -78,6 +80,8 @@ public class TeacherHomepageController {
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
     }
+    // Відкриває маршрут GET /{idTeach}/homepage і готує дані для шаблону "closedTeacher/teacherHomepage/homepage".
+    // У Model додає "teacher", "password", "freeTimes", "teacherFreeTimes", "allCourses", "hours" та інші; дані бере через `teacherService.getById`, `theWeekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO` та інші.
     @GetMapping("/{idTeach}/homepage")
     public String gotoTeacher(@PathVariable("idTeach") int id, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -109,6 +113,8 @@ public class TeacherHomepageController {
         //////
         return "closedTeacher/teacherHomepage/homepage";
     }
+    // Відкриває маршрут GET /{idTeach}/homepage/{output} і готує дані для шаблону "closedTeacher/teacherHomepage/homepage".
+    // У Model додає "teacher", "password", "output", "freeTimes", "teacherFreeTimes", "allCourses" та інші; дані бере через `teacherService.getById`, `theWeekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO` та інші.
     @GetMapping("/{idTeach}/homepage/{output}")
     public String gotoTeacher(@PathVariable("idTeach") int id,@PathVariable("output") String output, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -141,6 +147,8 @@ public class TeacherHomepageController {
         //////
         return "closedTeacher/teacherHomepage/homepage";
     }
+    // Оновлює дані за маршрутом POST /{id}/homepage/{password} у модулі «викладачі».
+    // Викликає `userService.checkIfExistsByEmail`, `teacherService.getById`, `teacherCourseService.create`, `courseService.getById`, `emptyTimesForTeacherService.findAllByTeachId` та інші; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{id}/homepage/{password}")
     @Transactional
     public String updateTeacher(@PathVariable("id") int id,

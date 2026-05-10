@@ -36,6 +36,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+// Контролер TeacherLessonsController обслуговує веб-сторінки модуля «уроки».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/teacher")
 public class TeacherLessonsController {
@@ -52,7 +54,8 @@ public class TeacherLessonsController {
     private StudentMapper studentMapper;
     private TeacherMapper teacherMapper;
     private CourseMapper courseMapper;
-
+    // Отримує через Spring залежності TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
     public TeacherLessonsController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
@@ -68,7 +71,8 @@ public class TeacherLessonsController {
         this.teacherMapper = teacherMapper;
         this.courseMapper = courseMapper;
     }
-
+    // Відкриває маршрут GET /{id}/lessons і готує дані для шаблону "closedTeacher/teacherLessons/lessons".
+    // У Model додає "lessonDurations", "lessons", "students", "courses", "weekDays", "teacher" та інші; дані бере через `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO` та інші.
     @GetMapping("/{id}/lessons")
     public String gotoLessons(@PathVariable("id") int id, Model model) {
         Teacher teacher = teacherService.getById(id);
@@ -89,12 +93,14 @@ public class TeacherLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedTeacher/teacherLessons/lessons";
     }
-
+    // Оновлює дані за маршрутом POST /{idTeach}/lessons/editLesson/notPicked у модулі «уроки».
+    // Після завершення повертає "redirect:/teacher/".
     @PostMapping("/{idTeach}/lessons/editLesson/notPicked")
     public String editLessoneFromTeacherWithNotPicked(@PathVariable("idTeach") int idTeach) {
         return "redirect:/teacher/" + idTeach + "/lessons/ITEM_NOT_PICKED";
     }
-
+    // Відкриває маршрут GET /{id}/lessons/{output} і готує дані для шаблону "closedTeacher/teacherLessons/lessons".
+    // У Model додає "lessonDurations", "output", "lessons", "students", "courses", "weekDays" та інші; дані бере через `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO` та інші.
     @GetMapping("/{id}/lessons/{output}")
     public String gotoLessonsWithOutput(@PathVariable("id") int id, @PathVariable("output") String output, Model model) {
         Teacher teacher = teacherService.getById(id);
@@ -115,7 +121,8 @@ public class TeacherLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedTeacher/teacherLessons/lessons";
     }
-
+    // Видаляє або від’єднує дані за маршрутом POST /{idTeach}/lessons/deleteLesson/{id} у модулі «уроки».
+    // Викликає `lessonService.getById`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved`, `lessonService.deleteById`, `teacherMapper.mapTeacherToTeacherDTO`; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{idTeach}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes) throws MessagingException {
@@ -128,7 +135,8 @@ public class TeacherLessonsController {
         lessonService.deleteById(idLes);
         return "redirect:/teacher/" + idTeach + "/lessons/LESSON_DELETED";
     }
-
+    // Видаляє або від’єднує дані за маршрутом POST /{idTeach}/lessons/deleteCourse/{id} у модулі «уроки».
+    // Викликає `lessonService.getById`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved`, `lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow`, `tswService.removeAllByStIdAndTeachIdAndTswId` та інші; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{idTeach}/lessons/deleteCourse/{id}")
     @Transactional
     public String deleteCourse(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes) throws MessagingException {
@@ -149,11 +157,7 @@ public class TeacherLessonsController {
 //        TimeOfTheWeek newTime = theWeekService.getById(newTimeId);
 //        Lesson lesson = lessonService.getById(idLes);
 //        float dur = lesson.getDuration();
-//        LocalDateTime now = LocalDateTime.now();
-//        LocalDateTime newDate = LocalDateTime.now().withYear(Integer.parseInt(date.split("\\.")[2].split("-")[0])).withMonth(Integer.parseInt(date.split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split("\\.")[0])).withHour(newTime.getTimeOfTheDay()).withMinute(Integer.parseInt(date.split("-")[1])).withSecond(0);
-//        LocalDateTime time = newDate;
 //        if (newDate.getDayOfWeek().getValue() == newTime.getDayOfTheWeek()) {
-//            LocalDateTime lessonFinish = time;
 //            if (dur == (long) dur) {
 //                lessonFinish = lessonFinish.plusHours((long) dur);
 //            } else {
@@ -162,10 +166,7 @@ public class TeacherLessonsController {
 //            if (lessonFinish.isBefore(time.withHour(22).withMinute(1))) {
 //                AtomicBoolean overlap = new AtomicBoolean(false);
 //                List<Lesson> teacherLessons = lessonService.findAllByTeachId(idTeach);
-//                LocalDateTime finalLessonFinish = lessonFinish;
-//                LocalDateTime finalTime = time;
 //                teacherLessons.stream().filter(les->les.getId()!=lesson.getId()).forEach(l -> {
-//                    LocalDateTime lFinish = l.getLessonTime();
 //                    float lDur = l.getDuration();
 //                    if (lDur == (long) lDur) {
 //                        lFinish = lFinish.plusHours((long) lDur);
@@ -180,7 +181,6 @@ public class TeacherLessonsController {
 //
 //                List<Lesson> studentLessons = lessonService.findAllByStudentId(lesson.getStudent().getId());
 //                studentLessons.stream().filter(les->les.getId()!=lesson.getId()).forEach(l -> {
-//                    LocalDateTime lFinish = l.getLessonTime();
 //                    float lDur = l.getDuration();
 //                    if (lDur == (long) lDur) {
 //                        lFinish = lFinish.plusHours((long) lDur);
@@ -212,6 +212,8 @@ public class TeacherLessonsController {
 //        }
 //
 //    }
+    // Оновлює дані за маршрутом POST /{idTeach}/lessons/editLesson/{id}/{nTId}/{date} у модулі «уроки».
+    // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{idTeach}/lessons/editLesson/{id}/{nTId}/{date}")
     public String editLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);
@@ -233,6 +235,8 @@ public class TeacherLessonsController {
         }
     }
 
+    // Створює дані за маршрутом POST /{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}/{dur} у модулі «уроки».
+    // Викликає `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `teacherService.getById`, `courseService.getById`, `theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}/{dur}")
     public String addLesson(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId, @PathVariable("retDate") String date, @PathVariable("dur") float dur, Model model) throws MessagingException {
 
@@ -262,7 +266,6 @@ public class TeacherLessonsController {
 //        int month = Integer.parseInt(date.split(" ")[1].split("\\.")[1]);
 //        int hour = Integer.parseInt(date.split(" ")[2].split(":")[0]);
 //        int minut = Integer.parseInt(date.split(" ")[2].split(":")[1]);
-//        LocalDateTime time = LocalDateTime.now();
 //        if (time.getMonth().getValue() == 12 && month == 1) {
 //            time = time.withYear(time.getYear() + 1).withMonth(month).withDayOfMonth(dayOfMonth).withHour(hour).withMinute(minut).withSecond(0).withNano(0);
 //        } else {
@@ -271,7 +274,6 @@ public class TeacherLessonsController {
 //        int tId = theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId();
 //        Statuses status = lessonService.checkIfLessonValid(idTeach, stId, String.valueOf(tId), cId, dur, date);
 //
-//        LocalDateTime lessonFinish = time;
 //        if (dur == (long) dur) {
 //            lessonFinish = lessonFinish.plusHours((long) dur);
 //        } else {
@@ -285,18 +287,14 @@ public class TeacherLessonsController {
 //                if (stId != 0) {
 //                    AtomicBoolean exists = new AtomicBoolean(false);
 //                    Lesson lesson = new Lesson();
-//                    LocalDateTime checkingTime = time;
 //                    AtomicBoolean overlap = new AtomicBoolean(false);
 //
 //                    for (int i = 1; i <= 5; i++) {
-//                        LocalDateTime finalLessonFinish = lessonFinish;
-//                        LocalDateTime finalTime = checkingTime;
 //                        for (Lesson les : teacherService.getById(idTeach).getLessons()) {
 //
 //                            if (les.getLessonTime().truncatedTo(ChronoUnit.MINUTES).isEqual(checkingTime.truncatedTo(ChronoUnit.MINUTES))) {
 //                                exists.set(true);
 //                            } else {
-//                                LocalDateTime lFinish = les.getLessonTime();
 //                                float lDur = les.getDuration();
 //                                if (lDur == (long) lDur) {
 //                                    lFinish = lFinish.plusHours((long) lDur);
@@ -311,7 +309,6 @@ public class TeacherLessonsController {
 //                        }
 //                        List<Lesson> studentLessons = lessonService.findAllByStudentId(stId);
 //                        studentLessons.stream().forEach(l -> {
-//                            LocalDateTime lFinish = l.getLessonTime();
 //                            float lDur = l.getDuration();
 //                            if (lDur == (long) lDur) {
 //                                lFinish = lFinish.plusHours((long) lDur);
@@ -359,6 +356,8 @@ public class TeacherLessonsController {
 //            return "redirect:/teacher/" + idTeach + "/lessons/LESSON_BEFORE_NOW";
 //        }
 //    }
+    // Створює дані за маршрутом POST /{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}/{dur} у модулі «уроки».
+    // Викликає `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `teacherService.getById`, `courseService.getById`, `theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}/{dur}")
     public String addCourse(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId, @PathVariable("retDate") String date, @PathVariable("dur") float dur, Model model) throws MessagingException {
         List<Object> objs = lessonService.checkIfLessonValidWithReputitions(idTeach, stId, cId, dur, date, 5);
@@ -389,7 +388,8 @@ public class TeacherLessonsController {
         }
 
     }
-
+    // Створює дані за маршрутом POST /{idTeach}/addMoneyByLesson/{lesId} у модулі «уроки».
+    // Викликає `teacherService.getById`, `lessonService.getById`, `teacherService.update`, `lessonService.update`; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{idTeach}/addMoneyByLesson/{lesId}")
     public String addMoney(@PathVariable("idTeach") int teachId, @PathVariable("lesId") int lesId, Model model) {
         Teacher teacher = teacherService.getById(teachId);

@@ -13,45 +13,60 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+// Сервіс TimeOfTheWeekService містить бізнес-операції для модуля «часові слоти тижня».
+// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
 @Service
 public class TimeOfTheWeekService {
     private final TimeOfTheWeekRepository timeOfTheWeekRepository;
-
+    // Отримує через Spring залежності TimeOfTheWeekRepository.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «часові слоти тижня» без ручного створення об’єктів.
     @Autowired
     public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository) {
         this.timeOfTheWeekRepository = timeOfTheWeekRepository;
     }
-
+    // Знаходить часовий слот за днем тижня і годиною.
+    // Метод потрібен старішим сценаріям, де хвилини ще не передаються окремо.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour){
         return timeOfTheWeekRepository.findFirstByDayOfTheWeekAndTimeOfTheDay(day,hour);
     }
+    // Знаходить точний часовий слот за днем тижня, годиною і хвилиною.
+    // Його використовують форми створення розкладу, де час може бути 8:00 або 8:30.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute){
         return timeOfTheWeekRepository.findByDayOfTheWeekAndTimeOfTheDayAndMinute( day, hour, minute);
     }
+    // Повертає всі часові слоти тижня з репозиторію.
+    // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
     public List<TimeOfTheWeek> getAll() {
         return timeOfTheWeekRepository.findAll();
     }
-
+    // Знаходить один запис модуля «часові слоти тижня» за id.
+    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
     public TimeOfTheWeek getById(Integer id) {
         return timeOfTheWeekRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TimeOfTheWeek not found with id: " + id));
     }
-
+    // Зберігає новий запис модуля «часові слоти тижня».
+    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
     public TimeOfTheWeek create(TimeOfTheWeek timeOfTheWeek) {
         return timeOfTheWeekRepository.save(timeOfTheWeek);
     }
 
+    // Оновлює існуючий запис модуля «часові слоти тижня».
+    // Спочатку знаходить поточну сутність, переносить поля dayOfTheWeek, timeOfTheDay і зберігає її назад у репозиторій.
     public TimeOfTheWeek update(Integer id, TimeOfTheWeek timeOfTheWeek) {
         TimeOfTheWeek existing = getById(id);
         existing.setDayOfTheWeek(timeOfTheWeek.getDayOfTheWeek());
         existing.setTimeOfTheDay(timeOfTheWeek.getTimeOfTheDay());
         return timeOfTheWeekRepository.save(existing);
     }
-
+    // Видаляє запис модуля «часові слоти тижня» за id.
+    // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
     public void deleteById(Integer id) {
         getById(id);
         timeOfTheWeekRepository.deleteById(id);
     }
+    // Перетворює id з checkbox-ів форми на об’єкти TimeOfTheWeek.
+    // Якщо список порожній або null, повертає всі слоти, щоб форма не залишилася без варіантів.
     public List<TimeOfTheWeek> getTimesOfTheWeekThroughIds(List<Integer> ids){
         if(ids!=null && !ids.isEmpty()){
             List<TimeOfTheWeek> freeTimes = new ArrayList<>();
@@ -62,6 +77,8 @@ public class TimeOfTheWeekService {
             return freeTimes;
         }
     }
+    // Стискає послідовні години одного дня у компактні діапазони.
+    // Наприклад, набір 8, 9, 10 перетворюється на один проміжок для зручного показу в листах і профілях.
     public List<String> compressRanges(List<String> input) {
         List<Integer> numbers = input.stream()
                 .map(Integer::parseInt)
@@ -98,6 +115,8 @@ public class TimeOfTheWeekService {
 
         return result;
     }
+    // Групує вибрані часові слоти за назвами днів тижня.
+    // Після групування години стискаються через compressRanges, щоб шаблон показував розклад охайними блоками.
     public HashMap<String, List<String>> compileTimes(List<TimeOfTheWeek> selectedFreeTimes){
         HashMap<String, List<String>> compiledTimes = new HashMap<>();
 

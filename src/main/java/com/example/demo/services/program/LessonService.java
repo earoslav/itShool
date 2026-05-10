@@ -24,6 +24,8 @@ import com.example.demo.services.other.TimeOfTheWeekService;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+// Сервіс LessonService містить бізнес-операції для модуля «уроки».
+// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
 @Service
 public class LessonService {
     private final LessonRepository lessonRepository;
@@ -34,7 +36,8 @@ public class LessonService {
     private CourseService courseService;
     private StudentService studentService;
     private TimeOfTheWeekService theWeekService;
-
+    // Отримує через Spring залежності LessonRepository, LessonMapper, TeacherService, ObjectMapper, TimeOfTheWeekService, CourseService, StudentService.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
     public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
@@ -46,35 +49,45 @@ public class LessonService {
         this.studentService = studentService;
         this.theWeekService = theWeekService;
     }
-
+    // Повертає всі уроки з репозиторію.
+    // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
     public List<Lesson> getAll() {
         return lessonRepository.findAll();
     }
-
+    // Знаходить один запис модуля «уроки» за id.
+    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
     public Lesson getById(int id) {
         return lessonRepository.findById(id);
     }
-
+    // Видаляє всі уроки конкретного студента.
+    // Метод використовують під час очищення даних студента, щоб у розкладі не лишилися заняття без власника.
     public void deleteAllLessonsByStudent(Student student) {
         lessonRepository.deleteAllByStudent(student);
     }
-
+    // Зберігає новий запис модуля «уроки».
+    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
     public Lesson create(Lesson lesson) {
         return lessonRepository.save(lesson);
     }
-
+    // Повертає уроки викладача, прив’язані до конкретного тижневого слота.
+    // Це потрібно під час зміни доступного часу, щоб знайти заняття, які залежать від цього слота.
     public List<Lesson> findAllByTimeOfTheWeekIdAndTeacherId(int timeOfWeekId, int teachId) {
         return lessonRepository.findAllByTimeOfTheWeekIdAndTeacherId(timeOfWeekId, teachId);
     }
-
+    // Повертає всі уроки конкретного студента.
+    // Метод використовують календар студента і перевірка перетинів перед перенесенням або створенням заняття.
     public List<Lesson> findAllByStudentId(int id) {
         return lessonRepository.findByStudentId(id);
     }
 
+    // Перевіряє, чи в базі вже є урок на точний LocalDateTime.
+    // Повертає boolean для швидкої перевірки дубля у розкладі.
     public boolean checkIfExistsByLessonTime(LocalDateTime time) {
         return lessonRepository.findByLessonTime(time) != null;
     }
 
+    // Оновлює існуючий запис модуля «уроки».
+    // Спочатку знаходить поточну сутність, переносить поля student, teacher, course, lessonTime, status і зберігає її назад у репозиторій.
     public Lesson update(Integer id, Lesson lesson) {
         Lesson existing = getById(id);
         existing.setStudent(lesson.getStudent());
@@ -85,40 +98,49 @@ public class LessonService {
         return lessonRepository.save(existing);
     }
 
+    // Перевіряє, чи має викладач урок у конкретний час.
+    // Метод дивиться у LessonRepository за teacherId і lessonTime та повертає true, якщо слот зайнятий.
     public boolean check(LocalDateTime time, int id) {
         return !lessonRepository.findAllByTeacherIdAndLessonTime(id, time).isEmpty();
     }
-
+    // Видаляє запис модуля «уроки» за id.
+    // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
     public void deleteById(Integer id) {
         getById(id);
         lessonRepository.deleteById(id);
     }
-
+    // Шукає записи модуля «уроки» за умовами: викладачем.
+    // Фактичний запит виконує `lessonRepository.findAllByTeacherId`, а контролер отримує вже готовий результат.
     public List<Lesson> findAllByTeachId(int id) {
         return lessonRepository.findAllByTeacherId(id);
     }
-
+    // Шукає урок студента на конкретну дату й час.
+    // Такий пошук потрібен, коли дія з UI приходить як вибраний часовий слот.
     public Lesson findByStudentIdAndTime(LocalDateTime time, int id) {
         return lessonRepository.findByLessonTimeAndStudentId(time, id);
     }
-
+    // Повертає уроки однієї пари викладач-студент у межах одного тижневого слота.
+    // Фоновий менеджер уроків використовує це, щоб продовжувати саме потрібний ланцюжок WILL-занять.
     public List<Lesson> findAllByTeachIdAndStIdAndWeekId(int teachId, int stId, int weekId) {
         return lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeekId(teachId, stId, weekId);
     }
-
+    // Видаляє уроки, прив’язані до вибраного слота тижня.
+    // Метод потрібен, коли адміністратор або викладач прибирає доступний час і треба очистити залежні заняття.
     public void deleteAllByTimeOfTheWeekId(int id) {
         lessonRepository.removeAllByTimeOfTheWeekId(id);
     }
-
+    // Видаляє майбутні уроки конкретної пари студент-викладач у заданому слоті.
+    // Так курс можна прибрати без зачіпання вже минулих занять.
     public void deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(int stId, int teachId, int tswId, LocalDateTime now) {
         lessonRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekIdAndLessonTimeAfter(stId, teachId, tswId, now);
     }
-
+    // Повертає всі уроки між конкретним викладачем і студентом.
+    // Ці дані використовують сторінки teacherStudentLessons/studentLessons для календаря однієї навчальної пари.
     public List<Lesson> findAllByIdTandIdSt(int idT, int idSt) {
         return lessonRepository.findAllByTeacherIdAndStudentId(idT, idSt);
     }
-
-
+    // Збирає календар викладача: дні, уроки, клітинки продовження тривалих занять і доступні слоти для перенесення.
+    // Метод повертає список з weekDays, lessonHashMap і lessonDurations, щоб контролер одразу передав їх у Thymeleaf.
     public List<Object> compileLessonsForTeacher(int teacherId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Teacher teacher = teacherService.getById(teacherId);
@@ -212,8 +234,8 @@ public class LessonService {
         retValue.add(lessonDurations);
         return retValue;
     }
-
-
+    // Збирає календар тільки для однієї пари викладач-студент.
+    // Він фільтрує Lesson цієї пари, додає доступні часи викладача і повертає структури для teacherStudentLessons/studentLessons.
     public List<Object> compileLessonsForStudentAndTeacher(int idT, int idSt) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Teacher teacher = teacherService.getById(idT);
@@ -303,7 +325,8 @@ public class LessonService {
         retValue.add(lessonDurations);
         return retValue;
     }
-
+    // Збирає календар студента з уроками всіх його викладачів.
+    // Для кожного викладача додає notTakenTimes, щоб студент бачив варіанти перенесення заняття.
     public List<Object> compileLessonsForStudent(int stId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Student student = studentService.getById(stId);
@@ -405,7 +428,8 @@ public class LessonService {
         retValue.add(lessonDurations);
         return retValue;
     }
-
+    // Збирає адмінську версію календаря студента.
+    // Структура така сама, як у студентському кабінеті, але дані готуються для адміністративного шаблону.
     public List<Object> compileLessonsForStudentInAdmin(int stId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Student student = studentService.getById(stId);
@@ -507,11 +531,14 @@ public class LessonService {
     }
 
 
+    // Метод-заглушка зараз не впливає на бізнес-логіку уроків.
+    // Усередині створюється локальна мапа статусів, але вона нікуди не повертається і не використовується далі.
     public void dosometh() {
         HashMap<Statuses, Boolean> retValues = new HashMap<>();
         retValues.put(Statuses.LESSON_DELETED, true);
     }
-
+    // Перевіряє, чи новий інтервал уроку перетинається з уроками викладача або студента.
+    // Метод рахує кінець заняття з duration, порівнює часові проміжки і пропускає урок, який зараз редагується.
     public boolean checkIfLessonOverlap(int tId, int sId, int lId, float dur, String date) {
         /////////////
 
@@ -566,6 +593,8 @@ public class LessonService {
         return overlap.get();
     }
 
+    // Перевіряє, чи можна створити або перенести урок на вибраний день і час.
+    // Повертає конкретний Statuses: минула дата, занадто пізно, перетин, не вибраний учасник, курс або тривалість.
     public Statuses checkIfLessonValid(int tId, int sId, int lId, int cId, float dur, String date) {
         LocalDateTime newDate = LocalDateTime.now();
         if (LocalDateTime.now().getMonth().getValue() == 12 && Integer.parseInt(date.split(" ")[1].split("\\.")[1]) == 1) {
@@ -610,10 +639,15 @@ public class LessonService {
 
     }
 
+    // Перевіряє серію повторюваних уроків на кілька тижнів вперед.
+    // Для кожного повторення викликає checkIfLessonValid і повертає перший статус помилки або SUCCESS разом з останньою перевіреною датою.
     public List<Object> checkIfLessonValidWithReputitions(int tId, int sId, int cId, float dur, String date, int repetitions) {
+    // Для кожного повторення він викликає checkIfLessonValid і повертає перший статус помилки або SUCCESS.
         return checkIfLessonValidWithReputitions(tId, sId, cId, -1, dur, date, repetitions);
     }
 
+    // Перевіряє серію повторюваних уроків на кілька тижнів вперед.
+    // Для кожного повторення викликає checkIfLessonValid і повертає перший статус помилки або SUCCESS разом з останньою перевіреною датою.
     public List<Object> checkIfLessonValidWithReputitions(int tId, int sId, int cId, int idLes, float dur, String date, int repetitions) {
         String checkingDate = date;
         LocalDateTime time = LocalDateTime.now();

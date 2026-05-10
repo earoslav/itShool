@@ -1,5 +1,7 @@
 package com.example.demo.services;
 
+// Enum зібрав статуси, які сервіси повертають після дій з уроками, курсами, студентами й викладачами.
+// Контролери передають ці значення у redirect-и, щоб сторінки показували зрозумілий результат операції.
 public enum Statuses {
     LESSON_EDITED,
     LESSON_DELETED,

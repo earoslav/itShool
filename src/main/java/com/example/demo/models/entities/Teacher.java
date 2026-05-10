@@ -10,6 +10,8 @@ import lombok.*;
 
 import java.util.List;
 
+// Модель Teacher описує сутність модуля «викладачі» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 @Getter
 @Setter
 @AllArgsConstructor
@@ -60,33 +62,51 @@ public class Teacher{
     private List<Comment> myComments;
 
 
+    // Повертає поле user об’єкта Teacher.
+    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     public User getUser() {
         return user;
     }
 
+    // Записує поле user об’єкта Teacher.
+    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
     public void setUser(User user) {
         this.user = user;
     }
+    // Записує поле name об’єкта Teacher.
+    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
     public void setName(String name){
         this.user.setName(name);
     }
+    // Записує поле email об’єкта Teacher.
+    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
     public void setEmail(String email){
         this.user.setEmail(email);
     }
+    // Записує поле password об’єкта Teacher.
+    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
     public void setPassword(String password){
         this.user.setPassword(password);
     }
 
+    // Повертає поле name об’єкта Teacher.
+    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     public String getName(){
         return user.getName();
     }
+    // Повертає поле password об’єкта Teacher.
+    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     public String getPassword(){
         return user.getPassword();
     }
+    // Повертає поле email об’єкта Teacher.
+    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     public String getEmail(){
         return user.getEmail();
     }
 
+    // Повертає короткий текстовий опис Teacher для логів і налагодження.
+    // У рядок потрапляють лише ключові поля, щоб під час debug було зрозуміло, який саме об’єкт обробляється.
     @Override
     public String toString() {
         return "Teacher{" +

@@ -21,18 +21,22 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Set;
+// Handler спрацьовує після успішного логіну і вирішує, куди перенаправити користувача.
+// Він знаходить id студента або викладача через сервіси, бо URL кабінетів у цьому проекті містять ці id.
 @Component
 @RequiredArgsConstructor
 public class MyCustomSuccessHandler implements AuthenticationSuccessHandler {
 
     private final StudentService studentService;
     private final TeacherService teacherService;
-
+    // Передає стандартну обробку успішної авторизації батьківському AuthenticationSuccessHandler.
+    // Цей overload лишає сумісність з API, але реальне перенаправлення виконує версія без FilterChain нижче.
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
         AuthenticationSuccessHandler.super.onAuthenticationSuccess(request, response, chain, authentication);
     }
-
+    // Після логіну визначає роль користувача і готує правильний URL кабінету.
+    // Для ROLE_TEACHER і ROLE_STUDENT він через сервіси знаходить id профілю, а ROLE_ADMIN веде напряму на /admin/homepage.
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,

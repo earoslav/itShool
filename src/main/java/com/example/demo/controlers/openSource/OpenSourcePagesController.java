@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Контролер OpenSourcePagesController обслуговує веб-сторінки модуля «публічні сторінки та реєстрація».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/openSource")
 public class OpenSourcePagesController {
@@ -42,6 +44,8 @@ public class OpenSourcePagesController {
 
     private final MailService mailService;
     private StudentMapper studentMapper;
+    // Отримує через Spring залежності CourseService, StudentService, CourseMapper, CommentMapper, CommentService, TeacherMapper, TeacherService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «публічні сторінки та реєстрація» без ручного створення об’єктів.
     @Autowired
     public OpenSourcePagesController(CourseService courseService,
                                      StudentService studentService,
@@ -69,6 +73,8 @@ public class OpenSourcePagesController {
         this.mailService = mailService;
         this.studentMapper = studentMapper;
     }
+    // Відкриває маршрут GET /homepage і готує дані для шаблону "openSource/openSourceHomepage/homepage".
+    // У Model додає "courses", "comments", "teachers"; дані бере через `courseService.getAll`, `commentService.getAll`, `teacherService.getAll`, `courseMapper.mapCourseToCourseDTO`, `commentMapper.mapCommentToCommentDTO` та інші.
     @GetMapping("/homepage")
     public String gotoHomePage(Model model) {
         List<CourseDTO> courses = new ArrayList<>();
@@ -85,7 +91,8 @@ public class OpenSourcePagesController {
         model.addAttribute("teachers", teachers);
         return "openSource/openSourceHomepage/homepage";
     }
-
+    // Відкриває маршрут GET /courses і готує дані для шаблону "openSource/openSourceOther/courses".
+    // У Model додає "courses"; дані бере через `courseService.getAll`, `courseMapper.mapCourseToCourseDTO`.
     @GetMapping("/courses")
     public String gotoCourses (Model model){
         List<CourseDTO> courses = new ArrayList<>();
@@ -99,4 +106,3 @@ public class OpenSourcePagesController {
     }
 
 }
-

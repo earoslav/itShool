@@ -18,32 +18,40 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+// Конфігурація описує правила доступу до відкритих, адмінських, викладацьких і студентських маршрутів.
+// Тут також задаються сторінка логіну, BCrypt для паролів і handler, який після входу веде користувача у свій кабінет.
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     private final MyCustomSuccessHandler successHandler;
-
+    // Отримує MyCustomSuccessHandler, який використовується після успішної авторизації.
+    // Через constructor injection конфігурація безпеки працює з тим самим handler-ом, що зареєстрований у Spring.
     public SecurityConfig(MyCustomSuccessHandler successHandler){
         this.successHandler = successHandler;
     }
+    // Створює UserService як джерело користувачів для Spring Security.
+    // Під час логіну саме цей сервіс шукає User за email з форми входу.
     @Bean
     public UserDetailsService userDetailsService() {
         return new UserService();
     }
-
+    // Налаштовує DaoAuthenticationProvider для перевірки користувачів з бази.
+    // У provider передається UserService і BCryptPasswordEncoder, тому паролі порівнюються як хеші.
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserService userService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userService);
-        authProvider.setPasswordEncoder(passwordEncoder); // Обов'язково вказуємо тут
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
+    // Реєструє BCryptPasswordEncoder як bean для хешування і перевірки паролів.
+    // Його використовують Spring Security та контролери, які створюють або оновлюють акаунти.
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
+    // Описує доступ до URL: openSource, CSS, JS та images відкриті, а admin/teacher/student закриті ролями.
+    // Також задає кастомну сторінку /login, failureUrl з output=notValid, successHandler і вихід на /openSource/homepage.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
@@ -63,7 +71,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .failureUrl("/login?output=notValid")
-                        .successHandler(successHandler) // 'true' forces redirect to this URL
+                        .successHandler(successHandler)
                 ).logout(log->log.logoutUrl("/logout").logoutSuccessUrl("/openSource/homepage"))
                 .build();
     }

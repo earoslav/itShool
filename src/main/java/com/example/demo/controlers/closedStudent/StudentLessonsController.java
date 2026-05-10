@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// Контролер StudentLessonsController обслуговує веб-сторінки модуля «уроки».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/student")
 public class StudentLessonsController {
@@ -54,7 +56,8 @@ public class StudentLessonsController {
     private StudentMapper studentMapper;
     private TeacherMapper teacherMapper;
     private CourseMapper courseMapper;
-
+    // Отримує через Spring залежності TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
     public StudentLessonsController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, ObjectMapper objectMapper, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
@@ -72,7 +75,8 @@ public class StudentLessonsController {
 
         this.courseMapper = courseMapper;
     }
-
+    // Відкриває маршрут GET /{idSt}/lessons і готує дані для шаблону "closedStudent/studentLessons/lessons".
+    // У Model додає "lessonDurations", "lessons", "weekDays", "student", "hours"; дані бере через `studentService.getById`, `lessonService.compileLessonsForStudent`, `studentMapper.mapStudentToStudentDTO`.
     @GetMapping("/{idSt}/lessons")
     public String gotoLessons(Model model, @PathVariable("idSt") int id) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Student student = studentService.getById(id);
@@ -90,7 +94,8 @@ public class StudentLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedStudent/studentLessons/lessons";
     }
-
+    // Відкриває маршрут GET /{idSt}/lessons/{output} і готує дані для шаблону "closedStudent/studentLessons/lessons".
+    // У Model додає "lessonDurations", "lessons", "weekDays", "output", "student", "hours"; дані бере через `studentService.getById`, `lessonService.compileLessonsForStudent`, `studentMapper.mapStudentToStudentDTO`.
     @GetMapping("/{idSt}/lessons/{output}")
     public String gotoLessonsWithOutput(Model model, @PathVariable("idSt") int id, @PathVariable("output") String output) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Student student = studentService.getById(id);
@@ -109,7 +114,8 @@ public class StudentLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedStudent/studentLessons/lessons";
     }
-
+    // Видаляє або від’єднує дані за маршрутом POST /{idSt}/lessons/deleteLesson/{id} у модулі «уроки».
+    // Викликає `lessonService.getById`, `studentService.getById`, `mailService.sendRequestWithThymeleafTeacherAboutRequestLessonRemoved`, `studentMapper.mapStudentToStudentDTO`; після завершення повертає "redirect:/student/".
     @PostMapping("/{idSt}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, Model model) throws MessagingException {
@@ -127,13 +133,15 @@ public class StudentLessonsController {
         }
 
     }
-
+    // Оновлює дані за маршрутом POST /{idSt}/lessons/editLesson/notPicked у модулі «уроки».
+    // Після завершення повертає "redirect:/student/".
     @PostMapping("/{idSt}/lessons/editLesson/notPicked")
     @Transactional
     public String manageNotPickedItemInEdit(@PathVariable("idSt") int idSt) {
         return "redirect:/student/" + idSt + "/lessons/ITEM_NOT_PICKED";
     }
-
+    // Видаляє або від’єднує дані за маршрутом POST /{idSt}/lessons/deleteCourse/{id} у модулі «уроки».
+    // Викликає `lessonService.getById`, `studentService.getById`, `mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved`, `lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow`, `tswService.removeAllByStIdAndTeachIdAndTswId` та інші; після завершення повертає "redirect:/student/".
     @PostMapping("/{idSt}/lessons/deleteCourse/{id}")
     @Transactional
     public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes) throws MessagingException {
@@ -149,6 +157,8 @@ public class StudentLessonsController {
         return "redirect:/student/" + idSt + "/lessons/COURSE_DELETED";
     }
 
+    // Видаляє або від’єднує дані за маршрутом POST /{idSt}/lessons/editLesson/{id}/{nTId}/{date} у модулі «уроки».
+    // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/student/".
     @PostMapping("/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
     public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);

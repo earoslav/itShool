@@ -62,6 +62,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// Універсальний mapper копіює однакові за назвою поля між сутностями та DTO через reflection.
+// Його використовують дрібні mapper-и, щоб не писати ручне перенесення полів для кожної форми й таблиці.
 @Service
 public class UniversalMapper {
 
@@ -138,9 +140,12 @@ public class UniversalMapper {
 //                || type.equals(java.time.LocalDate.class)
 //                || type.equals(java.time.LocalDateTime.class);
 //    }
+// Створює порожній UniversalMapper для Spring, JPA або UniversalMapper.
+// Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
 public UniversalMapper() {
 }
-
+    // Копіює однакові за назвою поля з source у targetClass через reflection.
+    // Якщо поле є LocalDateTime, воно стає рядком, а складні вкладені об’єкти мапляться рекурсивно.
     public static  <S, T> T generalMapper(S source, Class<T> targetClass){
         if(source==null){
             return null;
@@ -151,6 +156,7 @@ public UniversalMapper() {
             Field[] sourceFields = source.getClass().getDeclaredFields();
             Field[] targetFields = targetClass.getDeclaredFields();
 
+            // Копіюємо поля з однаковими назвами між сутністю та DTO.
             for(Field s : sourceFields){
                 s.setAccessible(true);
                 for(Field t : targetFields){
@@ -164,6 +170,7 @@ public UniversalMapper() {
                                 t.set(target, ((LocalDateTime)s.get(source)).toString());
                             }
                             else{
+                                // Вкладені об’єкти мапимо рекурсивно.
                                 t.set(target, generalMapper(s.get(source), t.getType()));
                             }
 
@@ -181,4 +188,3 @@ public UniversalMapper() {
         return null;
     }
 }
-

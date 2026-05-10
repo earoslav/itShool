@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// Модель Lesson описує сутність модуля «уроки» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,8 +51,8 @@ public class Lesson {
 
     @Column(name = "status", length = 30)
     private String status;
-
-
+    // Отримує через Spring залежності Student, Teacher, Course, LocalDateTime, float, TimeOfTheWeek, String.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
     public Lesson(Student student, Teacher teacher, Course course, LocalDateTime lessonTime, float duration, TimeOfTheWeek timeOfTheWeek, String status) {
         this.student = student;
         this.teacher = teacher;

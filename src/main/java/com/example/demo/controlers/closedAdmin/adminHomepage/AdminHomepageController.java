@@ -28,6 +28,8 @@ import java.util.Map;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.models.programe.Lesson;
 
+// Контролер AdminHomepageController обслуговує веб-сторінки модуля «адміністратори».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/admin")
 public class AdminHomepageController {
@@ -47,8 +49,8 @@ public class AdminHomepageController {
     private AdminService adminService;
     private AdminMapper adminMapper;
     private PasswordEncoder passwordEncoder;
-
-
+    // Отримує через Spring залежності TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService, CommentService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «адміністратори» без ручного створення об’єктів.
     public AdminHomepageController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, AdminMapper adminMapper, PasswordEncoder passwordEncoder) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
@@ -66,6 +68,8 @@ public class AdminHomepageController {
         this.adminMapper = adminMapper;
         this.passwordEncoder = passwordEncoder;
     }
+    // Відкриває маршрут GET /homepage і готує дані для шаблону "closedAdmin/adminHomepage/homepage".
+    // У Model додає "admin", "teacherEarnings"; дані бере через `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
     @GetMapping("/homepage")
     public String gotoHomepage(Model model) {
 
@@ -90,6 +94,8 @@ public class AdminHomepageController {
 
         return "closedAdmin/adminHomepage/homepage";
     }
+    // Відкриває маршрут GET /homepage/{output} і готує дані для шаблону "closedAdmin/adminHomepage/homepage".
+    // У Model додає "admin", "output", "teacherEarnings"; дані бере через `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
     @GetMapping("/homepage/{output}")
     public String gotoHomepage(Model model, @PathVariable(value = "output", required = false) String output) {
 

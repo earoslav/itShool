@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+// Контролер AdminStudentLessonsController обслуговує веб-сторінки модуля «уроки».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/admin")
 public class AdminStudentLessonsController {
@@ -64,7 +66,8 @@ public class AdminStudentLessonsController {
     private StudentMapper studentMapper;
     private CourseMapper courseMapper;
     private TimeOfTheWeekMapper theWeekMapper;
-
+    // Отримує через Spring залежності TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService, CommentService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
     public AdminStudentLessonsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, TeacherMapper teacherMapper, StudentMapper studentMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
@@ -84,7 +87,8 @@ public class AdminStudentLessonsController {
         this.courseMapper = courseMapper;
         this.theWeekMapper = theWeekMapper;
     }
-
+    // Відкриває маршрут GET /student/{idSt}/lessons і готує дані для шаблону "closedAdmin/adminStudents/studentLessons".
+    // У Model додає "lessonDurations", "lessons", "courses", "weekDays", "teachers", "student" та інші; дані бере через `teacherService.getAll`, `studentService.getById`, `lessonService.compileLessonsForStudentInAdmin`, `courseService.getAll`, `courseMapper.mapCourseToCourseDTO` та інші.
     @GetMapping("/student/{idSt}/lessons")
     public String gotoStudentLessons(@PathVariable("idSt") int idSt, Model model) {
         List<Teacher> teachers = teacherService.getAll();
@@ -107,7 +111,8 @@ public class AdminStudentLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedAdmin/adminStudents/studentLessons";
     }
-
+    // Відкриває маршрут GET /student/{idSt}/lessons/{output} і готує дані для шаблону "closedAdmin/adminStudents/studentLessons".
+    // У Model додає "lessonDurations", "lessons", "courses", "weekDays", "output", "teachers" та інші; дані бере через `teacherService.getAll`, `studentService.getById`, `lessonService.compileLessonsForStudentInAdmin`, `courseService.getAll`, `courseMapper.mapCourseToCourseDTO` та інші.
     @GetMapping("/student/{idSt}/lessons/{output}")
     public String gotoStudentLessonsWithOutput(@PathVariable("idSt") int idSt, @PathVariable(value = "output", required = false) String output, Model model) {
         List<Teacher> teachers = teacherService.getAll();
@@ -130,7 +135,8 @@ public class AdminStudentLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedAdmin/adminStudents/studentLessons";
     }
-
+    // Видаляє або від’єднує дані за маршрутом POST /student/{idSt}/lessons/deleteLesson/{id} у модулі «уроки».
+    // Викликає `lessonService.getById`, `studentService.getById`, `mailService.sendEmailWithThymeleafTeacherAboutLessonRemoved`, `lessonService.deleteById`, `studentMapper.mapStudentToStudentDTO`; після завершення повертає "redirect:/admin/student/".
     @PostMapping("/student/{idSt}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, Model model) throws MessagingException {
@@ -144,7 +150,8 @@ public class AdminStudentLessonsController {
         lessonService.deleteById(idLes);
         return "redirect:/admin/student/" + idSt + "/lessons/LESSON_DELETED";
     }
-
+    // Видаляє або від’єднує дані за маршрутом POST /student/{idSt}/lessons/deleteCourse/{id} у модулі «уроки».
+    // Викликає `lessonService.getById`, `studentService.getById`, `mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved`, `lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow`, `tswService.removeAllByStIdAndTeachIdAndTswId` та інші; після завершення повертає "redirect:/admin/student/".
     @PostMapping("/student/{idSt}/lessons/deleteCourse/{id}")
     @Transactional
     public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes) throws MessagingException {
@@ -159,13 +166,16 @@ public class AdminStudentLessonsController {
         tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId());
         return "redirect:/admin/student/" + idSt + "/lessons/COURSE_DELETED";
     }
-
+    // Оновлює дані за маршрутом POST /student/{idSt}/lessons/editLesson/notPicked у модулі «уроки».
+    // Після завершення повертає "redirect:/admin/student/".
     @PostMapping("/student/{idSt}/lessons/editLesson/notPicked")
     @Transactional
     public String manageNotPickedItemInEdit(@PathVariable("idSt") int idSt) {
         return "redirect:/admin/student/" + idSt + "/lessons/ITEM_NOT_PICKED";
     }
 
+    // Оновлює дані за маршрутом POST /student/{idSt}/lessons/editLesson/{id}/{nTId}/{date} у модулі «уроки».
+    // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/admin/student/".
     @PostMapping("/student/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
     @Transactional
     public String editLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
@@ -188,4 +198,3 @@ public class AdminStudentLessonsController {
         }
     }
 }
-

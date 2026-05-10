@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Контролер AdminTeacherOtherActionsController обслуговує веб-сторінки модуля «викладачі».
+// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
 @Controller
 @RequestMapping("/admin")
 public class AdminTeacherOtherActionsController {
@@ -69,8 +71,8 @@ public class AdminTeacherOtherActionsController {
     private PasswordEncoder passwordEncoder;
 
     private UserService userService;
-
-
+    // Отримує через Spring залежності TeacherCourseService, TimeOfTheWeekService, TeacherService, EmptyTimesForTeacherService, CourseService, StudentCourseService, CommentService та інші.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
     @Autowired
     public AdminTeacherOtherActionsController(TeacherCourseService teacherCourseService, TimeOfTheWeekService theWeekService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper, PasswordEncoder passwordEncoder, UserService userService) {
         this.teacherCourseService = teacherCourseService;
@@ -95,6 +97,8 @@ public class AdminTeacherOtherActionsController {
 
         System.err.println(this);
     }
+    // Відкриває маршрут GET /addTeacher і готує дані для шаблону "closedAdmin/adminTeachers/addNewTeacher".
+    // У Model додає "teacher", "days", "dayNames", "hours", "courses", "freeTimes"; дані бере через `weekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
     @GetMapping("/addTeacher")
     public String gotoCreateTeacher(Model model){
         System.err.println(this);
@@ -110,6 +114,8 @@ public class AdminTeacherOtherActionsController {
         model.addAttribute("freeTimes", freeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         return "closedAdmin/adminTeachers/addNewTeacher";
     }
+    // Відкриває маршрут GET /addTeacher/{output} і готує дані для шаблону "closedAdmin/adminTeachers/addNewTeacher".
+    // У Model додає "teacher", "output", "days", "dayNames", "hours", "courses" та інші; дані бере через `weekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
     @GetMapping("/addTeacher/{output}")
     public String gotoCreateTeacherWithOutput(@PathVariable("output") String output, Model model){
         System.err.println(this);
@@ -127,9 +133,8 @@ public class AdminTeacherOtherActionsController {
         model.addAttribute("freeTimes", freeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         return "closedAdmin/adminTeachers/addNewTeacher";
     }
-
-
-
+    // Відкриває маршрут GET /addTeacher/{name}/{age}/{email}/{password}/{comment}/{tgUser}/{phonenumber}/{approved}/{courseIds}/{timeIds} і готує дані для шаблону "closedAdmin/adminTeachers/addNewTeacher".
+    // У Model додає "freeTimeIds", "courseIds", "teacher", "days", "dayNames", "hours" та інші; дані бере через `weekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
     @GetMapping("/addTeacher/{name}/{age}/{email}/{password}/{comment}/{tgUser}/{phonenumber}/{approved}/{courseIds}/{timeIds}")
     public String gotoCreateTeacherFromEmail(Model model,
                                               @PathVariable(value = "name", required = false) String name,
@@ -174,9 +179,8 @@ public class AdminTeacherOtherActionsController {
 
         return "closedAdmin/adminTeachers/addNewTeacher";
     }
-
-
-
+    // Створює дані за маршрутом POST /addTeacher/{password} у модулі «викладачі».
+    // Викликає `userService.checkIfExistsByEmail`, `userService.create`, `teacherService.create`, `courseService.getCoursesThroughIds`, `weekService.getTimesOfTheWeekThroughIds` та інші; після завершення повертає "redirect:/admin/addTeacher/EXISTS", "redirect:/admin/addTeacher/NO_COURSES", "redirect:/admin/addTeacher/NO_FREE_TIMES", "redirect:/admin/addTeacher/NO_PASS", "redirect:/admin/homepage/TEACHER_ADDED", "redirect:/admin/addTeacher/GENERAL".
     @PostMapping("/addTeacher/{password}")
     public String addTeacher(
             @ModelAttribute("teacher") TeacherDTO teacher,
@@ -226,20 +230,15 @@ public class AdminTeacherOtherActionsController {
 
 
     }
-
-
-
+    // Відкриває маршрут GET /teachers і готує дані для шаблону "closedAdmin/adminTeachers/teachers".
+    // У Model додає "teachers"; дані бере через `teacherService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`.
     @GetMapping("/teachers")
     public String gotoTeachers(Model model) {
         model.addAttribute("teachers", teacherService.getAll().stream().map(teacher -> teacherMapper.mapTeacherToTeacherDTO(teacher)).collect(Collectors.toList()));
         return "closedAdmin/adminTeachers/teachers";
     }
-
-
-
-
-
-
+    // Відкриває маршрут GET /teacher/{idTeach}/edit і готує дані для шаблону "closedAdmin/adminTeachers/editTeacher".
+    // У Model додає "teacher", "freeTimes", "teacherFreeTimes", "allCourses", "hours", "dayNames" та інші; дані бере через `teacherService.getById`, `weekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO` та інші.
     @GetMapping("/teacher/{idTeach}/edit")
     public String gotoEditTeacher(@PathVariable("idTeach") int id, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -271,6 +270,8 @@ public class AdminTeacherOtherActionsController {
         //////
         return "closedAdmin/adminTeachers/editTeacher";
     }
+    // Відкриває маршрут GET /teacher/{idTeach}/edit/{output} і готує дані для шаблону "closedAdmin/adminTeachers/editTeacher".
+    // У Model додає "teacher", "output", "freeTimes", "teacherFreeTimes", "allCourses", "hours" та інші; дані бере через `teacherService.getById`, `weekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO` та інші.
     @GetMapping("/teacher/{idTeach}/edit/{output}")
     public String gotoEditTeacherWithOutput(@PathVariable("idTeach") int id,@PathVariable("output") String output, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -303,6 +304,8 @@ public class AdminTeacherOtherActionsController {
         //////
         return "closedAdmin/adminTeachers/editTeacher";
     }
+    // Оновлює дані за маршрутом POST /teacher/{id}/edit/{password} у модулі «викладачі».
+    // Викликає `teacherService.checkIfExistsByEmail`, `teacherService.getById`, `teacherCourseService.create`, `courseService.getById`, `emptyTimesForTeacherService.findAllByTeachId` та інші; після завершення повертає "redirect:/admin/teacher/".
     @PostMapping("/teacher/{id}/edit/{password}")
     @Transactional
     public String updateTeacher(@PathVariable("id") int id,
@@ -374,6 +377,8 @@ public class AdminTeacherOtherActionsController {
 
         return "redirect:/admin/teacher/"+teacher.getId()+"/edit/TEACHER_EDITED";
     }
+    // Видаляє або від’єднує дані за маршрутом POST /teacher/{id}/delete у модулі «викладачі».
+    // Викликає `teacherService.getById`, `lessonService.deleteById`, `emptyTimesForTeacherService.deleteById`, `teacherCourseService.deleteById`, `tswService.findAllByTeachId` та інші; після завершення повертає "redirect:/admin/teachers".
     @PostMapping("/teacher/{id}/delete")
     public String deleteTeacher(@PathVariable("id") int id, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -394,6 +399,8 @@ public class AdminTeacherOtherActionsController {
         teacherService.deleteById(teacher.getId());
         return "redirect:/admin/teachers";
     }
+    // Відкриває маршрут GET /teacher/{teachId}/info і готує дані для шаблону "closedAdmin/adminTeachers/teacherInfo".
+    // У Model додає "teacher", "allEarnings", "ourShare", "freeTimes", "students", "teacherFreeTimes" та інші; дані бере через `teacherService.getById`, `weekService.getAll`, `courseService.getAll`, `lessonService.findAllByTeachId`, `studentService.getAll` та інші.
     @GetMapping("/teacher/{teachId}/info")
     public String gotoInfo(@PathVariable("teachId") int id, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -430,6 +437,8 @@ public class AdminTeacherOtherActionsController {
         //////
         return "closedAdmin/adminTeachers/teacherInfo";
     }
+    // Відкриває маршрут GET /teacher/{teachId}/info/{output} і готує дані для шаблону "closedAdmin/adminTeachers/teacherInfo".
+    // У Model додає "teacher", "output", "allEarnings", "ourShare", "freeTimes", "students" та інші; дані бере через `teacherService.getById`, `weekService.getAll`, `courseService.getAll`, `lessonService.findAllByTeachId`, `studentService.getAll` та інші.
     @GetMapping("/teacher/{teachId}/info/{output}")
     public String gotoInfoWithOutput(@PathVariable("teachId") int id,@PathVariable("output") String output, Model model){
         Teacher teacher = teacherService.getById(id);
@@ -467,16 +476,18 @@ public class AdminTeacherOtherActionsController {
         //////
         return "closedAdmin/adminTeachers/teacherInfo";
     }
+    // Оновлює дані за маршрутом POST /teacher/{teachId}/setEarnedMoneyToZero у модулі «викладачі».
+    // Викликає `teacherService.getById`, `teacherService.update`; після завершення повертає "redirect:/admin/teacher/".
     @PostMapping("/teacher/{teachId}/setEarnedMoneyToZero")
-
     public String setEarnedMoneyToZero(Model model, @PathVariable("teachId") int id){
         Teacher teacher = teacherService.getById(id);
         teacher.setUnpaidMoney(0);
         teacherService.update(id, teacher);
         return "redirect:/admin/teacher/"+id+"/info";
     }
+    // Оновлює дані за маршрутом POST /teacher/{teachId}/setEarnedMoney у модулі «викладачі».
+    // Викликає `teacherService.getById`, `teacherService.update`; після завершення повертає "redirect:/admin/teacher/".
     @PostMapping("/teacher/{teachId}/setEarnedMoney")
-
     public String setEarnedMoney(Model model, @PathVariable("teachId") int id, @ModelAttribute("teacher") TeacherDTO teacherDTO){
         Teacher teacher = teacherService.getById(id);
         teacher.setUnpaidMoney(teacherDTO.getUnpaidMoney());

@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// Модель StudentCourse описує сутність модуля «курси студента» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +37,8 @@ public class StudentCourse {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
-
+    // Отримує через Spring залежності Course, Student.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси студента» без ручного створення об’єктів.
     public StudentCourse(Course course, Student student) {
         this.course = course;
         this.student = student;

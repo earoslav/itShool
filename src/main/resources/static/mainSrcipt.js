@@ -3,6 +3,8 @@
 // =============================================================================
 
 // students.html (admin) + teacherStudents/students.html (teacher) — ідентичні
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchStudent() {
     var input, filter, a, i, txtValue;
     input = document.getElementById('myInput');
@@ -20,6 +22,8 @@ function searchStudent() {
 }
 
 // teachers.html (admin)
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchTeacher() {
     var input, filter, a, i, txtValue;
     input = document.getElementById('myInput');
@@ -38,6 +42,8 @@ function searchTeacher() {
 
 // teacherInfo.html (admin) — пошук по label+input парах
 // teacherLessons.html (admin) + teacherLessons/lessons.html (teacher) — ідентичні
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchStudents() {
     var input, filter, a, b, i, txtValue;
     input = document.getElementById('myInputStudents');
@@ -60,6 +66,8 @@ function searchStudents() {
 
 // Використовується тільки в teacherInfo.html (admin) — шукає без split(" ")[0]
 // ПЕРЕЙМЕНОВАНО: searchStudentsInTeacherInfo (оригінал — searchStudents, але логіка без split)
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchStudentsInTeacherInfo() {
     var input, filter, a, b, i, txtValue;
     input = document.getElementById('myInputStudents');
@@ -82,6 +90,8 @@ function searchStudentsInTeacherInfo() {
 
 // editTeacher.html (admin), teacherStudentLessons.html (admin),
 // teacherLessons.html (admin+teacher), teacherLessons/lessons.html (teacher) — ідентичні (courseSelect → option)
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchCourse() {
     var input, filter, a, b, i, txtValue;
     input = document.getElementById('myInputCourses');
@@ -104,6 +114,8 @@ function searchCourse() {
 
 // editTeacher.html (admin) + teacherHomepage (teacher) — пошук по courseSelect > option
 // ПЕРЕЙМЕНОВАНО: searchCourseSelect (оригінал — searchCourse, але шукає в <select> а не в courseIds/courseNames)
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchCourseSelect() {
     var input, filter, a, i, txtValue;
     input = document.getElementById('myInput');
@@ -122,6 +134,8 @@ function searchCourseSelect() {
 
 // addNewTeacher.html (admin) + signUpAsTeacher.html — пошук по div > span > span > span
 // ПЕРЕЙМЕНОВАНО: searchCourseInDivs (оригінал — searchCourse, але шукає в <div> структурі)
+// Функція фільтрує список на сторінці за введеним текстом користувача.
+// Вона працює напряму з DOM-елементами, тому одна й та сама логіка використовується у кількох шаблонах.
 function searchCourseInDivs() {
     var input, filter, a, i, txtValue;
     input = document.getElementById('myInput');
@@ -144,6 +158,8 @@ function searchCourseInDivs() {
 // =============================================================================
 
 // addNewStudent.html (admin) + addNewTeacher.html (admin) — ідентичні
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function managePassNew() {
     let pass = document.querySelector("#pass")
     let form = document.querySelector("#form")
@@ -156,6 +172,8 @@ function managePassNew() {
 
 // editStudent.html (admin)
 // ПЕРЕЙМЕНОВАНО: managePassEditStudent (оригінал — parsePass)
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function managePassEditStudent() {
     let id = document.getElementById("id").innerText
     let pass = document.querySelector("#pass")
@@ -168,6 +186,8 @@ function managePassEditStudent() {
 
 // editTeacher.html (admin)
 // ПЕРЕЙМЕНОВАНО: managePassEditTeacher (оригінал — managePass, але URL відрізняється)
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function managePassEditTeacher() {
     let id = document.getElementById("id").innerText
     let pass = document.querySelector("#pass")
@@ -181,6 +201,8 @@ function managePassEditTeacher() {
 
 // teacherHomepage/homepage.html (teacher)
 // ПЕРЕЙМЕНОВАНО: managePassTeacher (оригінал — managePass, але URL /teacher/...)
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function managePassTeacher() {
     let id = document.getElementById("id").innerText
     let pass = document.querySelector("#pass")
@@ -194,6 +216,8 @@ function managePassTeacher() {
 
 // studentHomepage/homepage.html (student)
 // ПЕРЕЙМЕНОВАНО: managePassStudent (оригінал — managePass, але читає #idSt і URL /student/...)
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function managePassStudent() {
     let id = document.getElementById("idSt")
     let pass = document.querySelector("#pass")
@@ -207,6 +231,8 @@ function managePassStudent() {
 
 // signUpAsStudent.html + signUpAsTeacher.html (openSource)
 // ПЕРЕЙМЕНОВАНО: managePassSignUp (оригінал — managePass, але логіка: встановлює pass.value="NOPASS" і дописує в action)
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function managePassSignUp() {
     let pass = document.querySelector("#pass")
     let form = document.querySelector("#form")
@@ -244,6 +270,8 @@ document.querySelectorAll('.freeTimeCheckbox').forEach(cb => {
 });
 
 // editTeacher.html (admin), teacherInfo.html (admin), teacherHomepage (teacher) — ідентичні
+// Функція перевіряє дію перед відправкою форми та показує підтвердження користувачу.
+// Це захищає від випадкових змін, які можуть вплинути на розклад або особисті дані.
 function handleSubmit(event) {
     if (freeTimeChanged) {
         return confirm("Якщо ви змінете свої вільні часи то ваші заняття з учнями на ці часи будуть видалені. Продовжити?");
@@ -252,6 +280,8 @@ function handleSubmit(event) {
 }
 
 // Додає можливість виділяти весь день кліком на заголовок таблиці
+// Допоміжна функція приводить дату або день тижня до формату, зручного для інтерфейсу.
+// Її результат використовується у попапах та підписах розкладу.
 (function initDaySelection() {
     document.querySelectorAll('.times-table').forEach(table => {
         const headers = table.querySelectorAll('thead th');
@@ -278,12 +308,16 @@ function handleSubmit(event) {
 
 // studentHomepage/homepage.html (student) — інший текст підтвердження
 // ПЕРЕЙМЕНОВАНО: handleSubmitStudent (оригінал — handleSubmit)
+// Функція перевіряє дію перед відправкою форми та показує підтвердження користувачу.
+// Це захищає від випадкових змін, які можуть вплинути на розклад або особисті дані.
 function handleSubmitStudent(event) {
     return confirm("Змінити данні?");
 }
 
 // editTeacher.html (admin), teacherInfo.html (admin), teacherHomepage (teacher),
 // studentHomepage (student) — ідентичні
+// Функція готує пароль перед відправкою форми на сервер.
+// Якщо поле порожнє, у URL або form action передається службове значення, яке backend розуміє як старий або відсутній пароль.
 function togglePassword() {
     const input = document.getElementById("passwordField");
     const btn = event.target;
@@ -302,6 +336,8 @@ function togglePassword() {
 // editTeacher.html (admin) + teacherHomepage/homepage.html (teacher) — ідентичні
 // =============================================================================
 
+// Ініціалізатор підключає обробники подій після завантаження DOM-елементів.
+// Такий підхід дозволяє одному JS-файлу працювати на різних сторінках, де частина елементів може бути відсутня.
 (function initCourseSelect() {
     const select = document.getElementById("courseSelect");
     const list = document.getElementById("coursesList");
@@ -353,6 +389,8 @@ function togglePassword() {
 // ЗВ'ЯЗОК СТУДЕНТ → ПОСИЛАННЯ (teacherInfo.html admin)
 // =============================================================================
 
+// Ініціалізатор підключає обробники подій після завантаження DOM-елементів.
+// Такий підхід дозволяє одному JS-файлу працювати на різних сторінках, де частина елементів може бути відсутня.
 (function initTeacherStudentLink() {
     const teacherIdEl = document.querySelector("#teacherId");
     const link = document.querySelector("#link");
@@ -376,6 +414,8 @@ function togglePassword() {
 // СКОРОЧЕННЯ ТЕКСТУ (openSourceHomepage/homepage.html)
 // =============================================================================
 
+// Функція скорочує довгі описи до компактного вигляду на публічних сторінках.
+// Повний текст зберігається в data-атрибуті, а користувач бачить коротку превю-версію.
 (function truncateDescriptions() {
     const maxWords = 10;
     document.querySelectorAll('.course-description, .teacher-description').forEach(function (element) {
@@ -389,6 +429,8 @@ function togglePassword() {
     });
 })();
 
+// Функція позначає останню клітинку тривалого уроку у таблиці розкладу.
+// Це допомагає CSS правильно намалювати візуальний блок заняття, яке займає кілька часових слотів.
 (function markLessonSegmentEnds() {
     document.querySelectorAll(".lesson-table-wrapper table").forEach(table => {
         const rows = Array.from(table.querySelectorAll("tbody tr"));
@@ -429,12 +471,16 @@ function togglePassword() {
 // =============================================================================
 
 // Допоміжна: рендеринг назви дня тижня
+// Допоміжна функція приводить дату або день тижня до формату, зручного для інтерфейсу.
+// Її результат використовується у попапах та підписах розкладу.
 function getDayName(dayVal) {
     const days = {1: "Понеділок", 2: "Вівторок", 3: "Середа", 4: "Четвер", 5: "Пятниця", 6: "Субота", 7: "Неділя"};
     return days[dayVal] || "";
 }
 
 // Допоміжна: форматування дати з ISO-рядка
+// Допоміжна функція приводить дату або день тижня до формату, зручного для інтерфейсу.
+// Її результат використовується у попапах та підписах розкладу.
 function formatDateFromKey(element) {
     const [datePart, timePart] = element.split("T");
     const [y, m, d] = datePart.split("-");
@@ -443,6 +489,8 @@ function formatDateFromKey(element) {
     return { display: `${d}.${m}`, isoDate: `DayOfWeek ${d}.${m} ${timePart.split(":")[0]}:${timePart.split(":")[1]}`, minutes };
 }
 
+// Функція керує попапами уроків: відкриває їх, заповнює даними або закриває.
+// Вона читає dataset з клітинок розкладу та підставляє потрібні значення у форми.
 function initLessonPopup(config) {
     const popup = document.querySelector("#lessonPopup");
     const popupDate = document.querySelector("#popupDate");
@@ -701,6 +749,8 @@ function initLessonPopup(config) {
 // =============================================================================
 // BACK TO TOP BUTTON
 // =============================================================================
+// Ініціалізатор підключає обробники подій після завантаження DOM-елементів.
+// Такий підхід дозволяє одному JS-файлу працювати на різних сторінках, де частина елементів може бути відсутня.
 (function initBackToTop() {
     window.addEventListener('scroll', () => {
         const backToTopBtn = document.getElementById('back-to-top');

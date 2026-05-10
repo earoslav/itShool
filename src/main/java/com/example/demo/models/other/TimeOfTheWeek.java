@@ -12,6 +12,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+// Модель TimeOfTheWeek описує сутність модуля «часові слоти тижня» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,7 +42,8 @@ public class TimeOfTheWeek {
 
     @OneToMany(mappedBy = "timeOfTheWeek")
     private List<Lesson> lessons;
-
+    // Отримує через Spring залежності Integer, List<EmptyTimesForTeacher>, List<Lesson>.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «часові слоти тижня» без ручного створення об’єктів.
     public TimeOfTheWeek(Integer dayOfTheWeek, Integer timeOfTheDay, List<EmptyTimesForTeacher> emptyTimesForTeachers, List<Lesson> lessons) {
         this.dayOfTheWeek = dayOfTheWeek;
         this.timeOfTheDay = timeOfTheDay;

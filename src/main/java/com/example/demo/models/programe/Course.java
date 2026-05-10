@@ -20,6 +20,8 @@ import java.util.List;
 @Entity
 @Table(name = "course")
 
+// Модель Course описує сутність модуля «курси» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 public class Course {
 
     @Id
@@ -43,7 +45,8 @@ public class Course {
     private List<StudentCourse> studentCourses;
     @OneToMany(mappedBy = "course")
     private List<TeacherStudentTimeOfTheWeek> tswList;
-
+    // Отримує через Spring залежності String, Integer, List<TeacherCourse>, List<StudentCourse>, List<TeacherStudentTimeOfTheWeek>.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси» без ручного створення об’єктів.
     public Course(String name, Integer costPerLesson, Integer teacherShare, String description, List<TeacherCourse> teacherCourses, List<StudentCourse> studentCourses, List<TeacherStudentTimeOfTheWeek> tswList) {
         this.name = name;
         this.costPerLesson = costPerLesson;
@@ -53,7 +56,8 @@ public class Course {
         this.studentCourses = studentCourses;
         this.tswList = tswList;
     }
-
+    // Отримує через Spring залежності String, Integer.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси» без ручного створення об’єктів.
     public Course(String name, Integer costPerLesson, Integer teacherShare, String description) {
         this.name = name;
         this.costPerLesson = costPerLesson;

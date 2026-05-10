@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// Модель TeacherCourse описує сутність модуля «курси викладача» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +37,8 @@ public class TeacherCourse {
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
-
+    // Отримує через Spring залежності Course, Teacher.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси викладача» без ручного створення об’єктів.
     public TeacherCourse(Course course, Teacher teacher) {
         this.course = course;
         this.teacher = teacher;

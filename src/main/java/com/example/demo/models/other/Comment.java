@@ -13,6 +13,8 @@ import lombok.*;
 @Entity
 @Table(name = "comment")
 
+// Модель Comment описує сутність модуля «коментарі студентів» у базі даних або службовий об’єкт проекту.
+// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +30,8 @@ public class Comment {
     private String commentText;
     @Column(name = "rating_of_stars")
     private int ratingOfStars;
-
+    // Отримує через Spring залежності Student, Teacher, String, int.
+    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «коментарі студентів» без ручного створення об’єктів.
     public Comment(Student student, Teacher teacher, String commentText, int ratingOfStars) {
         this.student = student;
         this.teacher = teacher;

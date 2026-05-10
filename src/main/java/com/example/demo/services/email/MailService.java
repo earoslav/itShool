@@ -286,17 +286,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+// Сервіс MailService містить бізнес-операції для модуля «email-повідомлення».
+// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
 @Service
 public class MailService {
 
     private final JavaMailSender javaMailSender;
     private final TemplateEngine templateEngine;
-
+    // Отримує JavaMailSender і Thymeleaf TemplateEngine для HTML-листів.
+    // Усі публічні методи нижче лише готують змінні, а фактичну відправку виконує внутрішній send.
     public MailService(JavaMailSender javaMailSender, TemplateEngine templateEngine) {
         this.javaMailSender = javaMailSender;
         this.templateEngine = templateEngine;
     }
-
+    // Єдиний внутрішній метод, який збирає Thymeleaf Context, рендерить HTML і надсилає MIME-лист кожному отримувачу.
+    // Перед рендерингом він форматує часи уроків українською, щоб email-шаблони показували читабельні дату, час і тривалість.
     private void send(Mail mail, String template, Map<String, Object> variables) throws MessagingException {
         Context context = new Context();
         variables.keySet().stream().forEach(val->{
@@ -340,7 +344,8 @@ public class MailService {
             javaMailSender.send(mimeMessage);
         }
     }
-
+    // Готує лист адміну з даними нового викладача, паролем, курсами та вільним часом для підтвердження.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toAdmin/mailTemplateForAddNewTeacher" і делегує відправку send.
     public void sendEmailWithThymeleaf(Mail mail, TeacherDTO teacher, String password, List<TimeOfTheWeekDTO> freeTimes, List<CourseDTO> courses, HashMap<String, List<String>> compiledTimes, String timeIds, String courseIds) throws MessagingException {
         send(mail, "emailTemplates/toAdmin/mailTemplateForAddNewTeacher", Map.of(
                 "teacher", teacher,
@@ -355,6 +360,8 @@ public class MailService {
         ));
     }
 
+    // Готує лист студенту про видалення всього курсу викладачем.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forDelete/mailTemplateForDeleteCourseByTeacher" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutCourseRemoved(Mail mail, TeacherDTO teacher, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forDelete/mailTemplateForDeleteCourseByTeacher", Map.of(
                 "teacher", teacher,
@@ -363,7 +370,8 @@ public class MailService {
 
         ));
     }
-
+    // Готує лист студенту про скасування одного заняття викладачем.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forDelete/mailTemplateForDeleteLessonByTeacher" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutLessonRemoved(Mail mail, TeacherDTO teacher, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forDelete/mailTemplateForDeleteLessonByTeacher", Map.of(
                 "teacher", teacher,
@@ -371,7 +379,8 @@ public class MailService {
                 "duration", duration
         ));
     }
-
+    // Готує лист студенту про доданий викладачем урок.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forAdd/mailTemplateForAddLessonByTeacher" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutLessonAdded(Mail mail, TeacherDTO teacher, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forAdd/mailTemplateForAddLessonByTeacher", Map.of(
                 "teacher", teacher,
@@ -380,6 +389,8 @@ public class MailService {
         ));
     }
 
+    // Готує лист студенту про доданий курс і перше заняття.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forAdd/mailTemplateForAddCourseByTeacher" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutCourseAdded(Mail mail, TeacherDTO teacher, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forAdd/mailTemplateForAddCourseByTeacher", Map.of(
                 "teacher", teacher,
@@ -387,7 +398,8 @@ public class MailService {
                 "duration", duration
         ));
     }
-
+    // Готує лист студенту, що викладач погодив видалення уроку.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forDelete/mailTemplateForExceptDeleteLesson" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutDeleteLessonExcepted(Mail mail, TeacherDTO teacher, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forDelete/mailTemplateForExceptDeleteLesson", Map.of(
                 "teacher", teacher,
@@ -395,7 +407,8 @@ public class MailService {
                 "duration", duration
         ));
     }
-
+    // Готує лист студенту, що викладач відхилив видалення уроку.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forDelete/mailTemplateForDenyedDeleteLesson" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutDeleteLessonDenyed(Mail mail, TeacherDTO teacher, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forDelete/mailTemplateForDenyedDeleteLesson", Map.of(
                 "teacher", teacher,
@@ -404,6 +417,8 @@ public class MailService {
         ));
     }
 
+    // Готує запит викладачу на підтвердження видалення уроку студентом.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toTeacher/forDelete/mailTemplateForRequestForDeleteLessonByStudent" і делегує відправку send.
     public void sendRequestWithThymeleafTeacherAboutRequestLessonRemoved(Mail mail, StudentDTO student, int idTeach, int idLes, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toTeacher/forDelete/mailTemplateForRequestForDeleteLessonByStudent", Map.of(
                 "student", student,
@@ -413,7 +428,8 @@ public class MailService {
                 "duration", duration
         ));
     }
-
+    // Готує лист викладачу про скасування одного заняття студентом.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toTeacher/forDelete/mailTemplateForDeleteLessonByStudent" і делегує відправку send.
     public void sendEmailWithThymeleafTeacherAboutLessonRemoved(Mail mail, StudentDTO student, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toTeacher/forDelete/mailTemplateForDeleteLessonByStudent", Map.of(
                 "student", student,
@@ -421,7 +437,8 @@ public class MailService {
                 "duration", duration
         ));
     }
-
+    // Готує лист викладачу про видалення курсу студентом.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toTeacher/forDelete/mailTemplateForDeleteCourseByStudent" і делегує відправку send.
     public void sendEmailWithThymeleafTeacherAboutCourseRemoved(Mail mail, StudentDTO student, LocalDateTime time, float duration) throws MessagingException {
         send(mail, "emailTemplates/toTeacher/forDelete/mailTemplateForDeleteCourseByStudent", Map.of(
                 "student", student,
@@ -430,6 +447,8 @@ public class MailService {
         ));
     }
 
+    // Готує лист викладачу про перенесення уроку студентом.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toTeacher/forEdit/mailTemplateForEditLessonTimeByStudent" і делегує відправку send.
     public void sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(Mail mail, StudentDTO student, LocalDateTime oldTime, LocalDateTime newTime, float duration) throws MessagingException {
         send(mail, "emailTemplates/toTeacher/forEdit/mailTemplateForEditLessonTimeByStudent", Map.of(
                 "student", student,
@@ -439,6 +458,8 @@ public class MailService {
         ));
     }
 
+    // Готує лист студенту про перенесення уроку викладачем.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forEdit/mailTemplateForEditLessonTimeByTeacher" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutLessonTimeEdited(Mail mail, TeacherDTO teacher, LocalDateTime oldTime, LocalDateTime newTime, float duration) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forEdit/mailTemplateForEditLessonTimeByTeacher", Map.of(
                 "teacher", teacher,
@@ -448,6 +469,8 @@ public class MailService {
         ));
     }
 
+    // Готує лист студенту, що його прибрали зі списку учнів викладача.
+    // У змінні шаблону передає потрібні DTO і час уроку, а HTML бере з "emailTemplates/toStudent/forDelete/mailTemplateForStudentRemovedFromTeacherStudents" і делегує відправку send.
     public void sendEmailWithThymeleafToStudentAboutTeacherRemover(Mail mail, TeacherDTO teacher) throws MessagingException {
         send(mail, "emailTemplates/toStudent/forDelete/mailTemplateForStudentRemovedFromTeacherStudents", Map.of(
                 "teacher", teacher

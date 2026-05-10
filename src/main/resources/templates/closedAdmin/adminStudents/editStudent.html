@@ -3,23 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Title</title>
+    <title>IT Kids School - Редагування учня</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a href="/admin/homepage">Головна</a>
-            <a href="/admin/students">Учні</a>
-            <a href="/admin/teachers">Викладачі</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
 
-<section class="hero">
+<section class="hero" style="min-height: 120px;">
     <div class="container">
         <p th:text="'Учень: '+${student.user.name}"></p>
         <h3 class="ml-20">Змінити</h3>
@@ -27,10 +18,8 @@
 </section>
 <div class="main-content">
     <div class="container">
-        <div class="card">
-            <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
-            <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
-            <div class="success-box" th:if="${output == 'studentEdited'}">Учня успішно змінено</div>
+        <div class="card" style="overflow: clip;">
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
 
 
             <form th:action="@{/admin/student/{id}/edit/(id=${student.id})}" th:object="${student}" method="post" id="form">
@@ -89,20 +78,7 @@
     </div>
 </div>
 
-<footer>
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 <script src="/mainSrcipt.js"></script>
 </body>
 

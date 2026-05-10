@@ -22,6 +22,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import com.example.demo.models.entities.Teacher;
+import com.example.demo.models.programe.Lesson;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminHomepageController {
@@ -67,6 +73,21 @@ public class AdminHomepageController {
         admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
         adminService.update(admin.getId(), admin);
         model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
+
+        List<Teacher> teachers = teacherService.getAll();
+        Map<String, Integer> teacherEarnings = new HashMap<>();
+        for (Teacher t : teachers) {
+            int total = 0;
+            List<Lesson> lessons = lessonService.findAllByTeachId(t.getId());
+            for (Lesson l : lessons) {
+                if ("WAS".equals(l.getStatus())) {
+                    total += (int) (l.getDuration() * l.getCourse().getTeacherShare());
+                }
+            }
+            teacherEarnings.put(t.getUser().getName(), total);
+        }
+        model.addAttribute("teacherEarnings", teacherEarnings);
+
         return "closedAdmin/adminHomepage/homepage";
     }
     @GetMapping("/homepage/{output}")
@@ -79,6 +100,21 @@ public class AdminHomepageController {
         if(!output.isEmpty()){
             model.addAttribute("output", output);
         }
+
+        List<Teacher> teachers = teacherService.getAll();
+        Map<String, Integer> teacherEarnings = new HashMap<>();
+        for (Teacher t : teachers) {
+            int total = 0;
+            List<Lesson> lessons = lessonService.findAllByTeachId(t.getId());
+            for (Lesson l : lessons) {
+                if ("WAS".equals(l.getStatus())) {
+                    total += (int) (l.getDuration() * l.getCourse().getTeacherShare());
+                }
+            }
+            teacherEarnings.put(t.getUser().getName(), total);
+        }
+        model.addAttribute("teacherEarnings", teacherEarnings);
+
         return "closedAdmin/adminHomepage/homepage";
     }
 }

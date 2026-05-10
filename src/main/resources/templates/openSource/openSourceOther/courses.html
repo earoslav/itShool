@@ -4,64 +4,435 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Kids School - Курси</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --blue-dark:  #1e3a8a;
+            --blue-mid:   #2563eb;
+            --blue-light: #3b82f6;
+            --accent:     #f59e0b;
+            --accent2:    #06b6d4;
+            --white:      #ffffff;
+            --bg:         #f5f6fa;
+            --text:       #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        body { font-family: 'Inter', Arial, sans-serif; }
+        h1, h2, h3 { font-family: 'Sora', Arial, sans-serif; }
+
+        /* =============================================
+           HEADER
+           ============================================= */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-family: 'Sora', sans-serif;
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff 60%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* =============================================
+           HERO — compact (no image)
+           ============================================= */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%) !important;
+            padding: 60px 0 50px !important;
+            overflow: hidden;
+            max-height: 40vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                    radial-gradient(circle at 20% 80%, rgba(6,182,212,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(245,158,11,0.12) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 4vw, 46px) !important;
+            font-weight: 800 !important;
+            line-height: 1.15 !important;
+            margin-bottom: 16px !important;
+            color: #ffffff !important;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 .accent-word {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 17px !important;
+            line-height: 1.7 !important;
+            color: rgba(255,255,255,0.78) !important;
+            margin: 0 auto 0 auto !important;
+            max-width: 560px;
+        }
+
+        /* =============================================
+           MAIN COURSES SECTION
+           ============================================= */
+        .courses-page-section {
+            background: var(--bg);
+            padding: 80px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 52px;
+        }
+
+        .section-header h2 {
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin-bottom: 12px !important;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* =============================================
+           COURSES GRID
+           ============================================= */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 28px;
+        }
+
+        .course-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 32px 28px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.25s, box-shadow 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--blue-mid), var(--accent2));
+            border-radius: 20px 20px 0 0;
+        }
+
+        .course-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+        }
+
+        .course-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(6,182,212,0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+
+        .course-card h3 {
+            font-family: 'Sora', sans-serif;
+            font-size: 19px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin-bottom: 10px !important;
+            line-height: 1.3;
+        }
+
+        .price {
+            display: inline-block;
+            background: rgba(37,99,235,0.08);
+            color: var(--blue-dark);
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            border: 1px solid rgba(37,99,235,0.12);
+        }
+
+        .course-card p {
+            color: var(--text-muted) !important;
+            font-size: 14px !important;
+            line-height: 1.65 !important;
+            margin: 0;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 64px 32px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.05);
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        /* =============================================
+           CTA SECTION
+           ============================================= */
+        .cta-section {
+            padding: 80px 0;
+            background: #ffffff;
+        }
+
+        .cta {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+            border-radius: 28px !important;
+            padding: 56px 40px !important;
+            text-align: center;
+            border: 1px solid rgba(37,99,235,0.12) !important;
+        }
+
+        .cta h2 {
+            font-size: 32px !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin-bottom: 12px !important;
+        }
+
+        .cta p {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 0;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #f97316 100%) !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
+            padding: 14px 28px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            box-shadow: 0 8px 24px rgba(245,158,11,0.35) !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+            letter-spacing: 0.3px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 32px rgba(245,158,11,0.45) !important;
+        }
+
+        .btn-ghost {
+            background: rgba(37,99,235,0.07) !important;
+            border: 1.5px solid rgba(37,99,235,0.2) !important;
+            color: var(--blue-dark) !important;
+            font-weight: 600 !important;
+            padding: 14px 28px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            transition: background 0.2s !important;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(37,99,235,0.13) !important;
+        }
+
+        /* =============================================
+           FOOTER
+           ============================================= */
+        footer {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a) !important;
+        }
+
+        /* =============================================
+           SCROLL ANIMATIONS
+           ============================================= */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: none;
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        /* =============================================
+           MOBILE
+           ============================================= */
+        @media (max-width: 768px) {
+            .hero { padding: 48px 0 40px !important; }
+            .hero h1 { font-size: 26px !important; }
+            .courses-page-section, .cta-section { padding: 52px 0; }
+            .section-header h2 { font-size: 26px !important; }
+            .cta { border-radius: 16px !important; padding: 36px 20px !important; }
+            .cta h2 { font-size: 22px !important; }
+        }
+
+        @media (max-width: 480px) {
+            .courses-grid { grid-template-columns: 1fr; }
+        }
+
+
+    </style>
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a href="/openSource/homepage">Головна</a>
-            <a class="active" href="/openSource/courses">Курси</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: publicHeader}"></header>
 
-<section class="hero">
+<!-- ===================== HERO ===================== -->
+<section class="hero " style="padding: 15% !important;">
     <div class="container">
-        <h1>Наші курси</h1>
-        <p>
-            Обирайте напрямок, який подобається дитині, та розвивайте IT-навички крок за кроком.
-        </p>
+        <div class="hero-badge">📚 Навчання для дітей 7–17 років</div>
+        <h1>Наші <span class="accent-word">курси</span></h1>
+        <p>Обирайте напрямок, який подобається дитині, та розвивайте IT-навички крок за кроком.</p>
     </div>
 </section>
 
 <main>
-    <div class="container">
-        <h2>Доступні програми навчання</h2>
-        <p class="subtitle">Оберіть напрямок та почніть навчання в IT Kids School.</p>
+    <!-- ===================== COURSES ===================== -->
+    <section class="courses-page-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Доступні програми навчання</h2>
+                <p class="section-subtitle">Оберіть напрямок та почніть навчання в IT Kids School</p>
+            </div>
 
-        <div class="courses-grid" th:if="${courses != null and !courses.isEmpty()}">
-            <div class="course-card" th:each="course : ${courses}">
-                <h3 th:text="${course.name}">Назва курсу</h3>
-                <div class="price" th:text="${course.costPerLesson} + ' грн за заняття'">Вартість</div>
-                <p th:text="${course.description != null and !course.description.isEmpty() ? course.description : 'Опис курсу скоро з''явиться.'}">
-                    Опис курсу
-                </p>
+            <div class="courses-grid" th:if="${courses != null and !courses.isEmpty()}">
+                <div class="course-card reveal" th:each="course, iterStat : ${courses}"
+                     th:classappend="${iterStat.index == 0 ? ' reveal' : (iterStat.index == 1 ? ' reveal reveal-delay-1' : (iterStat.index == 2 ? ' reveal reveal-delay-2' : ' reveal reveal-delay-3'))}">
+                    <div class="course-icon">🚀</div>
+                    <h3 th:text="${course.name}">Назва курсу</h3>
+                    <div class="price" th:text="${course.costPerLesson} + ' грн / заняття'">Вартість</div>
+                    <p th:text="${course.description != null and !course.description.isEmpty() ? course.description : 'Опис курсу скоро з''явиться.'}">
+                        Опис курсу
+                    </p>
+                </div>
+            </div>
+
+            <div class="empty-state reveal" th:if="${courses == null or courses.isEmpty()}">
+                <span class="empty-icon">📂</span>
+                Курси поки не додані. Скоро тут буде повний каталог.
             </div>
         </div>
+    </section>
 
-        <div class="course-card" th:if="${courses == null or courses.isEmpty()}">
-            Курси поки не додані. Скоро тут буде повний каталог.
+    <!-- ===================== CTA ===================== -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta reveal">
+                <h2>Готові почати навчання?</h2>
+                <p>Запишіться на перше заняття — воно безкоштовне та ні до чого не зобов'язує.</p>
+                <div class="hero-buttons">
+                    <a class="btn-primary" href="/openSource/signUpAsStudent">🎯 Записатися зараз</a>
+                    <a class="btn-ghost" href="/openSource/homepage">← Повернутися на головну</a>
+                </div>
+            </div>
         </div>
-
-        <a class="back-link" href="/openSource/homepage">Повернутися на головну</a>
-    </div>
+    </section>
 </main>
-<footer>
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+
 <script src="/mainSrcipt.js"></script>
+<script>
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+
+</script>
+<a href="#" id="back-to-top" class="back-to-top" title="Вгору">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m18 15-6-6-6 6"/>
+    </svg>
+</a>
 </body>
 </html>

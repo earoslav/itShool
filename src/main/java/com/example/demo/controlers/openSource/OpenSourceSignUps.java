@@ -23,6 +23,7 @@ import com.example.demo.services.program.CourseService;
 import com.example.demo.services.security.UserService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
+import jakarta.mail.MessagingException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -90,8 +91,8 @@ public class OpenSourceSignUps {
     @PostMapping("/signUpAsStudent/{password}")
     public String signUpAsStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model){
         try{
-            if(password.equals("NOPASS")){
-            return "redirect:/openSource/signUpAsStudent/NOPASS";
+            if(password.equals("NO_PASS")){
+            return "redirect:/openSource/signUpAsStudent/NO_PASS";
             }
             if(!studentService.checkIfExistsByEmail(student.getUser().getEmail())){
                 Student student1 = studentMapper.mapStudentDTOToStudent(student);
@@ -100,15 +101,15 @@ public class OpenSourceSignUps {
                 userService.create(user);
                 student1.setUser(user);
                 studentService.create(student1);
-                return "redirect:/openSource/homepage/studentAdded";
+                return "redirect:/openSource/homepage/STUDENT_ADDED";
             }else{
-                return "redirect:/openSource/signUpAsStudent/exists";
+                return "redirect:/openSource/signUpAsStudent/EXISTS";
             }
 
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
-        return "redirect:/openSource/signUpAsStudent/general";
+        return "redirect:/openSource/signUpAsStudent/GENERAL";
 
     }
     @GetMapping("/signUpAsTeacher")
@@ -165,17 +166,17 @@ public class OpenSourceSignUps {
                                   @PathVariable("password") String password,
                                   @RequestParam(value = "courseIds",required = false) List<Integer> courses,
                                   @RequestParam(value = "freeTimeIds",required = false) List<Integer> freeTimes,
-                                  Model model) {
+                                  Model model) throws MessagingException {
         List<Integer> hours = new ArrayList<>();
         for (int h = 8; h <= 21; h++) {
             hours.add(h);
         }
         List<Course> coursesToReload = courseService.getAll();
         List<TimeOfTheWeek> freeTimesToReload = timeWeekService.getAll();
-        try {
+
             if (!teacherService.checkIfExistsByEmail(teacher.getUser().getEmail())) {
-                if(password.equals("NOPASS")){
-                    return "redirect:/openSource/signUpAsTeacher/NOPASS";
+                if(password.equals("NO_PASS")){
+                    return "redirect:/openSource/signUpAsTeacher/NO_PASS";
                 }
                 teacher.setApproved(0);
 
@@ -200,12 +201,8 @@ public class OpenSourceSignUps {
 
 
                 mailService.sendEmailWithThymeleaf(mail, teacher, password, selectedFreeTimes.stream().map(time -> theWeekMapper.mapTTheWeekToTTheWeekDTO(time)).collect(Collectors.toList()), selectedCourses.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()), compiledTimes, timesIds.toString(), coursesIds.toString());
-                return "redirect:/openSource/homepage/teacherAdded";
+                return "redirect:/openSource/homepage/TEACHER_ADDED";
             }
-            return "redirect:/openSource/signUpAsTeacher/exists";
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return "redirect:/openSource/signUpAsTeacher/general";
+            return "redirect:/openSource/signUpAsTeacher/EXISTS";
     }
 }

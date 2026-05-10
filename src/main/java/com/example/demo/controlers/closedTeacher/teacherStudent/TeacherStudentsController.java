@@ -101,7 +101,7 @@ public class TeacherStudentsController {
         mailService.sendEmailWithThymeleafToStudentAboutTeacherRemover(mail, teacherMapper.mapTeacherToTeacherDTO(saved));
         model.addAttribute("students", studentMapper.mapStudentToStudentDTO(studentService.getById(idSt)));
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idT)));
-        return "redirect:/teacher/"+idT+"/students/studentDeleted";
+        return "redirect:/teacher/"+idT+"/students/STUDENT_DELETED";
     }
 
 }

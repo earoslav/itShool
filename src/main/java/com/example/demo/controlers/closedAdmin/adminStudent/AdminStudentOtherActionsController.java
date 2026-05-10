@@ -30,7 +30,9 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
-public class AdminStudentOtherActionsController {
+public class
+
+AdminStudentOtherActionsController {
     private TeacherCourseService teacherCourseService;
     private TeacherService teacherService;
     private EmptyTimesForTeacherService emptyTimesForTeacherService;
@@ -80,12 +82,12 @@ public class AdminStudentOtherActionsController {
     public String addStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model) {
         try {
             if (studentService.checkIfExistsByEmail(student.getUser().getEmail())) {
-                if(password.equals("NOPASS")){
+                if(password.equals("NO_PASS")){
                     model.addAttribute("student");
-                    model.addAttribute("output", "NOPASS");
+                    model.addAttribute("output", "NO_PASS");
                     return "closedAdmin/adminStudents/addNewStudent";
                 }
-                model.addAttribute("output", "exists");
+                model.addAttribute("output", "EXISTS");
                 model.addAttribute("student", student);
                 return "closedAdmin/adminStudents/addNewStudent";
             }
@@ -94,11 +96,11 @@ public class AdminStudentOtherActionsController {
             Student student1 = studentMapper.mapStudentDTOToStudent(student);
             student1.setUser(user);
             studentService.create(student1);
-            return "redirect:/admin/homepage/studentAdded";
+            return "redirect:/admin/homepage/STUDENT_ADDED";
         } catch (Exception e) {
             System.out.println(e);
             model.addAttribute("output");
-            model.addAttribute("error", "general");
+            model.addAttribute("error", "GENERAL");
             return "closedAdmin/adminStudents/addNewStudent";
         }
 
@@ -144,7 +146,7 @@ public class AdminStudentOtherActionsController {
 
         try {
             if (userService.checkIfExistsByEmail(student.getUser().getEmail()) && !studentService.getById(id).getEmail().equals(student.getUser().getEmail())) {
-                return "redirect:/admin/student/"+id+"/edit/exists";
+                return "redirect:/admin/student/"+id+"/edit/EXISTS";
             }
 
             Student student1 = studentMapper.mapStudentDTOToStudent(student);
@@ -152,13 +154,13 @@ public class AdminStudentOtherActionsController {
                 password = studentService.getById(student.getId()).getPassword();
                 student1.setPassword(password);
                 studentService.update(id, student1);
-                return "redirect:/admin/student/"+id+"/edit/studentEdited";
+                return "redirect:/admin/student/"+id+"/edit/STUDENT_EDITED";
             }
             student1.setPassword(passwordEncoder.encode(password));
             studentService.update(id, student1);
-            return "redirect:/admin/student/"+id+"/edit/studentEdited";
+            return "redirect:/admin/student/"+id+"/edit/STUDENT_EDITED";
         } catch (Exception e) {
-            return "redirect:/admin/student/"+id+"/edit/general";
+            return "redirect:/admin/student/"+id+"/edit/GENERAL";
         }
 
     }
@@ -172,7 +174,7 @@ public class AdminStudentOtherActionsController {
         studentCourseService.deleteAllCoursesByStudent(student);
         commentService.deleteAllByStudent(student);
         studentService.deleteById(id);
-        return "redirect:/admin/students/studentDeleted";
+        return "redirect:/admin/students/STUDENT_DELETED";
     }
 
 }

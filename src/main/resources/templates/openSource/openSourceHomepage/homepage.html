@@ -1,158 +1,991 @@
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Kids School - Home</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* =============================================
+           HOMEPAGE ENHANCEMENTS — only additive styles
+           ============================================= */
+
+        :root {
+            --blue-dark:  #1e3a8a;
+            --blue-mid:   #2563eb;
+            --blue-light: #3b82f6;
+            --accent:     #f59e0b;
+            --accent2:    #06b6d4;
+            --white:      #ffffff;
+            --bg:         #f5f6fa;
+            --text:       #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        /* --- Google Font override (additive) --- */
+        body { font-family: 'Inter', Arial, sans-serif; }
+        h1, h2, h3 { font-family: 'Sora', Arial, sans-serif; }
+
+        /* =============================================
+           HEADER ENHANCEMENTS
+           ============================================= */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-family: 'Sora', sans-serif;
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff 60%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* =============================================
+           HERO SECTION — full-screen with SVG BG
+           ============================================= */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%) !important;
+            padding: 100px 0 80px !important;
+            overflow: hidden;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Animated circuit/dot background */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                    radial-gradient(circle at 20% 80%, rgba(6,182,212,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(245,158,11,0.12) 0%, transparent 50%),
+                    radial-gradient(circle at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content { }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 24px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-badge::before {
+            content: '🚀';
+            font-size: 14px;
+        }
+
+        .hero h1 {
+            font-size: clamp(32px, 4vw, 52px) !important;
+            font-weight: 800 !important;
+            line-height: 1.15 !important;
+            margin-bottom: 20px !important;
+            color: #ffffff !important;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 .accent-word {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 17px !important;
+            line-height: 1.7 !important;
+            color: rgba(255,255,255,0.78) !important;
+            margin-bottom: 36px !important;
+            max-width: 480px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #f97316 100%) !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
+            padding: 14px 28px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            box-shadow: 0 8px 24px rgba(245,158,11,0.35) !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 32px rgba(245,158,11,0.45) !important;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1) !important;
+            border: 1.5px solid rgba(255,255,255,0.3) !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            padding: 14px 28px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            backdrop-filter: blur(6px);
+            transition: background 0.2s !important;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.18) !important;
+        }
+
+        /* Hero illustration panel */
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-img-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .hero-img-wrap img {
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.45);
+            display: block;
+        }
+
+        /* floating stat cards */
+        .hero-stat {
+            position: absolute;
+            background: rgba(255,255,255,0.95);
+            border-radius: 14px;
+            padding: 12px 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: floatCard 3s ease-in-out infinite;
+        }
+
+        .hero-stat:nth-child(2) { animation-delay: -1.5s; }
+
+        .hero-stat .stat-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .hero-stat .stat-text {
+            font-family: 'Sora', sans-serif;
+        }
+
+        .hero-stat .stat-num {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--blue-dark);
+            line-height: 1;
+        }
+
+        .hero-stat .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .hero-stat-1 {
+            top: -16px;
+            right: -20px;
+        }
+
+        .hero-stat-2 {
+            bottom: -16px;
+            left: -20px;
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-8px); }
+        }
+
+        /* =============================================
+           STATS BAR
+           ============================================= */
+        .stats-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 28px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+
+        .stats-bar .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .stat-item .stat-number {
+            font-family: 'Sora', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--blue-dark);
+            line-height: 1;
+            display: block;
+        }
+
+        .stat-item .stat-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 40px;
+            background: #e5e7eb;
+        }
+
+        /* =============================================
+           WHY US — cards grid
+           ============================================= */
+        .why-section { background: var(--bg); }
+
+        .why-section h2 {
+            text-align: center;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            margin-bottom: 12px !important;
+            color: #0f172a !important;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 48px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cards {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+            gap: 24px !important;
+        }
+
+        .card {
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            padding: 32px 28px !important;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            transition: transform 0.25s, box-shadow 0.25s !important;
+            position: relative;
+            overflow: hidden;
+            max-width: none !important;
+            margin: 0 !important;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--blue-mid), var(--accent2));
+            border-radius: 20px 20px 0 0;
+        }
+
+        .card:hover {
+            transform: translateY(-6px) !important;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.12) !important;
+        }
+
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 18px;
+            display: block;
+        }
+
+        .card h3 {
+            font-family: 'Sora', sans-serif;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin-bottom: 10px !important;
+        }
+
+        .card p {
+            color: var(--text-muted) !important;
+            font-size: 14px !important;
+            line-height: 1.6 !important;
+        }
+
+        /* =============================================
+           ABOUT SECTION
+           ============================================= */
+        .about-section {
+            background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+        }
+
+        .about-section .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+
+        .about-img-col {
+            position: relative;
+        }
+
+        .about-img-col img {
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        .about-img-badge {
+            position: absolute;
+            bottom: -16px;
+            right: -16px;
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+            color: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(30,58,138,0.3);
+        }
+
+        .about-img-badge .badge-num {
+            font-family: 'Sora', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .about-img-badge .badge-text {
+            font-size: 11px;
+            opacity: 0.85;
+            font-weight: 500;
+        }
+
+        .about-content h2 {
+            font-size: 34px !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin-bottom: 16px !important;
+            line-height: 1.2 !important;
+        }
+
+        .about-lead {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            line-height: 1.7;
+        }
+
+        .about-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .about-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--bg);
+            border-radius: 12px;
+            border-left: 3px solid var(--blue-mid);
+        }
+
+        .about-feature .feat-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .about-feature .feat-text h4 {
+            font-family: 'Sora', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .about-feature .feat-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Directions grid */
+        .directions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .direction-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37,99,235,0.07);
+            border: 1px solid rgba(37,99,235,0.15);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--blue-dark);
+        }
+
+        /* =============================================
+           COURSES SECTION
+           ============================================= */
+        .courses-section { background: var(--bg); }
+
+        .courses-section h2 {
+            text-align: center;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            margin-bottom: 48px !important;
+        }
+
+        .courses-list {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+            gap: 24px !important;
+            max-height: none !important;
+        }
+
+        .course-item {
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            padding: 28px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            border-left: none !important;
+            transition: transform 0.22s, box-shadow 0.22s !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-item::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: linear-gradient(180deg, var(--blue-mid), var(--accent2));
+            border-radius: 20px 0 0 20px;
+        }
+
+        .course-item:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1) !important;
+        }
+
+        .course-link {
+            font-family: 'Sora', sans-serif;
+            font-size: 17px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+        }
+
+        .course-price-tag {
+            display: inline-block;
+            background: rgba(37,99,235,0.08);
+            color: var(--blue-dark);
+            border-radius: 8px;
+            padding: 3px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        /* =============================================
+           TEACHERS SECTION
+           ============================================= */
+        .teachers-section { background: #ffffff; }
+
+        .teachers-section h2 {
+            text-align: center;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            margin-bottom: 12px !important;
+        }
+
+        .teachers-list {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+            gap: 24px !important;
+        }
+
+        .person-card {
+            background: var(--bg) !important;
+            border-radius: 20px !important;
+            padding: 28px 24px !important;
+            text-align: center !important;
+            transition: transform 0.22s, box-shadow 0.22s !important;
+            border: 1px solid rgba(0,0,0,0.04) !important;
+        }
+
+        .person-card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+        }
+
+        .teacher-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 20px rgba(30,58,138,0.2);
+        }
+
+        .person-card h3 {
+            font-family: 'Sora', sans-serif !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin-bottom: 6px !important;
+        }
+
+        /* =============================================
+           CTA SECTIONS
+           ============================================= */
+        .teacher-cta {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a) !important;
+            border-radius: 28px !important;
+            padding: 56px 40px !important;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .teacher-cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 70% 50%, rgba(6,182,212,0.15) 0%, transparent 60%);
+        }
+
+        .teacher-cta h2 {
+            color: #ffffff !important;
+            font-size: 32px !important;
+            font-weight: 800 !important;
+            position: relative;
+        }
+
+        .teacher-cta p { color: rgba(255,255,255,0.75) !important; position: relative; }
+
+        .cta {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+            border-radius: 28px !important;
+            padding: 56px 40px !important;
+            text-align: center;
+            border: 1px solid rgba(37,99,235,0.12) !important;
+        }
+
+        .cta h2 {
+            font-size: 32px !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+        }
+
+        .a-homepage {
+            display: inline-block;
+            font-weight: 700 !important;
+            padding: 14px 32px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            margin-top: 10px;
+        }
+
+        .hero-buttons-center { justify-content: center; }
+
+        /* =============================================
+           COMMENTS
+           ============================================= */
+        .comments-section { background: var(--bg); }
+
+        .comments-section h2 {
+            text-align: center;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            margin-bottom: 12px !important;
+        }
+
+        .comments-list {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+            gap: 24px !important;
+        }
+
+        .comment-card {
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            padding: 28px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+            border: 1px solid rgba(0,0,0,0.04) !important;
+            position: relative;
+        }
+
+        .comment-card::before {
+            content: '"';
+            font-family: 'Sora', sans-serif;
+            font-size: 80px;
+            color: rgba(37,99,235,0.08);
+            position: absolute;
+            top: 10px; left: 20px;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        /* Stars */
+        .star-rating {
+            color: var(--accent);
+            font-size: 16px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        /* =============================================
+           SECTIONS SPACING
+           ============================================= */
+        main > section {
+            padding: 80px 0 !important;
+        }
+
+        main > section:first-child { padding: 0 !important; }
+
+        /* =============================================
+           FOOTER
+           ============================================= */
+        footer {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a) !important;
+        }
+
+        /* =============================================
+           MOBILE RESPONSIVE
+           ============================================= */
+        @media (max-width: 900px) {
+            .hero .container {
+                grid-template-columns: 1fr !important;
+                gap: 40px;
+                text-align: center;
+            }
+            .hero { min-height: auto; padding: 70px 0 50px !important; }
+            .hero p { margin-left: auto; margin-right: auto; }
+            .hero-buttons { justify-content: center; }
+            .hero-visual { display: none; }
+
+            .about-section .container {
+                grid-template-columns: 1fr !important;
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            main > section { padding: 52px 0 !important; }
+
+            .hero h1 { font-size: 28px !important; letter-spacing: -0.5px; }
+            .hero p { font-size: 15px !important; }
+
+            .why-section h2,
+            .courses-section h2,
+            .teachers-section h2,
+            .comments-section h2 {
+                font-size: 26px !important;
+                margin-bottom: 28px !important;
+            }
+
+            .stat-divider { display: none; }
+
+            .teacher-cta, .cta {
+                border-radius: 16px !important;
+                padding: 36px 20px !important;
+            }
+
+            .teacher-cta h2, .cta h2 { font-size: 22px !important; }
+
+            .directions-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-bar .container { gap: 12px; }
+            .stat-item .stat-number { font-size: 24px; }
+        }
+
+        /* =============================================
+           SCROLL ANIMATIONS
+           ============================================= */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: none;
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        /* utility */
+        .mb-10 { margin-bottom: 10px; }
+        .mt-10 { margin-top: 10px; }
+        .text-center { text-align: center; }
+
+
+    </style>
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a class="active" href="/openSource/homepage">Головна</a>
-            <a href="/openSource/courses">Курси</a>
-            <a href="#teachers">Викладачі</a>
-            <a href="#schedule">Розклад</a>
-            <a href="#contacts">Контакти</a>
-            <a href="/login">Увійти як учень/вчитель</a>
-        </nav>
-    </div>
-</header>
-<div class="success-box" th:if="${output == 'teacherAdded'}">Вчителя успішно додано</div>
-<div class="success-box" th:if="${output == 'studentAdded'}">Учня успішно додано </div>
+<header th:replace="~{fragments/header :: publicHeader}"></header>
+
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
 <main>
-    <section class="hero">
+    <!-- ===================== HERO ===================== -->
+    <section class="hero" style="max-height: none; padding-bottom: 20px !important;">
         <div class="container">
-            <h1>Сучасна IT-школа для дітей та підлітків</h1>
-            <p>
-                Ми молода школа, але вже маємо амбітну команду, сильну навчальну програму
-                та великий потенціал вирости у топовий освітній IT-центр.
-            </p>
-            <div class="hero-buttons">
-                <a class="btn btn-primary" href="/openSource/signUpAsStudent">Спробувати перше заняття</a>
-                <a class="btn btn-secondary" href="/openSource/courses">Переглянути курси</a>
+            <div class="hero-content">
+                <div class="hero-badge">Топова IT-освіта для дітей</div>
+                <h1>Сучасна IT-школа для <span class="accent-word">дітей</span> та підлітків</h1>
+                <p>
+                    Ми молода школа з амбітною командою, сильною навчальною програмою
+                    та великим потенціалом вирости у топовий освітній IT-центр.
+                </p>
+                <div class="hero-buttons">
+                    <a class="btn btn-primary" href="/openSource/signUpAsStudent">🎯 Спробувати перше заняття</a>
+                    <a class="btn btn-secondary" href="/openSource/courses">Переглянути курси →</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-img-wrap">
+                    <img
+                            src="/images/kidPlaying.png"
+                            alt="Дитина за комп'ютером"
+                            loading="eager"
+                    >
+                    <div class="hero-stat hero-stat-1">
+                        <span class="stat-icon">👨‍🎓</span>
+                        <div class="stat-text">
+                            <div class="stat-num">1:1</div>
+                            <div class="stat-label">навчання</div>
+                        </div>
+                    </div>
+                    <div class="hero-stat hero-stat-2">
+                        <span class="stat-icon">⭐</span>
+                        <div class="stat-text">
+                            <div class="stat-num">5.0</div>
+                            <div class="stat-label">рейтинг</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
-    <section>
+
+    <!-- ===================== STATS BAR ===================== -->
+    <div class="stats-bar">
         <div class="container">
-            <h2>Чому обирають нас</h2>
+            <div class="stat-item reveal">
+                <span class="stat-number">7+</span>
+                <span class="stat-desc">Курсів</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item reveal reveal-delay-1">
+                <span class="stat-number">7</span>
+                <span class="stat-desc">Днів на тиждень</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item reveal reveal-delay-2">
+                <span class="stat-number">1:1</span>
+                <span class="stat-desc">Формат навчання</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item reveal reveal-delay-3">
+                <span class="stat-number">7-17</span>
+                <span class="stat-desc">Вік учнів</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== WHY US ===================== -->
+    <section class="why-section">
+        <div class="container">
+            <h2 class="reveal">Чому обирають нас</h2>
+            <p class="section-subtitle reveal reveal-delay-1">Ми будуємо не просто курси, а справжню спільноту майбутніх IT-фахівців</p>
             <div class="cards">
-                <div class="card">
+                <div class="card reveal reveal-delay-1">
+                    <span class="card-icon">🛠️</span>
                     <h3>Практичний підхід</h3>
-                    <p>Учні одразу створюють власні міні-проєкти та портфоліо.</p>
+                    <p>Учні одразу створюють власні міні-проєкти та портфоліо — без нудної теорії без практики.</p>
                 </div>
-                <div class="card">
+                <div class="card reveal reveal-delay-2">
+                    <span class="card-icon">💡</span>
                     <h3>Актуальні технології</h3>
-                    <p>Вивчаємо програмування, веброзробку, логіку та цифрові навички.</p>
+                    <p>Вивчаємо програмування, веброзробку, логіку та цифрові навички — те, що потрібне вже зараз.</p>
                 </div>
-                <div class="card">
+                <div class="card reveal reveal-delay-3">
+                    <span class="card-icon">🎯</span>
                     <h3>Комфортний темп</h3>
-                    <p>Групи невеликі, тому викладач приділяє увагу кожному учню.</p>
+                    <p>Формат 1 на 1 — викладач приділяє максимум уваги саме вашій дитині.</p>
                 </div>
-                <div class="card">
+                <div class="card reveal reveal-delay-4">
+                    <span class="card-icon">📊</span>
                     <h3>Підтримка батьків</h3>
-                    <p>Після занять надаємо короткий фідбек про прогрес дитини.</p>
+                    <p>Після занять надаємо короткий фідбек про прогрес дитини — ви завжди в курсі.</p>
                 </div>
             </div>
         </div>
     </section>
-    <section>
+
+    <!-- ===================== ABOUT ===================== -->
+    <section class="about-section">
         <div class="container">
-            <h2>Про нас</h2>
-            <div class="about-text">
-                <p>
-                    <strong>IT Kids School - сучасна IT освіта для дітей</strong>
+            <div class="about-img-col reveal">
+                <img
+                        src="/images/handReaching.png"
+                        alt="Онлайн навчання"
+                >
+                <div class="about-img-badge">
+                    <span class="badge-num">100%</span>
+                    <span class="badge-text">Онлайн</span>
+                </div>
+            </div>
+            <div class="about-content">
+                <h2 class="reveal">Про IT Kids School</h2>
+                <p class="about-lead reveal reveal-delay-1">
+                    IT Kids School — це молода школа, яка допомагає дітям і підліткам освоювати сучасні технології
+                    та розвивати навички в IT. Навчання 1 на 1 онлайн — з будь-якої точки України.
                 </p>
-                <p>
-                    IT Kids School - це молода школа, яка допомагає дітям і підліткам освоювати сучасні технології
-                    та розвивати свої навички в IT.
-                </p>
-                <h3>Ми пропонуємо зручне навчання:</h3>
-                <ul>
-                    <li>онлайн — з будь-якої точки України</li>
-                </ul>
+                <div class="about-features reveal reveal-delay-2">
+                    <div class="about-feature">
+                        <span class="feat-icon">🎓</span>
+                        <div class="feat-text">
+                            <h4>Навчання один на один</h4>
+                            <p>Індивідуальний підхід та максимум уваги до кожного учня</p>
+                        </div>
+                    </div>
+                    <div class="about-feature">
+                        <span class="feat-icon">⚡</span>
+                        <div class="feat-text">
+                            <h4>Багато практики</h4>
+                            <p>Реальні проєкти з першого заняття, не просто теорія</p>
+                        </div>
+                    </div>
+                    <div class="about-feature">
+                        <span class="feat-icon">🗓️</span>
+                        <div class="feat-text">
+                            <h4>Гнучкий розклад</h4>
+                            <p id="schedule">Заняття 7 днів на тиждень, коли зручно вам і викладачу</p>
+                        </div>
+                    </div>
+                </div>
 
-                <h3>Чому IT Kids School?</h3>
-                <p>
-                    IT — це про майбутнє, розвиток і нові можливості. Ми навчаємо дітей не просто користуватись
-                    технологіями, а розуміти їх і створювати власні проєкти.
-                </p>
-
-                <h3>Наш підхід:</h3>
-                <ul>
-                    <li>навчання один на один</li>
-                    <li>багато практики</li>
-                    <li>сучасні програми навчання</li>
-                    <li>підтримка викладача на кожному етапі</li>
-                </ul>
-
-                <h3>Як проходить навчання?</h3>
-                <p>
-                    Кожен учень отримує максимум уваги та можливість розвиватись у своєму темпі.
-                </p>
-
-                <h3>Напрямки навчання</h3>
-                <p>Ми пропонуємо курси для дітей 7-17 років:</p>
-                <ul>
-                    <li>програмування (Python, Java, C++)</li>
-                    <li>веб-розробка (HTML, CSS, JavaScript)</li>
-                    <li>дизайн (Figma, Photoshop)</li>
-                    <li>створення ігор</li>
-                    <li>Scratch</li>
-                </ul>
-                <p>Дитина обирає напрямок і глибоко його вивчає протягом курсу.</p>
-
-                <h3>Що отримають учні?</h3>
-                <p>Учні IT Kids School:</p>
-                <ul>
-                    <li>створюють власні сайти та проєкти</li>
-                    <li>вчаться програмувати та мислити логічно</li>
-                    <li>розвивають креативність і технічні навички</li>
-                    <li>отримують базу для майбутньої професії</li>
-                </ul>
-
-                <h3>Наша команда</h3>
-                <p>IT Kids School — це команда викладачів, які:</p>
-                <ul id="schedule">
-                    <li>вміють цікаво пояснювати</li>
-                    <li>працюють з дітьми та розуміють їх</li>
-                    <li>допомагають досягати результату</li>
-                </ul>
-                <h3 >Розклад</h3>
-                <p>IT Kids School — це компанія з гнучким розкладом:</p>
-                <ul >
-                    <li>заняття проходять 7 днів на тиждень</li>
-                    <li>коли виходить у вчителя</li>
-                </ul>
+                <h3 style="font-family:'Sora',sans-serif; font-size:17px; font-weight:700; margin-bottom:14px; color:#0f172a;" class="reveal reveal-delay-3">Напрямки навчання (7–17 років)</h3>
+                <div class="directions-grid reveal reveal-delay-4">
+                    <div class="direction-chip">🐍 Python / Java / C++</div>
+                    <div class="direction-chip">🌐 HTML, CSS, JS</div>
+                    <div class="direction-chip">🎨 Figma / Photoshop</div>
+                    <div class="direction-chip">🎮 Створення ігор</div>
+                    <div class="direction-chip">🧩 Scratch</div>
+                    <div class="direction-chip">📱 Веброзробка</div>
+                </div>
             </div>
         </div>
     </section>
-    <section>
+
+    <!-- ===================== COURSES ===================== -->
+    <section class="courses-section">
         <div class="container">
-            <h2>Наші курси</h2>
+            <h2 class="reveal">Наші курси</h2>
             <div class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
-                <div class="course-item" th:each="course : ${courses}">
+                <div class="course-item reveal" th:each="course : ${courses}">
                     <a class="course-link" href="/openSource/courses" th:text="${course.name}">Назва курсу</a>
-                    <span> - </span>
-                    <span th:text="${course.costPerLesson} + ' грн за заняття'">Вартість</span>
-                    <p class="course-description" th:data-full-text="${course.description != null and !course.description.isEmpty() ? course.description : 'Опис курсу скоро з''явиться.'}">
+                    <div class="course-price-tag" th:text="${course.costPerLesson} + ' грн / заняття'">Вартість</div>
+                    <p class="course-description" style="margin-top:10px; font-size:14px; color:#6b7280; line-height:1.6;"
+                       th:data-full-text="${course.description != null and !course.description.isEmpty() ? course.description : 'Опис курсу скоро з''явиться.'}">
                         Опис курсу
                     </p>
                 </div>
             </div>
-            <div  class="course-item" th:if="${courses == null or courses.isEmpty()}">
+            <div class="course-item reveal" th:if="${courses == null or courses.isEmpty()}">
                 Поки що курси ще додаються. Скоро тут буде повний каталог.
             </div>
         </div>
     </section>
-    <section id="teachers">
+
+    <!-- ===================== TEACHERS ===================== -->
+    <section class="teachers-section" id="teachers">
         <div class="container">
-            <h2>Наші викладачі</h2>
+            <h2 class="reveal">Наші викладачі</h2>
+            <p class="section-subtitle reveal reveal-delay-1">Команда фахівців, які вміють цікаво пояснювати та люблять працювати з дітьми</p>
             <div class="teachers-list" th:if="${teachers != null and !teachers.isEmpty()}">
-                <div class="person-card" th:each="teacher : ${teachers}">
+                <div class="person-card reveal" th:each="teacher : ${teachers}">
+                    <div class="teacher-avatar">👨‍💻</div>
                     <h3 th:text="${teacher.user.name}">Ім'я викладача</h3>
                     <p class="meta" th:text="'Вік: ' + ${teacher.age}">Вік</p>
                     <p class="meta teacher-description" th:data-full-text="${teacher.comment != null and !teacher.comment.isEmpty() ? teacher.comment : 'Опис викладача скоро з''явиться.'}">
@@ -160,67 +993,84 @@
                     </p>
                 </div>
             </div>
-            <div class="person-card" th:if="${teachers == null or teachers.isEmpty()}">
+            <div class="person-card reveal" th:if="${teachers == null or teachers.isEmpty()}">
                 Список викладачів скоро з'явиться.
             </div>
         </div>
     </section>
+
+    <!-- ===================== TEACHER CTA ===================== -->
     <section>
-        <div class="container teacher-cta">
-            <h2>Ви викладач?</h2>
-            <p>Тоді записуйтеся до IT Kids School та приєднуйтеся до нашої команди.</p>
-            <div class="hero-buttons-center hero-buttons">
-                <a class="btn btn-primary" href="/openSource/signUpAsTeacher">Стати викладачем</a>
+        <div class="container">
+            <div class="teacher-cta reveal">
+                <h2>Ви викладач?</h2>
+                <p class="mb-10">Тоді записуйтеся до IT Kids School та приєднуйтеся до нашої команди.</p>
+                <div class="hero-buttons-center hero-buttons">
+                    <a class="btn btn-primary a-homepage" href="/openSource/signUpAsTeacher">Стати викладачем →</a>
+                </div>
             </div>
         </div>
     </section>
-    <section>
+
+    <!-- ===================== COMMENTS ===================== -->
+    <section class="comments-section">
         <div class="container">
-            <h2>Коментарі учнів та батьків</h2>
+            <h2 class="reveal">Коментарі учнів та батьків</h2>
+            <p class="section-subtitle reveal reveal-delay-1">Що кажуть ті, хто вже навчається у нас</p>
             <div class="comments-list" th:if="${comments != null and !comments.isEmpty()}">
-                <div class="comment-card" th:each="comment : ${comments}">
+                <div class="comment-card reveal" th:each="comment : ${comments}">
+                    <div class="star-rating">★★★★★</div>
                     <p th:text="${comment.commentText}">Текст коментаря</p>
-                    <p class="meta">
-                        Від:
-                        <span th:text="${comment.student != null and comment.student.user.name != null and !comment.student.user.name.isEmpty() ? comment.student.user.name : 'Анонім'}">Ім'я учня</span>
-                        |
+                    <p class="meta" style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9;">
+                        <strong th:text="${comment.student != null and comment.student.user.name != null and !comment.student.user.name.isEmpty() ? comment.student.user.name : 'Анонім'}">Ім'я учня</strong>
+                        &nbsp;·&nbsp;
                         Викладач:
                         <span th:text="${comment.teacher != null and comment.teacher.user.name != null and !comment.teacher.user.name.isEmpty() ? comment.teacher.user.name : 'Не вказано'}">Ім'я викладача</span>
                     </p>
                     <p class="meta" th:text="'Оцінка: ' + ${comment.ratingOfStars} + ' / 5'">Рейтинг</p>
                 </div>
             </div>
-            <div class="comment-card" th:if="${comments == null or comments.isEmpty()}">
+            <div class="comment-card reveal" th:if="${comments == null or comments.isEmpty()}">
                 Поки що немає коментарів, але скоро тут буде фідбек від наших учнів.
             </div>
         </div>
     </section>
+
+    <!-- ===================== FINAL CTA ===================== -->
     <section>
-        <div class="container cta">
-            <h2>Приєднуйтесь до IT Kids School</h2>
-            <p>Навіть як молода школа, ми вже будуємо сильну базу і маємо реальний потенціал для росту.</p>
-            <div class="hero-buttons-center hero-buttons">
-                <a class="btn btn-primary" href="/openSource/signUpAsStudent">Записатися</a>
-                <a class="btn-outline-dark btn btn-secondary" href="#">Поставити запитання</a>
+        <div class="container">
+            <div class="cta reveal">
+                <h2>Приєднуйтесь до IT Kids School</h2>
+                <p class="mb-10">Навіть як молода школа, ми вже будуємо сильну базу і маємо реальний потенціал для росту.</p>
+                <div class="hero-buttons-center hero-buttons">
+                    <a class="btn btn-primary mt-10 a-homepage" href="/openSource/signUpAsStudent">🎯 Записатися зараз</a>
+                </div>
             </div>
         </div>
     </section>
 </main>
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 
 <script src="/mainSrcipt.js"></script>
+<script>
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+</script>
+<a href="#" id="back-to-top" class="back-to-top" title="Вгору">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m18 15-6-6-6 6"/>
+    </svg>
+</a>
 </body>
 </html>

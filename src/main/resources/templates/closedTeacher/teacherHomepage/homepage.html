@@ -3,21 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редагування викладача</title>
+    <title>IT Kids School - Головна</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
-            <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
-            <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
 
 <section class="hero">
     <div class="container">
@@ -28,12 +19,8 @@
 
 
 <div class="container">
-    <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
-    <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
-    <div class="success-box" th:if="${output == 'teacherEdited'}">Вчителя Успішно редаговано</div>
-    <div class="success-box" th:if="${output == 'deleteAccepted'}">Видалення уроку успішно прийнято</div>
-    <div class="success-box" th:if="${output == 'deleteDenyed'}">Видалення уроку успішно відхилено</div>
-    <p class="d-none" th:text="${teacher.id}" id="id"></p>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <p class="d-none" th:text="${teacher.id}" id="id" style="display: none"></p>
     <form id="form" th:action="@{/teacher/{id}/homepage/OLDPASS(id=${teacher.id})}" th:object="${teacher}"
           method="post">
         <input type="hidden" th:field="*{id}">
@@ -115,6 +102,9 @@
             </div>
             <div class="block">
                 <h2>Вільний час</h2>
+                <p class="hint" style="margin-bottom: 10px;">
+                    Порада: можна затиснути ліву кнопку миші та тягнути по клітинках, щоб швидко вибрати кілька комірок.
+                </p>
 
                 <table class="times-table">
                     <thead>
@@ -150,20 +140,7 @@
     </form>
 
 </div>
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 <!--<script>-->
 <!--    function searchCourse() {-->
 <!--        // Declare variables-->

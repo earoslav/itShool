@@ -1,24 +1,59 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редагування викладача</title>
-
+    <title>IT Kids School - Інформація про вчителя</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
+    <style>
+        /* teacherInfo page fixes — desktop only */
+        @media (min-width: 769px) {
+            .d-grid {
+                display: grid;
+            }
+            .d-block {
+                display: block;
+            }
+            .h-20 {
+                height: 20px;
+            }
+            .color-black {
+                color: #111;
+            }
+            .mb-50 {
+                margin-bottom: 50px;
+            }
+            .ml-15p {
+                margin-left: 0;
+            }
+            .btn-small {
+                width: auto !important;
+                padding: 6px 14px !important;
+                font-size: 14px !important;
+                margin-top: 8px !important;
+            }
+            /* Ensure the financial d-flex block spans full width in grid */
+            .form-grid > .d-flex {
+                grid-column: 1 / -1;
+            }
+            /* Courses block */
+            .form-grid > .block {
+                grid-column: 1 / -1;
+            }
+            /* Free time section */
+            .form-grid > .container {
+                grid-column: 1 / -1;
+                margin-top: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a href="/admin/homepage">Головна</a>
-            <a href="/admin/students">Учні</a>
-            <a href="/admin/teachers">Викладачі</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
 
 <section class="hero">
     <div class="container">
@@ -29,234 +64,161 @@
 
 
 <div class="container">
-    <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
-    <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
-    <div class="error-box" th:if="${output == 'notPicked'}">Ви не вибрали учня</div>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
     <input type="hidden" th:field="${teacher.id}">
     <p class="d-none" id="teacherId" th:text="${teacher.id}"></p>
-    <div>
-        <div class="form-grid">
-            <div class="field">
-                <label>Ім'я:</label>
-                <input readonly th:field="${teacher.user.name}">
-            </div>
-
-            <div class="field">
-                <label>Вік:</label>
-                <input readonly type="number" th:field="${teacher.age}">
-            </div>
-
-            <div class="field">
-                <label>Email:</label>
-                <input readonly type="text" th:field="${teacher.user.email}">
-            </div>
-
-            <div class="field">
-                <label>Телефон:</label>
-                <input readonly type="text" th:field="${teacher.phoneNumber}">
-            </div>
-
-            <div class="field">
-                <label>Telegram:</label>
-                <input readonly type="text" th:field="${teacher.tgUsername}">
-            </div>
-
-            <div class="field">
-                <label>Коментар:</label>
-                <input readonly type="text" th:field="${teacher.comment}">
-            </div>
-
-            <div class="field">
-                <label>Статус:</label>
-                <input readonly th:classappend="${teacher.approved==1} ? 'status' : 'status not-approved'"
-                       th:value="${teacher.approved==1 ? 'Підтверджений' : 'Непідтверджений'}">
-            </div>
-            <div class="d-flex">
-                <div class="block">
-                    <div class="field">
-                        <label>Невиплачені гроші::</label>
-                        <input readonly type="text" th:field="${teacher.unpaidMoney}">
-                    </div>
-                    <div class="field">
-                        <label>Всього зароблено(частка вчителя за місяць):</label>
-                        <input readonly type="text" th:field="${allEarnings}">
-                    </div>
-                    <div class="field">
-                        <label>Наша частка(за місяць):</label>
-                        <input readonly type="text" th:field="${ourShare}">
-                    </div>
+    <div class="form-card">
+        <form>
+            <div class="form-grid">
+                <div class="field">
+                    <label>Ім'я:</label>
+                    <input readonly th:field="${teacher.user.name}">
                 </div>
-                <div class="block">
-                    <form class="mb-50"
-                          th:action="@{/admin/teacher/{teachId}/setEarnedMoneyToZero(teachId=${teacher.id})}"
-                          method="post">
-                        <button class="btn" type="submit">Онулити невиплачені гроші</button>
-                    </form>
-                    <form class="d-block"
-                          th:action="@{/admin/teacher/{teachId}/setEarnedMoney(teachId=${teacher.id})}"
-                          method="post">
-                        <input name="newUnpaidMoney" type="text" th:field="${teacher.unpaidMoney}">
-                        <button class="btn" type="submit">Змінити невиплачені гроші</button>
-                    </form>
+
+                <div class="field">
+                    <label>Вік:</label>
+                    <input readonly type="number" th:field="${teacher.age}">
                 </div>
-            </div>
 
+                <div class="field">
+                    <label>Email:</label>
+                    <input readonly type="text" th:field="${teacher.user.email}">
+                </div>
 
-            <div class="field">
-                <label>Уроки з учнем:</label>
-                <input type="text" id="myInputStudents" class="myInput" onkeyup="searchStudentsInTeacherInfo()"
-                       placeholder="Search for names..">
-                <div class="coursesAndNames">
-                    <div class="d-flex">
-                        <div class="d-grid" id="studentIds">
-                            <input class="h-20" th:each="student : ${students}" type="checkbox"
-                                   th:value="${student.id}">
+                <div class="field">
+                    <label>Телефон:</label>
+                    <input readonly type="text" th:field="${teacher.phoneNumber}">
+                </div>
+
+                <div class="field">
+                    <label>Telegram:</label>
+                    <input readonly type="text" th:field="${teacher.tgUsername}">
+                </div>
+
+                <div class="field">
+                    <label>Коментар:</label>
+                    <input readonly type="text" th:field="${teacher.comment}">
+                </div>
+
+                <div class="field">
+                    <label>Статус:</label>
+                    <input readonly th:classappend="${teacher.approved==1} ? 'status' : 'status not-approved'"
+                           th:value="${teacher.approved==1 ? 'Підтверджений' : 'Непідтверджений'}">
+                </div>
+                <div class="d-flex" style="display:flex; gap:30px; align-items:flex-start; grid-column: 1 / -1;">
+                    <div class="block">
+                        <div class="field">
+                            <label>Невиплачені гроші::</label>
+                            <input readonly type="text" th:field="${teacher.unpaidMoney}">
                         </div>
-                        <span class="opacity-0">emp</span>
-                        <div class="d-grid" id="studentNames">
-                            <label class="color-black" th:each="student : ${students}" th:text="${student.user.name+' '+student.user.email}"></label>
+                        <div class="field">
+                            <label>Всього зароблено(частка вчителя за місяць):</label>
+                            <input readonly type="text" th:field="${allEarnings}">
+                        </div>
+                        <div class="field">
+                            <label>Наша частка(за місяць):</label>
+                            <input readonly type="text" th:field="${ourShare}">
                         </div>
                     </div>
+                    <div class="block">
+                        <form class="mb-50"
+                              th:action="@{/admin/teacher/{teachId}/setEarnedMoneyToZero(teachId=${teacher.id})}"
+                              method="post">
+                            <button class="btn" type="submit">Онулити невиплачені гроші</button>
+                        </form>
+                        <form class="d-block"
+                              th:action="@{/admin/teacher/{teachId}/setEarnedMoney(teachId=${teacher.id})}"
+                              method="post">
+                            <input name="newUnpaidMoney" type="text" th:field="${teacher.unpaidMoney}">
+                            <button class="btn" type="submit">Змінити невиплачені гроші</button>
+                        </form>
+                    </div>
                 </div>
-                <button class="btn-small btn btn-blue">
-                    <a id="link" th:href="@{/admin/teacher/{idTeach}/lessonsWithStudent/0(idTeach=${teacher.id})}">Перейти</a>
-                </button>
 
+
+                <div class="field">
+                    <label>Уроки з учнем:</label>
+                    <input type="text" id="myInputStudents" class="myInput" onkeyup="searchStudentsInTeacherInfo()"
+                           placeholder="Search for names..">
+                    <div class="coursesAndNames">
+                        <div class="d-flex" style="display: flex !important;">
+                            <div class="d-grid" id="studentIds">
+                                <input class="h-20" th:each="student : ${students}" type="checkbox"
+                                       th:value="${student.id}">
+                            </div>
+                            <span class="opacity-0">emp</span>
+                            <div class="d-grid" id="studentNames">
+                                <label class="color-black" th:each="student : ${students}" th:text="${student.user.name+' '+student.user.email}"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <a id="link" class="btn-small btn btn-blue" th:href="@{/admin/teacher/{idTeach}/lessonsWithStudent/0(idTeach=${teacher.id})}">Перейти</a>
+
+                </div>
+
+                <!-- Курси -->
+                <div class="ml-15p block">
+                    <h2>Курси</h2>
+
+                    <!-- список -->
+                    <ul id="coursesList">
+                        <li th:each="tc : ${teacher.teacherCourses}"
+                            th:text="${tc.course.name}">
+                        </li>
+                    </ul>
+
+                    <!-- select -->
+
+
+                    <!-- hidden inputs -->
+                    <div id="coursesInputs"></div>
+                </div>
+                <!-- Вільний час -->
+                <div class="container" style="@media(max-width: 768px) {
+                max-width: 350px;
+                }">
+                    <h2>Вільний час</h2>
+                    <p class="hint" style="margin-bottom: 10px;">
+                        Порада: можна затиснути ліву кнопку миші та тягнути по клітинках, щоб швидко вибрати кілька комірок.
+                    </p>
+
+                    <table class="times-table">
+                        <thead>
+                        <tr>
+                            <th>Година</th>
+                            <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="hour : ${hours}">
+                            <th th:text="${hour}"></th>
+
+                            <td th:each="day : ${days}">
+                                <input type="checkbox"
+                                       class="freeTimeCheckbox"
+                                       name="freeTimeIds"
+                                       th:each="ft : ${freeTimes}"
+                                       th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0') }"
+                                       th:value="${ft.id}"
+                                       th:checked="${teacherFreeTimes.contains(ft.id)}">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
-            <!-- Курси -->
-            <div class="ml-15p block">
-                <h2>Курси</h2>
-
-                <!-- список -->
-                <ul id="coursesList">
-                    <li th:each="tc : ${teacher.teacherCourses}"
-                        th:text="${tc.course.name}">
-                    </li>
-                </ul>
-
-                <!-- select -->
-
-
-                <!-- hidden inputs -->
-                <div id="coursesInputs"></div>
-            </div>
-            <!-- Вільний час -->
-            <div class="block">
-                <h2>Вільний час</h2>
-
-                <table class="times-table">
-                    <thead>
-                    <tr>
-                        <th>Година</th>
-                        <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <tr th:each="hour : ${hours}">
-                        <th th:text="${hour}"></th>
-
-                        <td th:each="day : ${days}">
-                            <input type="checkbox"
-                                   class="freeTimeCheckbox"
-                                   name="freeTimeIds"
-                                   th:each="ft : ${freeTimes}"
-                                   th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0') }"
-                                   th:value="${ft.id}"
-                                   th:checked="${teacherFreeTimes.contains(ft.id)}">
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
 
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
-<!--<script>-->
-<!--    function searchStudents() {-->
-<!--        // Declare variables-->
-<!--        var input, filter, ul, a, b, i, txtValue;-->
-<!--        input = document.getElementById('myInputStudents');-->
-<!--        let studentIds = document.getElementById('studentIds').getElementsByTagName("input");-->
-<!--        let studentNames = document.getElementById('studentNames').getElementsByTagName("label");-->
-<!--        filter = input.value.toUpperCase();-->
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 
-<!--        // Loop through all list items, and hide those who don't match the search query-->
-<!--        for (i = 0; i < studentNames.length; i++) {-->
-<!--            a = studentNames[i];-->
-<!--            b = studentIds[i]-->
-<!--            txtValue = a.textContent || a.innerText;-->
-<!--            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
-<!--                studentNames[i].style.display = "";-->
-<!--                studentIds[i].style.display = "";-->
-<!--            } else {-->
-<!--                studentNames[i].style.display = "none";-->
-<!--                studentIds[i].style.display = "none";-->
-<!--            }-->
-<!--        }-->
-<!--    }-->
-<!--</script>-->
-<!--<script>-->
-<!--    let teachId = document.querySelector("#teacherId").innerText-->
-<!--    let link = document.querySelector("#link")-->
-<!--    let students = document.querySelector("#studentIds")-->
-<!--    let stIds = students.getElementsByTagName("input")-->
-<!--    let stId = 0-->
-<!--    for (let i = 0; i < stIds.length; i++) {-->
-<!--        stIds[i].addEventListener('change', () => {-->
-<!--            if (stIds[i].checked) {-->
-<!--                stId = stIds[i].value;-->
-<!--                link.href = `/admin/teacher/` + teachId + `/lessonsWithStudent/` + stId;-->
-<!--            }-->
-<!--        });-->
-<!--    }-->
-
-<!--</script>-->
-<!--<script>-->
-<!--    let freeTimeChanged = false;-->
-
-<!--    document.querySelectorAll('.freeTimeCheckbox').forEach(cb => {-->
-<!--        cb.addEventListener('change', () => {-->
-<!--            freeTimeChanged = true;-->
-<!--        });-->
-<!--    });-->
-
-<!--    function handleSubmit(event) {-->
-<!--        if (freeTimeChanged) {-->
-<!--            return confirm("Якщо ви змінете свої вільні часи то ваші заняття з учнями на ці часи будуть видалені. Продовжити?");-->
-<!--        }-->
-<!--        return true;-->
-<!--    }-->
-
-<!--    function togglePassword() {-->
-<!--        const input = document.getElementById("passwordField");-->
-<!--        const btn = event.target;-->
-
-<!--        if (input.type === "password") {-->
-<!--            input.type = "text";-->
-<!--            btn.innerText = "Сховати";-->
-<!--        } else {-->
-<!--            input.type = "password";-->
-<!--            btn.innerText = "Показати";-->
-<!--        }-->
-<!--    }-->
-<!--</script>-->
 <script src="/mainSrcipt.js"></script>
+<a href="#" id="back-to-top" class="back-to-top" title="Вгору">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m18 15-6-6-6 6"/>
+    </svg>
+</a>
 </body>
 </html>

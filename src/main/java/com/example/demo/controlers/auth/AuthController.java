@@ -13,6 +13,6 @@ public class AuthController {
         if (error != null) {
             model.addAttribute("output", error);
         }
-        return "/auth/login";
+        return "auth/login";
     }
 }

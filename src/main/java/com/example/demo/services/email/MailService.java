@@ -432,6 +432,7 @@ public class MailService {
 
     public void sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(Mail mail, StudentDTO student, LocalDateTime oldTime, LocalDateTime newTime, float duration) throws MessagingException {
         send(mail, "emailTemplates/toTeacher/forEdit/mailTemplateForEditLessonTimeByStudent", Map.of(
+                "student", student,
                 "timeLessonOld", oldTime,
                 "timeLessonNew", newTime,
                 "duration", duration
@@ -452,4 +453,5 @@ public class MailService {
                 "teacher", teacher
         ));
     }
+
 }

@@ -4,25 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Homepage</title>
-
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
 
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a href="/admin/homepage">Головна</a>
-            <a href="/admin/students">Учні</a>
-            <a href="/admin/teachers">Викладачі</a>
-            <a href="/logout">Вийти</a>
-
-        </nav>
-    </div>
-</header>
-<div class="success-box" th:if="${output == 'teacherAdded'}">Вчителя успішно додано</div>
-<div class="success-box" th:if="${output == 'studentAdded'}">Учня успішно додано </div>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
 
 <section class="hero">
     <div class="container">
@@ -33,44 +21,161 @@
 <div class="container container-flex">
     <div class="card">
         <h2>Інформація про адміністратора</h2>
+        <div class="block">
+            <div class="info">
+                <span class="label">ID:</span>
+                <span th:text="${admin.id}">1</span>
+            </div>
 
-        <div class="info">
-            <span class="label">ID:</span>
-            <span th:text="${admin.id}">1</span>
+            <div class="info">
+                <span class="label">Ім'я:</span>
+                <span th:text="${admin.user.name}">Admin Name</span>
+            </div>
+
+            <div class="info">
+                <span class="label">Email:</span>
+                <span th:text="${admin.user.email}">admin@email.com</span>
+            </div>
         </div>
 
-        <div class="info">
-            <span class="label">Ім'я:</span>
-            <span th:text="${admin.user.name}">Admin Name</span>
-        </div>
-
-        <div class="info">
-            <span class="label">Email:</span>
-            <span th:text="${admin.user.email}">admin@email.com</span>
-        </div>
 
     </div>
-    <div class="buttons">
-    <a th:href="@{/admin/addTeacher}" class="btn btn-green">Створити вчителя</a>
-    </div>
-    <div class="buttons">
-        <a th:href="@{/admin/addStudent}" class="btn btn-green">Створити учня</a>
+    <div class="changeDisplay">
+        <div class="buttons ml-20">
+            <a th:href="@{/admin/addTeacher}" class="btn btn-green">Створити вчителя</a>
+        </div>
+        <div class="buttons ml-20">
+            <a th:href="@{/admin/addStudent}" class="btn btn-green">Створити учня</a>
+        </div>
     </div>
 </div>
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
+
+<div class="container" style="margin-top: 30px; display: flex; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 1000px; min-width: 65%; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border-radius: 24px; padding: 40px; background: #fff;">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #1a1a1a; font-weight: 800; font-size: 28px; letter-spacing: -0.5px;">💸 Статистика доходів вчителів</h2>
+        <div style="position: relative; height: 500px; width: 100%;">
+            <canvas id="earningsChart"></canvas>
         </div>
     </div>
-</footer>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const earningsData = /*[[${teacherEarnings}]]*/ {};
+    
+    const labels = Object.keys(earningsData);
+    const data = Object.values(earningsData);
+
+    const generateColors = (count) => {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            const hue = (i * (360 / count)) % 360;
+            colors.push(`hsla(${hue}, 75%, 85%, 0.85)`);
+        }
+        return colors;
+    };
+
+    const generateBorderColors = (count) => {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            const hue = (i * (360 / count)) % 360;
+            colors.push(`hsla(${hue}, 70%, 55%, 1)`);
+        }
+        return colors;
+    };
+
+    const ctx = document.getElementById('earningsChart').getContext('2d');
+    
+    // Fix for blurry text on high DPI screens
+    const dpr = window.devicePixelRatio || 1;
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Зароблено (грн)',
+                data: data,
+                backgroundColor: generateColors(labels.length),
+                borderColor: generateBorderColors(labels.length),
+                borderWidth: 2,
+                borderRadius: 14,
+                hoverBackgroundColor: generateBorderColors(labels.length)
+            }]
+        },
+        options: {
+            devicePixelRatio: dpr * 1.2, // Boost resolution for crisp text
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.04)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#444',
+                        font: { 
+                            size: 14,
+                            family: "'Inter', sans-serif"
+                        },
+                        callback: function(value) {
+                            return value + ' ₴';
+                        }
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#222',
+                        font: function(context) {
+                            const avg = context.chart.width / labels.length;
+                            let size = 16;
+                            if (avg < 50) size = 14;
+                            if (avg < 30) size = 12;
+                            return {
+                                size: size,
+                                weight: '600',
+                                family: "'Inter', sans-serif"
+                            };
+                        },
+                        minRotation: 90,
+                        maxRotation: 90
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#fff',
+                    titleColor: '#111',
+                    titleFont: { size: 16, weight: '700' },
+                    bodyColor: '#444',
+                    bodyFont: { size: 14 },
+                    borderColor: 'rgba(0,0,0,0.1)',
+                    borderWidth: 1,
+                    padding: 15,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return ' Дохід: ' + context.parsed.y + ' ₴';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    /*]]>*/
+</script>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 <script src="/mainSrcipt.js"></script>
 </body>
 </html>

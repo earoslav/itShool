@@ -5,22 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>IT Kids School | Розклад занять</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
-            <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
-            <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
 
 <section class="hero">
     <div class="container">
@@ -29,23 +20,7 @@
     </div>
 </section>
     <div class="week-navigation">
-        <div class="error-box" th:if="${output=='tooLate'}">Вибачте, але редагувати можна лише за 12 годин до заняття.</div>
-        <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так.</div>
-        <div class="error-box" th:if="${output == 'lessonBeforeNow'}">Вибачте, але додати урок можна тільки на майбутній час, виберіть пізнішу дату.</div>
-        <div class="error-box" th:if="${output == 'courseNotFound'}">Вибачте, але ви не вибрали курс або курс не знайдено.</div>
-        <div class="error-box" th:if="${output == 'studentNotFound'}">Вибачте, але ви не вибрали учня або учня не знайдено.</div>
-        <div class="error-box" th:if="${output == 'lessonAfterAcceptedTime'}">Вибачте, але час який ви вибрали не є легітивним в компанії.</div>
-        <div class="error-box" th:if="${output == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.</div>
-        <div class="error-box" th:if="${output == 'timeNotEmpty'}">Вибачте, але час який ви вибрали у вас вже зайнятий іншим/іншими зайняттями.</div>
-        <div class="error-box" th:if="${output == 'itemNotPicked'}">Вибачте, але ви не вибрали одне з полів</div>
-        <div class="error-box" th:if="${output == 'tooEarly'}">Вибачте, але ще зарано щоб відзначити заняття "було".</div>
-        <div class="error-box" th:if="${output == 'lessonOverlap'}">Вибачте, але урок перетинається з іншим вашим уроком чи уроком учня.</div>
-        <div class="success-box" th:if="${output == 'lessonStatusChanged'}">Урок успішно позначений "було".</div>
-        <div class="success-box" th:if="${output == 'lessonAdded'}">Урок успішно додано </div>
-        <div class="success-box" th:if="${output == 'courseAdded'}">Курс успішно додано </div>
-        <div class="success-box" th:if="${output == 'lessonDeleted'}">Урок успішно видалено</div>
-        <div class="success-box" th:if="${output == 'courseDeleted'}">Курс успішно видалено</div>
-        <div class="success-box" th:if="${output == 'lessonEdited'}">Урок успішно змінено</div>
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
     </div>
 
     <div class="table-wrapper lesson-table-wrapper" id="tableWrapper">
@@ -64,7 +39,7 @@
                 <td
                     th:each="day : ${weekDays}">
                     <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
-                        <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='wasnt'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" class="btn-red form-btn lesson-segment-continuation"
+                        <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" class="btn-red form-btn lesson-segment-continuation"
                                 th:data-sn="${lessonDur.student.user.name}"
                                 th:data-cn="${lessonDur.course.name}"
                                 th:data-hour="${lessonDur.lessonTime.toString().split('T')[1].split(':')[0]}"
@@ -73,7 +48,7 @@
                                 th:data-status="${lessonDur.status}"
                                 th:onclick="'openPastLessonPopup(this)'">
                         </button>
-                        <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='was'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"  class="btn-darkgreen form-btn lesson-segment-continuation"
+                        <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WAS'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"  class="btn-darkgreen form-btn lesson-segment-continuation"
                                 th:data-sn="${lessonDur.student.user.name}"
                                 th:data-cn="${lessonDur.course.name}"
                                 th:data-hour="${lessonDur.lessonTime.toString().split('T')[1].split(':')[0]}"
@@ -82,7 +57,7 @@
                                 th:data-status="${lessonDur.status}"
                                 th:onclick="'openPastLessonPopup(this)'">
                         </button>
-                        <button  th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='will'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"   class="btn-green form-btn lesson-segment-continuation"
+                        <button  th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WILL'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"   class="btn-green form-btn lesson-segment-continuation"
                                 th:data-date="${day}"
                                 th:data-id="${lessonDur.id}"
 
@@ -100,7 +75,7 @@
 
 
 
-                        <button th:if="${lesson != null and (lesson.status=='wasnt' or lesson.status=='wont') }" class="btn-red form-btn lesson-segment-start"
+                        <button th:if="${lesson != null and (lesson.status=='WASNT' or lesson.status=='WONT') }" class="btn-red form-btn lesson-segment-start"
                                 th:data-sn="${lesson.student.user.name}"
                                 th:data-cn="${lesson.course.name}"
                                 th:data-hour="${hour}"
@@ -110,7 +85,7 @@
                                 th:onclick="'openPastLessonPopup(this)'">
                             <span class="lesson-title" th:text="${lesson.course.name}"></span>
                         </button>
-                        <button th:if="${lesson != null and (lesson.status=='was')}"  class="btn-darkgreen form-btn lesson-segment-start"
+                        <button th:if="${lesson != null and (lesson.status=='WAS')}"  class="btn-darkgreen form-btn lesson-segment-start"
                                 th:data-sn="${lesson.student.user.name}"
                                 th:data-cn="${lesson.course.name}"
                                 th:data-hour="${hour}"
@@ -120,7 +95,7 @@
                                 th:onclick="'openPastLessonPopup(this)'">
                             <span class="lesson-title" th:text="${lesson.course.name}"></span>
                         </button>
-                        <button th:if="${lesson != null and (lesson.status=='will')}"    class="btn-green form-btn lesson-segment-start"
+                        <button th:if="${lesson != null and (lesson.status=='WILL')}"    class="btn-green form-btn lesson-segment-start"
                                 th:data-date="${day}"
                                 th:data-id="${lesson.id}"
 
@@ -153,23 +128,23 @@
             </tbody>
         </table>
     </div>
-    <div class="popup-overlay hide" id="pastLessonPopup">
-        <div id="pastLessonPopupMain" class="popup-content">
-            <div class="popup-header">
-                <h3>розглянути заняттям</h3>
-                <span class="popup-close" onclick="closePopup()">&times;</span>
-            </div>
-            <div class="popup-body">
-                <p><strong>Дата:</strong> <span id="popupDateInPastPopup"></span></p>
-                <p><strong>Час:</strong> <span id="popupTimeInPastPopup"></span></p>
-                <p><strong>Тривалість:</strong> <span id="durInPast"></span> год</p>
-                <p><strong>Учень:</strong> <span id="studentNameInPastPopup"></span></p>
-                <p><strong>Курс:</strong> <span id="courseNameInPastPopup"></span></p>
-                <p><strong>статус:</strong> <span id="statusInPastPopup"></span></p>
+    <div id="lessonPopup" class="popup-overlay hide">
+        <div class="popup-overlay hide" id="pastLessonPopup">
+            <div id="pastLessonPopupMain" class="popup-content">
+                <div class="popup-header">
+                    <h3>розглянути заняттям</h3>
+                    <span class="popup-close" onclick="closePopup()">&times;</span>
+                </div>
+                <div class="popup-body">
+                    <p><strong>Дата:</strong> <span id="popupDateInPastPopup"></span></p>
+                    <p><strong>Час:</strong> <span id="popupTimeInPastPopup"></span></p>
+                    <p><strong>Тривалість:</strong> <span id="durInPast"></span> год</p>
+                    <p><strong>Учень:</strong> <span id="studentNameInPastPopup"></span></p>
+                    <p><strong>Курс:</strong> <span id="courseNameInPastPopup"></span></p>
+                    <p><strong>статус:</strong> <span id="statusInPastPopup"></span></p>
+                </div>
             </div>
         </div>
-    </div>
-    <div id="lessonPopup" class="popup-overlay hide">
         <div id="popupMain" class="popup-content">
             <div class="popup-header">
                 <h3>Керування заняттям</h3>
@@ -190,13 +165,13 @@
             <div class="popup-footer">
 
                 <button id="editLessonBtn" class="popup-btn edit-btn">✏️ Змінити</button>
-                <form action="" method="post" id="deleteLessonForm">
-                    <button id="deleteLessonBtn" class="popup-btn delete-btn" >🗑️ Видалити одиничне заняття</button>
+                <form class="popupForm" th:action="@{/teacher/{id}/lessons/deleteLesson/0(id=${teacher.id})}" method="post" id="deleteLessonForm">
+                    <button id="deleteLessonBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')" >🗑️ Видалити одиничне заняття</button>
                 </form>
-                <form action="" method="post" id="deleteCourseForm">
-                    <button id="deleteCourseBtn" class="popup-btn delete-btn" >🗑️ Видалити курс з вчителем</button>
+                <form class="popupForm" th:action="@{/teacher/{id}/lessons/deleteCourse/0(id=${teacher.id})}" method="post" id="deleteCourseForm">
+                    <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')" >🗑️ Видалити курс з вчителем</button>
                 </form>
-                <form action="" method="post" id="setWasForm">
+                <form class="popupForm" th:action="@{/teacher/{id}/addMoneyByLesson/0(id=${teacher.id})}" method="post" id="setWasForm">
                     <button type="submit" id="setWasBtn" class="popup-btn mark-was-btn">Познчити "було"</button>
                 </form>
                 <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>
@@ -219,7 +194,7 @@
                 </div>
 
                 <div class="popup-footer">
-                    <form th:action="@{/teacher/{id}/lessons/editLesson/notPicked(id=${teacher.id})}" method="post" id="editForm">
+                    <form class="popupForm" th:action="@{/teacher/{id}/lessons/editLesson/notPicked(id=${teacher.id})}" method="post" id="editForm">
                         <button type="submit" id="editLessonBtnInEdit" class="popup-btn edit-btn" >✏️ Змінити заняття(на один раз)</button>
                     </form>
 
@@ -270,10 +245,10 @@
             </div>
 
             <div class="popup-action-row">
-                <form th:action="@{/teacher/{teachId}/lessons/addLesson/0/0/0/0(teachId=${teacher.id})}" method="post" id="addLessonForm">
+                <form class="popupForm" th:action="@{/teacher/{teachId}/lessons/addLesson/0/0/0/0(teachId=${teacher.id})}" method="post" id="addLessonForm">
                     <button type="submit" id="addLessonBtnInEmptyPopup" class="popup-btn edit-btn" >Додати одне заняття</button>
                 </form>
-                <form th:action="@{/teacher/{teachId}/lessons/addCourse/0/0/0/0(teachId=${teacher.id})}" method="post" id="addCourseForm">
+                <form class="popupForm" th:action="@{/teacher/{teachId}/lessons/addCourse/0/0/0/0(teachId=${teacher.id})}" method="post" id="addCourseForm">
                     <button type="submit" id="addCourseBtnInEmptyPopup" class="popup-btn edit-btn" >Додати курc з учнем</button>
                 </form>
             </div>
@@ -282,20 +257,7 @@
         </div>
     </div>
     </div>
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="footer-contact">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 </div>
 
 <!--<script>-->

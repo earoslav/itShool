@@ -3,22 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Title</title>
+    <title>IT Kids School - Учні</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
-            <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
-            <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
-    <div class="success-box" th:if="${output == 'studentDeleted'}">Учня успішно видалено</div>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
     <section class="hero">
         <div class="container">
             <p th:text="'Вчитель: '+${teacher.user.name}"></p>
@@ -70,40 +61,8 @@
     </div>
 </div>
 
-<footer>
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
-<!--<script>-->
-<!--    function searchStudent() {-->
-<!--        // Declare variables-->
-<!--        var input, filter, students, a, i, txtValue;-->
-<!--        input = document.getElementById('myInput');-->
-<!--        students = document.getElementById('students').getElementsByTagName("tr");-->
-<!--        filter = input.value.toUpperCase();-->
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 
-<!--        // Loop through all list items, and hide those who don't match the search query-->
-<!--        for (i = 0; i < students.length; i++) {-->
-<!--            a = students[i].getElementsByTagName("td")[1];-->
-<!--            txtValue = a.textContent || a.innerText;-->
-<!--            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
-<!--                students[i].style.display = "";-->
-<!--            } else {-->
-<!--                students[i].style.display = "none";-->
-<!--            }-->
-<!--        }-->
-<!--    }-->
-<!--</script>-->
 <script src="/mainSrcipt.js"></script>
 </body>
 

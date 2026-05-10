@@ -9,6 +9,7 @@ import com.example.demo.models.email.Mail;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.programe.Lesson;
+import com.example.demo.services.Statuses;
 import com.example.demo.services.email.MailService;
 import com.example.demo.services.entities.StudentService;
 import com.example.demo.services.entities.TeacherService;
@@ -120,9 +121,9 @@ public class StudentLessonsController {
             Student student = studentService.getById(idSt);
             mailService.sendRequestWithThymeleafTeacherAboutRequestLessonRemoved(mail, studentMapper.mapStudentToStudentDTO(student), lessonService.getById(idLes).getTeacher().getId(), idLes, lessonService.getById(idLes).getLessonTime(), lessonService.getById(idLes).getDuration());
 
-            return "redirect:/student/" + idSt + "/lessons/lessonDeleted";
+            return "redirect:/student/" + idSt + "/lessons/LESSON_DELETED";
         } else {
-            return "redirect:/student/" + idSt + "/lessons/tooLate";
+            return "redirect:/student/" + idSt + "/lessons/TOO_LATE";
         }
 
     }
@@ -130,7 +131,7 @@ public class StudentLessonsController {
     @PostMapping("/{idSt}/lessons/editLesson/notPicked")
     @Transactional
     public String manageNotPickedItemInEdit(@PathVariable("idSt") int idSt) {
-        return "redirect:/student/" + idSt + "/lessons/itemNotPicked";
+        return "redirect:/student/" + idSt + "/lessons/ITEM_NOT_PICKED";
     }
 
     @PostMapping("/{idSt}/lessons/deleteCourse/{id}")
@@ -145,77 +146,27 @@ public class StudentLessonsController {
         mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), lesson.getDuration());
         lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
         tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId());
-        return "redirect:/student/" + idSt + "/lessons/courseDeleted";
+        return "redirect:/student/" + idSt + "/lessons/COURSE_DELETED";
     }
 
     @PostMapping("/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
     public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
-        TimeOfTheWeek newTime = theWeekService.getById(newTimeId);
         Lesson lesson = lessonService.getById(idLes);
-        LocalDateTime now = LocalDateTime.now();
-        float dur = lesson.getDuration();
-        LocalDateTime newDate = LocalDateTime.now().withYear(Integer.parseInt(date.split("\\.")[2].split("-")[0])).withMonth(Integer.parseInt(date.split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split("\\.")[0])).withHour(newTime.getTimeOfTheDay()).withMinute(Integer.parseInt(date.split("-")[1])).withSecond(0);
-        if (newDate.isAfter(now.plusHours(12)) && now.plusHours(12).isBefore(lesson.getLessonTime())) {
-            LocalDateTime time = newDate;
-            if (newDate.getDayOfWeek().getValue() == newTime.getDayOfTheWeek()) {
-                LocalDateTime lessonFinish = time;
-                if (dur == (long) dur) {
-                    lessonFinish = lessonFinish.plusHours((long) dur);
-                } else {
-                    lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
-                }
-                if (lessonFinish.isBefore(time.withHour(22).withMinute(1))) {
-                    AtomicBoolean overlap = new AtomicBoolean(false);
-                    List<Lesson> studentLessons = lessonService.findAllByStudentId(idSt);
-                    LocalDateTime finalLessonFinish = lessonFinish;
-                    LocalDateTime finalTime = time;
-                    studentLessons.stream().filter(les->les.getId()!=lesson.getId()).forEach(l -> {
-                        LocalDateTime lFinish = l.getLessonTime();
-                        float lDur = l.getDuration();
-                        if (lDur == (long) lDur) {
-                            lFinish = lFinish.plusHours((long) lDur);
-                        } else {
-                            lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
-                        }
-                        if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
-                            overlap.set(true);
-                        }
-
-                    });
-                    List<Lesson> teacherLessons = lessonService.findAllByTeachId(lesson.getTeacher().getId());
-                    teacherLessons.stream().filter(les->les.getId()!=lesson.getId()).forEach(l -> {
-                        LocalDateTime lFinish = l.getLessonTime();
-                        float lDur = l.getDuration();
-                        if (lDur == (long) lDur) {
-                            lFinish = lFinish.plusHours((long) lDur);
-                        } else {
-                            lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
-                        }
-                        if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime()))) {
-                            overlap.set(true);
-                        }
-                    });
-                    if (!overlap.get()) {
-                        Mail mail = new Mail();
-                        mail.setTo(Collections.singletonList(lesson.getTeacher().getEmail()));
-                        mail.setSubject("Лист про зміну часу одного заняття");
-                        mail.setBody("");
-                        Student student = studentService.getById(idSt);
-                        mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), newDate, dur);
-                        lesson.setLessonTime(newDate);
-                        lessonService.update(lesson.getId(), lesson);
-                        return "redirect:/student/" + idSt + "/lessons/lessonEdited";
-                    } else {
-                        return "redirect:/student/" + idSt + "/lessons/lessonOverlap";
-                    }
-                } else {
-                    return "redirect:/student/" + idSt + "/lessons/lessonAfterAcceptedTime";
-                }
-            } else {
-                return "redirect:/student/" + idSt + "/lessons/dateInconsistency";
-            }
+        List<Object> objs = lessonService.checkIfLessonValidWithReputitions(lesson.getTeacher().getId(), lesson.getStudent().getId(), lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
+        Statuses status = (Statuses) objs.get(0);
+        LocalDateTime newDate = (LocalDateTime) objs.get(1);
+        if (status == Statuses.SUCCESS) {
+            Mail mail = new Mail();
+            mail.setTo(Collections.singletonList(lesson.getTeacher().getEmail()));
+            mail.setSubject("Лист про зміну часу одного заняття");
+            mail.setBody("");
+            Student student = studentService.getById(idSt);
+            mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), newDate, lesson.getDuration());
+            lesson.setLessonTime(newDate);
+            lessonService.update(lesson.getId(), lesson);
+            return "redirect:/student/" + idSt + "/lessons/LESSON_EDITED";
         } else {
-            return "redirect:/student/" + idSt + "/lessons/tooLate";
+            return "redirect:/student/" + idSt + "/lessons/" + status.name();
         }
     }
 }

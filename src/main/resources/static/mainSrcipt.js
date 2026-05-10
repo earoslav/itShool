@@ -81,8 +81,7 @@ function searchStudentsInTeacherInfo() {
 }
 
 // editTeacher.html (admin), teacherStudentLessons.html (admin),
-// teacherLessons.html (admin+teacher), teacherStudents/studentLessons.html (teacher),
-// teacherHomepage/homepage.html (teacher) — всі ідентичні (courseSelect → option)
+// teacherLessons.html (admin+teacher), teacherLessons/lessons.html (teacher) — ідентичні (courseSelect → option)
 function searchCourse() {
     var input, filter, a, b, i, txtValue;
     input = document.getElementById('myInputCourses');
@@ -252,6 +251,31 @@ function handleSubmit(event) {
     return true;
 }
 
+// Додає можливість виділяти весь день кліком на заголовок таблиці
+(function initDaySelection() {
+    document.querySelectorAll('.times-table').forEach(table => {
+        const headers = table.querySelectorAll('thead th');
+        headers.forEach((th, index) => {
+            if (index === 0) return; // Пропускаємо колонку "Година"
+            
+            th.style.cursor = 'pointer';
+            th.title = 'Натисніть, щоб вибрати/скасувати всі в цей день';
+            
+            th.addEventListener('click', () => {
+                const checkboxes = table.querySelectorAll(`tbody tr td:nth-child(${index + 1}) .freeTimeCheckbox`);
+                if (checkboxes.length === 0) return;
+                
+                // Якщо хоча б один не вибраний — вибираємо всі. Інакше — знімаємо всі.
+                const anyUnchecked = Array.from(checkboxes).some(cb => !cb.checked);
+                checkboxes.forEach(cb => {
+                    cb.checked = anyUnchecked;
+                    cb.dispatchEvent(new Event('change'));
+                });
+            });
+        });
+    });
+})();
+
 // studentHomepage/homepage.html (student) — інший текст підтвердження
 // ПЕРЕЙМЕНОВАНО: handleSubmitStudent (оригінал — handleSubmit)
 function handleSubmitStudent(event) {
@@ -402,16 +426,6 @@ function togglePassword() {
 
 // =============================================================================
 // POPUP ДЛЯ УРОКІВ
-// Використовується в 6 файлах з різними URL-префіксами.
-// Кожен файл підключає свою версію з відповідним baseUrl.
-//
-// Файли та їх baseUrl:
-//   adminStudents/studentLessons.html     → /admin/student/{stId}/lessons
-//   closedStudent/studentLessons/lessons  → /student/{stId}/lessons
-//   adminTeachers/teacherLessons.html     → /admin/teacher/{teachId}/lessons
-//   adminTeachers/teacherStudentLessons   → /admin/teacher/{teachId}/lessonsWithStudent
-//   teacherLessons/lessons.html           → /teacher/{teachId}/lessons
-//   teacherStudents/studentLessons.html   → /teacher/{teachId}/student/{stId}/lessons
 // =============================================================================
 
 // Допоміжна: рендеринг назви дня тижня
@@ -425,19 +439,10 @@ function formatDateFromKey(element) {
     const [datePart, timePart] = element.split("T");
     const [y, m, d] = datePart.split("-");
     const minutes = timePart.split(":")[1];
-    return { display: `${d}.${m}`, isoDate: `${d}.${m}.${y}`, minutes };
+    console.log(`DayOfWeek ${d}.${m} ${timePart.split(":")[0]}:${timePart.split(":")[1]}`)
+    return { display: `${d}.${m}`, isoDate: `DayOfWeek ${d}.${m} ${timePart.split(":")[0]}:${timePart.split(":")[1]}`, minutes };
 }
 
-// Основна функція ініціалізації попапу уроку.
-// Викликається з кожної сторінки з відповідним конфігом.
-//
-// config = {
-//   getBaseUrl: (ids) => string,       // функція що повертає базовий URL
-//   hasStudentSelector: bool,          // чи є вибір студента в emptyPopup
-//   hasWasForm: bool,                  // чи є форма "відмітити як відбувся"
-//   hasCostDisplay: bool,              // чи показувати вартість (для student)
-//   getIds: () => { teachId, stId },   // отримати поточні ID
-// }
 function initLessonPopup(config) {
     const popup = document.querySelector("#lessonPopup");
     const popupDate = document.querySelector("#popupDate");
@@ -644,11 +649,12 @@ function initLessonPopup(config) {
                 for (let element in teachFreeTimes) {
                     const { display, isoDate, minutes } = formatDateFromKey(element);
                     const dayName = getDayName(teachFreeTimes[element].dayOfTheWeek);
+                    console.log(isoDate)
 
                     let inp = document.createElement("input");
                     inp.type = "checkbox";
                     inp.name = "newTimeIds";
-                    inp.value = teachFreeTimes[element].id + " " + isoDate + "-" + minutes;
+                    inp.value = teachFreeTimes[element].id + " " + isoDate;
 
                     let labl = document.createElement("lable");
                     labl.innerText = display + " " + dayName + " " + teachFreeTimes[element].timeOfTheDay + ":" + minutes;
@@ -664,7 +670,7 @@ function initLessonPopup(config) {
                     nTIds[i1].addEventListener('change', () => {
                         if (nTIds[i1].checked) {
                             nTId = nTIds[i1].value.split(" ")[0];
-                            retDate = nTIds[i1].value.split(" ")[1];
+                            retDate = nTIds[i1].value.split(" ")[1]+" "+nTIds[i1].value.split(" ")[2]+" "+nTIds[i1].value.split(" ")[3];
                             if (config.setEditForm) config.setEditForm(editForm, ids, idLes, nTId, retDate);
                         }
                         returnIdValue.innerText = nTId;
@@ -673,7 +679,7 @@ function initLessonPopup(config) {
             }, { once: true });
         }
     }
-
+    editPopup
     function closePopup() {
         addClass(popupEdit, "hide");
         if (popup) addClass(popup, "hide");
@@ -693,8 +699,28 @@ function initLessonPopup(config) {
 
 
 // =============================================================================
-// ІНІЦІАЛІЗАЦІЯ POPUP — виклики для конкретних сторінок
-// Розкоментуй відповідний блок у потрібному HTML файлі
-// (або підстав через th:inline="javascript" значення змінних)
+// BACK TO TOP BUTTON
 // =============================================================================
+(function initBackToTop() {
+    window.addEventListener('scroll', () => {
+        const backToTopBtn = document.getElementById('back-to-top');
+        if (!backToTopBtn) return;
+        
+        if (window.scrollY > 400) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
 
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#back-to-top');
+        if (btn) {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    });
+})();

@@ -3,21 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редагування викладача</title>
-
+    <title>IT Kids School - Головна</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a th:href="@{/student/{idSt}/homepage(idSt = ${student.id})}">Головна</a>
-            <a th:href="@{/student/{idSt}/lessons(idSt = ${student.id})}">Уроки</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: studentHeader}"></header>
 
 <section class="hero">
     <div class="container">
@@ -27,14 +18,12 @@
 </section>
 
 <div class="container">
-    <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
-    <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
-    <div class="success-box" th:if="${output == 'studentEdited'}">Учня Успішно редаговано</div>
-    <p class="d-none" id="idSt" th:text="${student.id}"></p>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <p class="d-none" id="idSt" th:text="${student.id}" style="display: none"></p>
     <div class="card">
         <form  id="form" th:action="@{/student/{idSt}/homepage/(idSt=${student.id})}" th:object="${student}" method="post" onsubmit="return handleSubmit(event)">
 
-            <p class="d-none" id="id" th:text="${student.id}"></p>
+            <p class="d-none" id="id" th:text="${student.id}" style="display: none"></p>
             <div class="form-grid">
                 <div class="form-group">
                     <label>Ім'я</label>
@@ -79,20 +68,7 @@
         </form>
     </div>
 </div>
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 
 <!--<script>-->
 <!--    function managePass(){-->

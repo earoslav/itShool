@@ -4,20 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Kids School - Реєстрація викладача</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a href="/openSource/homepage">Головна</a>
-            <a href="/openSource/courses">Курси</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: publicHeader}"></header>
 
-<section class="hero">
+<section class="hero" style="padding: 8% !important;">
     <div class="container">
         <h1>Реєстрація викладача</h1>
         <p>Заповніть анкету. Після перевірки адміністратором з вами зв'яжуться.</p>
@@ -27,9 +20,7 @@
 <main>
     <div class="container">
         <div class="form-card">
-            <div class="error-box" th:if="${output == 'exists'}">Така пошта вже зареєстрована</div>
-            <div class="error-box" th:if="${output == 'NOPASS'}">Ви не ввели пароль</div>
-            <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
 
             <form id="form" th:action="@{/openSource/signUpAsTeacher}" th:object="${teacher}" method="post">
                 <div class="form-grid">
@@ -63,10 +54,11 @@
                     </div>
 
 
-                    <div class="password-box">
-                        Пароль:
+                    <div class="field">
+                        <label>Пароль:</label>
+                        <input type="password"  name="password" placeholder="Введіть пароль" id="pass">
                     </div>
-                    <input type="password"  name="password" placeholder="Введіть пароль" id="pass">
+
 
 
                     <div class="mt-16 field full">
@@ -101,6 +93,9 @@
 
                     <div class="block">
                         <h2>Вільний час</h2>
+                        <p class="hint" style="margin-bottom: 10px;">
+                            Порада: можна затиснути ліву кнопку миші та тягнути по клітинках, щоб швидко вибрати кілька комірок.
+                        </p>
 
                         <table class="times-table">
                             <thead>
@@ -142,20 +137,7 @@
     </div>
 </main>
 
-<footer>
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="mt-10">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 <!--<script>-->
 <!--    function managePass() {-->
 <!--        let pass = document.querySelector("#pass")-->

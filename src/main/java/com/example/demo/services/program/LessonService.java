@@ -15,8 +15,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.example.demo.services.Statuses;
 import com.example.demo.services.entities.StudentService;
 import com.example.demo.services.entities.TeacherService;
 import com.example.demo.services.other.TimeOfTheWeekService;
@@ -30,15 +31,18 @@ public class LessonService {
     private TeacherService teacherService;
     private ObjectMapper objectMapper;
     private TimeOfTheWeekService tswService;
+    private CourseService courseService;
     private StudentService studentService;
     private TimeOfTheWeekService theWeekService;
 
-    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, StudentService studentService, TimeOfTheWeekService theWeekService) {
+    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
         this.teacherService = teacherService;
         this.objectMapper = objectMapper;
         this.tswService = tswService;
+        this.courseService = courseService;
+
         this.studentService = studentService;
         this.theWeekService = theWeekService;
     }
@@ -62,9 +66,11 @@ public class LessonService {
     public List<Lesson> findAllByTimeOfTheWeekIdAndTeacherId(int timeOfWeekId, int teachId) {
         return lessonRepository.findAllByTimeOfTheWeekIdAndTeacherId(timeOfWeekId, teachId);
     }
-    public List<Lesson> findAllByStudentId(int id){
+
+    public List<Lesson> findAllByStudentId(int id) {
         return lessonRepository.findByStudentId(id);
     }
+
     public boolean checkIfExistsByLessonTime(LocalDateTime time) {
         return lessonRepository.findByLessonTime(time) != null;
     }
@@ -113,7 +119,6 @@ public class LessonService {
     }
 
 
-
     public List<Object> compileLessonsForTeacher(int teacherId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Teacher teacher = teacherService.getById(teacherId);
@@ -130,7 +135,7 @@ public class LessonService {
         List<String> weekDays = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + now.getDayOfMonth() + "." + now.getMonthValue());
+                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
                 now = now.plusDays(1);
             }
         }
@@ -139,9 +144,9 @@ public class LessonService {
         for (Lesson lesson : teacherLessons1) {
             String timeOfTheLesson = "";
             if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":00";
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
             } else {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
             }
             lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
@@ -149,9 +154,9 @@ public class LessonService {
                 durationTime = durationTime.plusMinutes(i * 30);
                 String durationTimeStr = "";
                 if (durationTime.getMinute() == 0) {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":00";
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
                 } else {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":" + durationTime.getMinute();
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
                 }
                 lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
@@ -225,7 +230,7 @@ public class LessonService {
         List<String> weekDays = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + now.getDayOfMonth() + "." + now.getMonthValue());
+                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
                 now = now.plusDays(1);
             }
         }
@@ -234,9 +239,9 @@ public class LessonService {
         for (Lesson lesson : teacherLessons1) {
             String timeOfTheLesson = "";
             if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":00";
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
             } else {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
             }
             lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
@@ -244,9 +249,9 @@ public class LessonService {
                 durationTime = durationTime.plusMinutes(i * 30);
                 String durationTimeStr = "";
                 if (durationTime.getMinute() == 0) {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":00";
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
                 } else {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":" + durationTime.getMinute();
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
                 }
                 lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
@@ -315,7 +320,7 @@ public class LessonService {
         List<String> weekDays = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + now.getDayOfMonth() + "." + now.getMonthValue());
+                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
                 now = now.plusDays(1);
             }
         }
@@ -324,9 +329,9 @@ public class LessonService {
         for (Lesson lesson : studentLessons) {
             String timeOfTheLesson = "";
             if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":00";
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
             } else {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
             }
             lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
@@ -334,9 +339,9 @@ public class LessonService {
                 durationTime = durationTime.plusMinutes(i * 30);
                 String durationTimeStr = "";
                 if (durationTime.getMinute() == 0) {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":00";
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
                 } else {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":" + durationTime.getMinute();
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
                 }
                 lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
@@ -351,7 +356,7 @@ public class LessonService {
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
         lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
         lessonHashMap.values().stream().forEach(les -> {
-            if(!teachers.stream().map(teach-> teach.getId()).toList().contains(les.getTeacher().getId())){
+            if (!teachers.stream().map(teach -> teach.getId()).toList().contains(les.getTeacher().getId())) {
                 teachers.add(les.getTeacher());
             }
 
@@ -390,8 +395,8 @@ public class LessonService {
 
 
             Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
-            lessonHashMap.values().stream().filter(les -> les.getTeacher().getId()==teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
-            lessonDurations.values().stream().filter(les -> les.getTeacher().getId()==teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+            lessonHashMap.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+            lessonDurations.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
         }
 
         List<Object> retValue = new ArrayList<>();
@@ -417,7 +422,7 @@ public class LessonService {
         List<String> weekDays = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + now.getDayOfMonth() + "." + now.getMonthValue());
+                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
                 now = now.plusDays(1);
             }
         }
@@ -426,9 +431,9 @@ public class LessonService {
         for (Lesson lesson : studentLessons) {
             String timeOfTheLesson = "";
             if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":00";
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
             } else {
-                timeOfTheLesson += lesson.getLessonTime().getDayOfMonth() + "." + lesson.getLessonTime().getMonthValue() + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
+                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
             }
             lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
@@ -436,9 +441,9 @@ public class LessonService {
                 durationTime = durationTime.plusMinutes(i * 30);
                 String durationTimeStr = "";
                 if (durationTime.getMinute() == 0) {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":00";
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
                 } else {
-                    durationTimeStr = durationTime.getDayOfMonth() + "." + durationTime.getMonthValue() + " " + durationTime.getHour() + ":" + durationTime.getMinute();
+                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
                 }
                 lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
@@ -452,7 +457,7 @@ public class LessonService {
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
         lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
         lessonHashMap.values().stream().forEach(les -> {
-            if(!teachers.stream().map(teach-> teach.getId()).toList().contains(les.getTeacher().getId())){
+            if (!teachers.stream().map(teach -> teach.getId()).toList().contains(les.getTeacher().getId())) {
                 teachers.add(les.getTeacher());
             }
 
@@ -490,8 +495,8 @@ public class LessonService {
             }
 
             Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
-            lessonHashMap.values().stream().filter(les -> les.getTeacher().getId()==teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
-            lessonDurations.values().stream().filter(les -> les.getTeacher().getId()==teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+            lessonHashMap.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+            lessonDurations.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
         }
 
         List<Object> retValue = new ArrayList<>();
@@ -499,5 +504,141 @@ public class LessonService {
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
         return retValue;
+    }
+
+
+    public void dosometh() {
+        HashMap<Statuses, Boolean> retValues = new HashMap<>();
+        retValues.put(Statuses.LESSON_DELETED, true);
+    }
+
+    public boolean checkIfLessonOverlap(int tId, int sId, int lId, float dur, String date) {
+        /////////////
+
+        LocalDateTime newDate = LocalDateTime.now();
+        if (LocalDateTime.now().getMonth().getValue() == 12 && Integer.parseInt(date.split(" ")[1].split("\\.")[1]) == 1) {
+            newDate = LocalDateTime.now().withYear(LocalDateTime.now().getYear() + 1).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
+        } else {
+            newDate = LocalDateTime.now().withYear(LocalDateTime.now().getYear()).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
+        }
+
+        LocalDateTime time = newDate;
+        LocalDateTime lessonFinish = time;
+        if (dur == (long) dur) {
+            lessonFinish = lessonFinish.plusHours((long) dur);
+        } else {
+            lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
+        }
+
+        /////////////////
+
+        AtomicBoolean overlap = new AtomicBoolean(false);
+        List<Lesson> teacherLessons = findAllByTeachId(tId);
+        LocalDateTime finalLessonFinish = lessonFinish;
+        LocalDateTime finalTime = time;
+        teacherLessons.stream().filter(les -> les.getId() != lId).forEach(l -> {
+            LocalDateTime lFinish = l.getLessonTime();
+            float lDur = l.getDuration();
+            if (lDur == (long) lDur) {
+                lFinish = lFinish.plusHours((long) lDur);
+            } else {
+                lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+            }
+            if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime())) || l.getLessonTime().truncatedTo(ChronoUnit.MINUTES).equals(finalTime.truncatedTo(ChronoUnit.MINUTES))) {
+                overlap.set(true);
+            }
+        });
+
+////////////////////////////////////
+        List<Lesson> studentLessons = findAllByStudentId(sId);
+        studentLessons.stream().filter(les -> les.getId() != lId).forEach(l -> {
+            LocalDateTime lFinish = l.getLessonTime();
+            float lDur = l.getDuration();
+            if (lDur == (long) lDur) {
+                lFinish = lFinish.plusHours((long) lDur);
+            } else {
+                lFinish = lFinish.plusHours((long) lDur).plusMinutes(30);
+            }
+            if ((l.getLessonTime().isAfter(finalTime) && l.getLessonTime().isBefore(finalLessonFinish)) || (lFinish.isAfter(finalTime) && finalTime.isAfter(l.getLessonTime())) || l.getLessonTime().truncatedTo(ChronoUnit.MINUTES).equals(finalTime.truncatedTo(ChronoUnit.MINUTES))) {
+                overlap.set(true);
+            }
+        });
+        return overlap.get();
+    }
+
+    public Statuses checkIfLessonValid(int tId, int sId, int lId, int cId, float dur, String date) {
+        LocalDateTime newDate = LocalDateTime.now();
+        if (LocalDateTime.now().getMonth().getValue() == 12 && Integer.parseInt(date.split(" ")[1].split("\\.")[1]) == 1) {
+            newDate = LocalDateTime.now().withYear(LocalDateTime.now().getYear() + 1).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
+        } else {
+            newDate = LocalDateTime.now().withYear(LocalDateTime.now().getYear()).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
+        }
+        LocalDateTime lessonFinish = newDate;
+        if (dur == (long) dur) {
+            lessonFinish = lessonFinish.plusHours((long) dur);
+        } else {
+            lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
+        }
+        //////////////
+        if (newDate.isBefore(LocalDateTime.now())) {
+            return Statuses.LESSON_BEFORE_NOW;
+        } else if (lessonFinish.isAfter(newDate.withHour(22).withMinute(1))) {
+            return Statuses.LESSON_AFTER_ACCEPTED_TIME;
+        } else if (checkIfLessonOverlap(tId, sId, lId, dur, date)) {
+            return Statuses.LESSON_OVERLAP;
+        }else if (lId==0) {
+            return Statuses.ITEM_NOT_PICKED;
+        }else if (dur==0) {
+            return Statuses.ITEM_NOT_PICKED;
+        } else if (cId == 0) {
+            return Statuses.ITEM_NOT_PICKED;
+        } else if (sId == 0) {
+            return Statuses.STUDENT_NOT_FOUND;
+        }else if (tId == 0) {
+            return Statuses.TEACHER_NOT_FOUND;
+        } else if (date == "") {
+            return Statuses.ITEM_NOT_PICKED;
+        }else if (studentService.getById(sId)==null) {
+            return Statuses.STUDENT_NOT_FOUND;
+        } else if (teacherService.getById(sId)==null) {
+            return Statuses.TEACHER_NOT_FOUND;
+        }else if (courseService.getById(sId)==null) {
+            return Statuses.COURSE_NOT_FOUND;
+        }else {
+            return Statuses.SUCCESS;
+        }
+
+    }
+
+    public List<Object> checkIfLessonValidWithReputitions(int tId, int sId, int cId, float dur, String date, int repetitions) {
+        return checkIfLessonValidWithReputitions(tId, sId, cId, -1, dur, date, repetitions);
+    }
+
+    public List<Object> checkIfLessonValidWithReputitions(int tId, int sId, int cId, int idLes, float dur, String date, int repetitions) {
+        String checkingDate = date;
+        LocalDateTime time = LocalDateTime.now();
+        if (LocalDateTime.now().getMonth().getValue() == 12 && Integer.parseInt(date.split(" ")[1].split("\\.")[1]) == 1) {
+            time = LocalDateTime.now().withYear(LocalDateTime.now().getYear() + 1).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
+        } else {
+            time = LocalDateTime.now().withYear(LocalDateTime.now().getYear()).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
+        }
+        Statuses status = Statuses.GENERAL;
+        for (int i = 0; i < repetitions; i++) {
+            LocalDateTime checkingTime = time.plusWeeks(i);
+            checkingDate = checkingTime.getDayOfWeek() + " " + checkingTime.getDayOfMonth() + "." + checkingTime.getMonth().getValue() + " " + checkingTime.getHour() + ":" + checkingTime.getMinute();
+            Statuses checkingSt = checkIfLessonValid(tId, sId, idLes, cId, dur, checkingDate);
+            if (checkingSt == Statuses.SUCCESS) {
+                status = checkingSt;
+            } else {
+                List<Object> retValues = new ArrayList<>();
+                retValues.add(checkingSt);
+                retValues.add(time);
+                return retValues;
+            }
+        }
+        List<Object> retValues = new ArrayList<>();
+        retValues.add(status);
+        retValues.add(time);
+        return retValues;
     }
 }

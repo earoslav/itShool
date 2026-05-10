@@ -155,14 +155,12 @@ public class TeacherHomepageController {
                                 @RequestParam(value = "allCourses", required = false) List<CourseDTO> allCourses,
                                 Model model) throws MessagingException {
         if(userService.checkIfExistsByEmail(teacher.getUser().getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getUser().getEmail())){
-            return "redirect:/teacher/"+teacher.getId()+"/homepage/exists";
+            return "redirect:/teacher/"+teacher.getId()+"/homepage/EXISTS";
         }
         else{
-            if(newCourseIds==null || newCourseIds.isEmpty()){
-                ///
-            }else{
+            if(newCourseIds!=null || !newCourseIds.isEmpty()){
                 for (int cId : newCourseIds){
-                    teacherCourseService.create(new TeacherCourse(courseService.getById(cId), teacherMapper.mapTeacherDTOToTeacher(teacher)));
+                                    teacherCourseService.create(new TeacherCourse(courseService.getById(cId), teacherMapper.mapTeacherDTOToTeacher(teacher)));
                 }
             }
             if(freeTimeIds==null){
@@ -184,16 +182,14 @@ public class TeacherHomepageController {
                 Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
                 teacher1.setPassword(password);
                 teacherService.update(teacher.getId(), teacher1);
-                return "redirect:/teacher/"+teacher.getId()+"/homepage/teacherEdited";
+                return "redirect:/teacher/"+teacher.getId()+"/homepage/TEACHER_EDITED";
+            }else{
+                Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
+                teacher1.setPassword(passwordEncoder.encode(password));
+                teacherService.update(teacher.getId(), teacher1);
             }
-            Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
-            teacher1.setPassword(passwordEncoder.encode(password));
-            teacherService.update(teacher.getId(), teacher1);
-
-
-
 
         }
-        return "redirect:/teacher/"+teacher.getId()+"/homepage/teacherEdited";
+        return "redirect:/teacher/"+teacher.getId()+"/homepage/TEACHER_EDITED";
     }
 }

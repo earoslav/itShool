@@ -4,23 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>IT Kids School | Розклад занять</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
           rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/generalStyle.css">
 </head>
 <body>
-<header>
-    <div class="container nav">
-        <div class="logo">IT Kids School</div>
-        <nav class="menu">
-            <a href="/admin/homepage">Головна</a>
-            <a href="/admin/students">Учні</a>
-            <a href="/admin/teachers">Викладачі</a>
-            <a href="/logout">Вийти</a>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
 
 <section class="hero">
     <div class="container">
@@ -29,30 +20,7 @@
     </div>
 </section>
 <div class="week-navigation">
-    <div class="error-box" th:if="${output == 'lessonAfterAcceptedTime'}">Вибачте, але час який ви вибрали не є
-        легітивним в компанії.
-    </div>
-    <div class="error-box" th:if="${output == 'lessonOverlap'}">Вибачте, але урок перетинається з іншим
-        вашим уроком чи уроком вчителя.
-    </div>
-    <div class="error-box" th:if="${output == 'lessonAfterAcceptedTime'}">Вибачте, але час який ви вибрали не є
-        легітивним в компанії.
-    </div>
-    <div class="error-box" th:if="${output == 'lessonOverlap'}">Вибачте, але урок перетинається з іншим
-        вашим уроком чи уроком вчителя.
-    </div>
-    <div class="error-box" th:if="${output=='tooLate'}">Вибачте, але редагувати або видаляти можна лише за 12 годин до
-        заняття
-    </div>
-    <div class="error-box" th:if="${output=='itemNotPicked'}">Вибачте, але ви не вибрали одне з полів</div>
-    <div class="error-box" th:if="${output == 'general'}">Упс, щось пішло не так</div>
-    <div class="error-box" th:if="${output == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або
-        виникла помилка. Оберіть будь ласка інший час або звяжіться з менеджером.
-    </div>
-    <div class="success-box" th:if="${output == 'lessonAdded'}">Урок успішно додано</div>
-    <div class="success-box" th:if="${output == 'lessonDeleted'}">Урок успішно видалено</div>
-    <div class="success-box" th:if="${output == 'courseDeleted'}">Курс успішно видалено</div>
-    <div class="success-box" th:if="${output == 'lessonEdited'}">Урок успішно змінено</div>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
 </div>
 
 <div class="table-wrapper lesson-table-wrapper" id="tableWrapper">
@@ -73,7 +41,7 @@
                 <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
 
 
-                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='wasnt'}"
+                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}"
                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
                             th:data-sn="${lessonDur.student.user.name}"
                             th:data-cn="${lessonDur.course.name}"
@@ -87,7 +55,7 @@
                             th:onclick="'openPastLessonPopup(this)'"
                             class="btn-red form-btn lesson-segment-continuation">
                     </button>
-                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='was'}"
+                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WAS'}"
                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
                             th:data-sn="${lessonDur.student.user.name}"
                             th:data-tn="${lessonDur.teacher.user.name}"
@@ -101,7 +69,7 @@
                             th:onclick="'openPastLessonPopup(this)'"
                             class="btn-darkgreen form-btn lesson-segment-continuation">
                     </button>
-                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='will'}"
+                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WILL'}"
                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
                             class="btn-green form-btn lesson-segment-continuation"
                             th:data-date="${day}"
@@ -117,7 +85,7 @@
                     </button>
 
 
-                    <button th:if="${lesson != null and (lesson.status=='wasnt')}"
+                    <button th:if="${lesson != null and (lesson.status=='WASNT')}"
                             th:data-sn="${lesson.student.user.name}"
                             th:data-cn="${lesson.course.name}"
                             th:data-tn="${lesson.teacher.user.name}"
@@ -131,7 +99,7 @@
                             class="btn-red form-btn lesson-segment-start">
                         <span class="lesson-title" th:text="${lesson.course.name}"></span>
                     </button>
-                    <button th:if="${lesson != null and (lesson.status=='was')}"
+                    <button th:if="${lesson != null and (lesson.status=='WAS')}"
                             th:data-sn="${lesson.student.user.name}"
                             th:data-tn="${lesson.teacher.user.name}"
                             th:data-cn="${lesson.course.name}"
@@ -145,7 +113,7 @@
                             class="btn-darkgreen form-btn lesson-segment-start">
                         <span class="lesson-title" th:text="${lesson.course.name}"></span>
                     </button>
-                    <button th:if="${lesson != null and (lesson.status=='will')}" class="btn-green form-btn lesson-segment-start"
+                    <button th:if="${lesson != null and (lesson.status=='WILL')}" class="btn-green form-btn lesson-segment-start"
                             th:data-date="${day}"
                             th:data-id="${lesson.id}"
                             th:data-lesson="${lesson}"
@@ -214,11 +182,11 @@
         <div class="popup-footer">
 
             <button id="editLessonBtn" class="popup-btn edit-btn">✏️ Змінити</button>
-            <form action="" method="post" id="deleteLessonForm">
-                <button id="deleteLessonBtn" class="popup-btn delete-btn">🗑️ Видалити одиничне заняття</button>
+            <form th:action="@{/admin/student/{id}/lessons/deleteLesson/0(id=${student.id})}" method="post" id="deleteLessonForm">
+                <button id="deleteLessonBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')">🗑️ Видалити одиничне заняття</button>
             </form>
-            <form action="" method="post" id="deleteCourseForm">
-                <button id="deleteCourseBtn" class="popup-btn delete-btn">🗑️ Видалити курс з вчителем</button>
+            <form th:action="@{/admin/student/{id}/lessons/deleteCourse/0(id=${student.id})}" method="post" id="deleteCourseForm">
+                <button id="deleteCourseBtn" class="popup-btn delete-btn"onclick="return confirm('Видалити?')">🗑️ Видалити курс з вчителем</button>
             </form>
             <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>
         </div>
@@ -241,8 +209,7 @@
             </div>
 
             <div class="popup-footer">
-                <form th:action="@{/admin/student/{studentId}/lessons/editLesson/notPicked(
-                studentId=${student.id})}" method="post" id="editForm">
+                <form th:action="@{/admin/student/{id}/lessons/editLesson/notPicked(id=${student.id})}" method="post" id="editForm">
                     <button type="submit" id="editLessonBtnInEdit" class="popup-btn edit-btn">✏️ Змінити заняття(на один
                         раз)
                     </button>
@@ -264,20 +231,7 @@
 </div>
 
 
-<footer id="contacts">
-    <div class="container">
-        <div>IT Kids School - розвиток майбутніх IT-талантів.</div>
-        <div class="footer-contact">
-            Контакти: 0970959664 | yaroslav.gorbatyuk.2004@gmail.com | Telegram: Uarrik
-        </div>
-        <div class="footer-links">
-            <a href="#">Instagram</a>
-            <a href="#">Telegram</a>
-            <a href="#">Facebook</a>
-            <a href="#">Політика конфіденційності</a>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
 <script src="/mainSrcipt.js"></script>
 <script>
     initLessonPopup({

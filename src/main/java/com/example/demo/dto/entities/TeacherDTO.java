@@ -21,7 +21,7 @@ public class TeacherDTO {
     private String comment;
     private int approved;
     private List<TeacherCourseDTO> teacherCourses;
-    private List<EmptyTimesForTeacherDTO> emptyTimesForTeachers;
+//    private List<EmptyTimesForTeacherDTO> emptyTimesForTeachers;
     private UserDTO user;
     public float unpaidMoney;
     private String phoneNumber;
@@ -30,12 +30,12 @@ public class TeacherDTO {
     // Отримує через Spring залежності Integer, String, int, List<TeacherCourseDTO>, List<EmptyTimesForTeacherDTO>, UserDTO, float.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
 
-    public TeacherDTO(Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, List<EmptyTimesForTeacherDTO> emptyTimesForTeachers, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername) {
+    public TeacherDTO(Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername) {
         this.age = age;
         this.comment = comment;
         this.approved = approved;
         this.teacherCourses = teacherCourses;
-        this.emptyTimesForTeachers = emptyTimesForTeachers;
+//        this.emptyTimesForTeachers = emptyTimesForTeachers;
         this.user = user;
         this.unpaidMoney = unpaidMoney;
         this.phoneNumber = phoneNumber;
@@ -52,13 +52,13 @@ public class TeacherDTO {
         this.tgUsername = tgUsername;
     }
 
-    public TeacherDTO( Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, List<EmptyTimesForTeacherDTO> emptyTimesForTeachers, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername, String freeTimeIds) {
+    public TeacherDTO( Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername, String freeTimeIds) {
 
         this.age = age;
         this.comment = comment;
         this.approved = approved;
         this.teacherCourses = teacherCourses;
-        this.emptyTimesForTeachers = emptyTimesForTeachers;
+
         this.user = user;
         this.unpaidMoney = unpaidMoney;
         this.phoneNumber = phoneNumber;

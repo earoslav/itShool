@@ -3,6 +3,7 @@ package com.example.demo.models.programe;
 import com.example.demo.models.thirdTables.StudentCourse;
 import com.example.demo.models.thirdTables.TeacherCourse;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,9 +43,12 @@ public class Course {
     private String program;
 
     @OneToMany(mappedBy = "course")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<TeacherCourse> teacherCourses;
     @OneToMany(mappedBy = "course")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<StudentCourse> studentCourses;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "course")
     private List<TeacherStudentTimeOfTheWeek> tswList;
     // Отримує через Spring залежності String, Integer, List<TeacherCourse>, List<StudentCourse>, List<TeacherStudentTimeOfTheWeek>.

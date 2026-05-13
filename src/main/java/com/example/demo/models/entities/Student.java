@@ -4,6 +4,7 @@ import com.example.demo.models.other.Comment;
 import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.thirdTables.StudentCourse;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,7 +29,7 @@ public class Student {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
-
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "student")
     private List<TeacherStudentTimeOfTheWeek> tswList;
 
@@ -44,12 +45,14 @@ public class Student {
     @Column(name = "comment", length = 500)
     private String comment;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "student")
     private List<StudentCourse> studentCourses;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "student")
     private List<Comment> myComments;
 
-
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "student")
     private List<Lesson> lessons;
 

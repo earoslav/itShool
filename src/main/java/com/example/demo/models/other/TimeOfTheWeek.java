@@ -3,6 +3,7 @@ package com.example.demo.models.other;
 import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.thirdTables.EmptyTimesForTeacher;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,8 +37,10 @@ public class TimeOfTheWeek {
     private Integer timeOfTheDay;
 
     @OneToMany(mappedBy = "time")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<EmptyTimesForTeacher> emptyTimesForTeachers;
     @OneToMany(mappedBy = "timeOfTheWeek")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<TeacherStudentTimeOfTheWeek> tswList;
 
     @OneToMany(mappedBy = "timeOfTheWeek")

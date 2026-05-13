@@ -5,6 +5,7 @@ import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.thirdTables.EmptyTimesForTeacher;
 import com.example.demo.models.thirdTables.TeacherCourse;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,18 +49,20 @@ public class Teacher{
     private String freeTimeIds;
 
     @OneToMany(mappedBy = "teacher")
-
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<TeacherCourse> teacherCourses;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "teacher")
     private List<TeacherStudentTimeOfTheWeek> tswList;
     @OneToMany(mappedBy = "teacher")
-
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<EmptyTimesForTeacher> emptyTimesForTeachers;
 
     @OneToMany(mappedBy = "teacher")
-
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Lesson> lessons;
     @OneToMany(mappedBy = "teacher")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Comment> myComments;
 
 

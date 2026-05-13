@@ -33,8 +33,8 @@ public class SecurityConfig {
     // Створює UserService як джерело користувачів для Spring Security.
     // Під час логіну саме цей сервіс шукає User за email з форми входу.
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserService();
+    public UserDetailsService userDetailsService(UserService userService) {
+        return userService;
     }
     // Налаштовує DaoAuthenticationProvider для перевірки користувачів з бази.
     // У provider передається UserService і BCryptPasswordEncoder, тому паролі порівнюються як хеші.

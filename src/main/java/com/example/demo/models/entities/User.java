@@ -1,5 +1,7 @@
 package com.example.demo.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,6 +32,7 @@ public class User implements UserDetails {
     protected String name;
     @Column(name="email")
     protected String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name="password")
     protected String password;
     @Column(name="role")
@@ -46,6 +49,7 @@ public class User implements UserDetails {
     // Повертає поле authorities об’єкта User.
     // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
@@ -53,6 +57,7 @@ public class User implements UserDetails {
     // Повертає поле username об’єкта User.
     // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     @Override
+    @JsonIgnore
     public String getUsername() {
         return getEmail();
     }
@@ -60,6 +65,7 @@ public class User implements UserDetails {
     // Повертає поле accountNonExpired об’єкта User.
     // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
@@ -67,6 +73,7 @@ public class User implements UserDetails {
     // Повертає поле accountNonLocked об’єкта User.
     // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return true;
     }
@@ -74,6 +81,7 @@ public class User implements UserDetails {
     // Повертає поле credentialsNonExpired об’єкта User.
     // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
@@ -81,6 +89,7 @@ public class User implements UserDetails {
     // Повертає поле enabled об’єкта User.
     // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return true;
     }

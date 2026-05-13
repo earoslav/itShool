@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -22,22 +24,29 @@ import org.springframework.stereotype.Service;
 public class TimeOfTheWeekService {
     private final TimeOfTheWeekRepository timeOfTheWeekRepository;
     private TimesService timesService;
+    private RedisTemplate redis;
     // Отримує через Spring залежності TimeOfTheWeekRepository.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «часові слоти тижня» без ручного створення об’єктів.
     @Autowired
-    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService) {
+    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService, @Qualifier("redisTemplate") RedisTemplate redis) {
         this.timeOfTheWeekRepository = timeOfTheWeekRepository;
         this.timesService = timesService;
+        this.redis = redis;
     }
     // Знаходить часовий слот за днем тижня і годиною.
     // Метод потрібен старішим сценаріям, де хвилини ще не передаються окремо.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour){
+        String cacheKey = "timeByDayHour"+day+"_"+hour;
+        if(redis.opsForValue().get(cacheKey) != null) return (TimeOfTheWeek) redis.opsForValue().get(cacheKey);
+
         for(String time : timesService.getTimes().split(",")){
             int dayRet = Integer.parseInt(time.split("-")[1]);
             int hourRet = Integer.parseInt(time.split("-")[2]);
             if(day == dayRet && hour == hourRet){
                 int id = Integer.parseInt(time.split("-")[0]);
-                return  new TimeOfTheWeek(id, day, hour, 0);
+                TimeOfTheWeek obj = new TimeOfTheWeek(id, day, hour, 0);
+                redis.opsForValue().set(cacheKey, obj);
+                return obj;
             }
         }
         return new TimeOfTheWeek(1, 1, 8, 0);
@@ -45,13 +54,18 @@ public class TimeOfTheWeekService {
     // Знаходить точний часовий слот за днем тижня, годиною і хвилиною.
     // Його використовують форми створення розкладу, де час може бути 8:00 або 8:30.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute){
+        String cacheKey = "timeByDayHourMin"+day+"_"+hour+"_"+minute;
+        if(redis.opsForValue().get(cacheKey) != null) return (TimeOfTheWeek) redis.opsForValue().get(cacheKey);
+
         for(String time : timesService.getTimes().split(",")){
             int minuteRet = Integer.parseInt(time.split("-")[3]);
             int dayRet = Integer.parseInt(time.split("-")[1]);
             int hourRet = Integer.parseInt(time.split("-")[2]);
             if(day == dayRet && hour == hourRet && minute == minuteRet){
                 int id = Integer.parseInt(time.split("-")[0]);
-                return  new TimeOfTheWeek(id, day, hour, minute);
+                TimeOfTheWeek obj = new TimeOfTheWeek(id, day, hour, minute);
+                redis.opsForValue().set(cacheKey, obj);
+                return obj;
             }
         }
         return new TimeOfTheWeek(1, 1, 8, 0);
@@ -59,6 +73,8 @@ public class TimeOfTheWeekService {
     // Повертає всі часові слоти тижня з репозиторію.
     // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
     public List<TimeOfTheWeek> getAll() {
+        if(redis.opsForValue().get("timeOfTheWeeks") != null) return (List<TimeOfTheWeek>) redis.opsForValue().get("timeOfTheWeeks");
+
         List<TimeOfTheWeek> times = new ArrayList<>();
         for(String time : timesService.getTimes().split(",")){
             int id = Integer.parseInt(time.split("-")[0]);
@@ -68,18 +84,23 @@ public class TimeOfTheWeekService {
             TimeOfTheWeek timeOfTheWeek = new TimeOfTheWeek(id, day, hour, minute);
             times.add(timeOfTheWeek);
         }
+        redis.opsForValue().set("timeOfTheWeeks", times);
         return times;
     }
     // Знаходить один запис модуля «часові слоти тижня» за id.
     // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
     public TimeOfTheWeek getById(Integer id) {
+        if(redis.opsForValue().get("timeById"+id) != null) return (TimeOfTheWeek) redis.opsForValue().get("timeById"+id);
+
         for(String time : timesService.getTimes().split(",")){
             int idRet = Integer.parseInt(time.split("-")[0]);
             if(id == idRet){
                 int dayRet = Integer.parseInt(time.split("-")[1]);
                 int hourRet = Integer.parseInt(time.split("-")[2]);
                 int minuteRet = Integer.parseInt(time.split("-")[3]);
-                return  new TimeOfTheWeek(id, dayRet, hourRet, minuteRet);
+                TimeOfTheWeek obj = new TimeOfTheWeek(id, dayRet, hourRet, minuteRet);
+                redis.opsForValue().set("timeById"+id, obj);
+                return obj;
             }
         }
         return new TimeOfTheWeek(1, 1, 8, 0);
@@ -87,6 +108,8 @@ public class TimeOfTheWeekService {
 //                .orElseThrow(() -> new RuntimeException("TimeOfTheWeek not found with id: " + id));
     }
     public List<String> compileWeekDays(){
+        if(redis.opsForValue().get("weekDays") != null) return (List<String>) redis.opsForValue().get("weekDays");
+
         LocalDate now = LocalDate.now();
         now = now.minusWeeks(2);
         List<String> weekDaysTemp = new ArrayList<>();
@@ -104,6 +127,7 @@ public class TimeOfTheWeekService {
                 now = now.plusDays(1);
             }
         }
+        redis.opsForValue().set("weekDays", weekDays);
         return weekDays;
     }
     // Зберігає новий запис модуля «часові слоти тижня».
@@ -129,6 +153,9 @@ public class TimeOfTheWeekService {
     // Перетворює id з checkbox-ів форми на об’єкти TimeOfTheWeek.
     // Якщо список порожній або null, повертає всі слоти, щоб форма не залишилася без варіантів.
     public List<TimeOfTheWeek> getTimesOfTheWeekThroughIds(String idsStr){
+        String cacheKey = "timesThroughIds"+idsStr;
+        if(redis.opsForValue().get(cacheKey) != null) return (List<TimeOfTheWeek>) redis.opsForValue().get(cacheKey);
+
         List<Integer> ids = new ArrayList<>();
         Arrays.stream(idsStr.split(",")).forEach(id->ids.add(Integer.valueOf(id)));
         List<TimeOfTheWeek> freeTimes = new ArrayList<>();
@@ -142,9 +169,11 @@ public class TimeOfTheWeekService {
                     freeTimes.add(new TimeOfTheWeek(idRet, dayRet, hourRet, minuteRet));
                 }
             }
+            redis.opsForValue().set(cacheKey, freeTimes);
             return freeTimes;
         }else{
             freeTimes = getAll();
+            redis.opsForValue().set(cacheKey, freeTimes);
             return freeTimes;
         }
     }

@@ -21,6 +21,8 @@ import com.example.demo.services.Statuses;
 import com.example.demo.services.entities.StudentService;
 import com.example.demo.services.entities.TeacherService;
 import com.example.demo.services.other.TimeOfTheWeekService;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -36,9 +38,10 @@ public class LessonService {
     private CourseService courseService;
     private StudentService studentService;
     private TimeOfTheWeekService theWeekService;
+    private RedisTemplate redis;
     // Отримує через Spring залежності LessonRepository, LessonMapper, TeacherService, ObjectMapper, TimeOfTheWeekService, CourseService, StudentService.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
-    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService) {
+    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService, @Qualifier("redisTemplate") RedisTemplate redis) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
         this.teacherService = teacherService;
@@ -48,41 +51,106 @@ public class LessonService {
 
         this.studentService = studentService;
         this.theWeekService = theWeekService;
+        this.redis = redis;
     }
     // Повертає всі уроки з репозиторію.
     // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
     public List<Lesson> getAll() {
-        return lessonRepository.findAll();
+        List<Lesson> obj;
+        if(redis.opsForValue().get("lessons") == null){
+            obj = lessonRepository.findAll();
+            redis.opsForValue().set("lessons", obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get("lessons");
+        }
+        return obj;
     }
     // Знаходить один запис модуля «уроки» за id.
     // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
     public Lesson getById(int id) {
-        return lessonRepository.findById(id);
+        Lesson obj;
+        if(redis.opsForValue().get("lessonById"+id) == null){
+            obj = lessonRepository.findById(id);
+            redis.opsForValue().set("lessonById"+id, obj);
+        } else {
+            obj = (Lesson) redis.opsForValue().get("lessonById"+id);
+        }
+        return obj;
     }
     // Видаляє всі уроки конкретного студента.
     // Метод використовують під час очищення даних студента, щоб у розкладі не лишилися заняття без власника.
     public void deleteAllLessonsByStudent(Student student) {
         lessonRepository.deleteAllByStudent(student);
+        redis.delete("lessons");
+        redis.delete("lessonsByStudentId"+student.getId());
+        redis.delete("lessonHashMapForStudent"+student.getId());
+        redis.delete("lessonDurationsForStudent"+student.getId());
+        redis.delete("lessonHashMapForStudentInAdmin"+student.getId());
+        redis.delete("lessonDurationsForStudentInAdmin"+student.getId());
     }
     // Зберігає новий запис модуля «уроки».
     // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
     public Lesson create(Lesson lesson) {
-        return lessonRepository.save(lesson);
+        Lesson created = lessonRepository.save(lesson);
+        redis.delete("lessons");
+        if(lesson.getTeacher() != null) {
+            int tId = lesson.getTeacher().getId();
+            redis.delete("lessonsByTeacherId"+tId);
+            redis.delete("lessonHashMapForTecherById"+tId);
+            redis.delete("lessonDurationsForTecherById"+tId);
+        }
+        if(lesson.getStudent() != null) {
+            int sId = lesson.getStudent().getId();
+            redis.delete("lessonsByStudentId"+sId);
+            redis.delete("lessonHashMapForStudent"+sId);
+            redis.delete("lessonDurationsForStudent"+sId);
+            redis.delete("lessonHashMapForStudentInAdmin"+sId);
+            redis.delete("lessonDurationsForStudentInAdmin"+sId);
+            if(lesson.getTeacher() != null) {
+                int tId = lesson.getTeacher().getId();
+                redis.delete("lessonHashMapForTecherAndStudent"+tId+"_"+sId);
+                redis.delete("lessonDurationsForTecherAndStudent"+tId+"_"+sId);
+                redis.delete("lessonsByTeacherAndStudent"+tId+"_"+sId);
+            }
+        }
+        return created;
     }
     // Повертає уроки викладача, прив’язані до конкретного тижневого слота.
     // Це потрібно під час зміни доступного часу, щоб знайти заняття, які залежать від цього слота.
     public List<Lesson> findAllByTimeOfTheWeekIdAndTeacherId(int timeOfWeekId, int teachId) {
-        return lessonRepository.findAllByTimeOfTheWeekAndTeacherId(timeOfWeekId, teachId);
+        List<Lesson> obj;
+        if(redis.opsForValue().get("lessonsByTimeOfWeekAndTeacher"+timeOfWeekId+"_"+teachId) == null){
+            obj = lessonRepository.findAllByTimeOfTheWeekAndTeacherId(timeOfWeekId, teachId);
+            redis.opsForValue().set("lessonsByTimeOfWeekAndTeacher"+timeOfWeekId+"_"+teachId, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get("lessonsByTimeOfWeekAndTeacher"+timeOfWeekId+"_"+teachId);
+        }
+        return obj;
     }
     // Повертає всі уроки конкретного студента.
     // Метод використовують календар студента і перевірка перетинів перед перенесенням або створенням заняття.
     public List<Lesson> findAllByStudentId(int id) {
-        return lessonRepository.findByStudentId(id);
+        List<Lesson> obj;
+        if(redis.opsForValue().get("lessonsByStudentId"+id) == null){
+            obj = lessonRepository.findByStudentId(id);
+            redis.opsForValue().set("lessonsByStudentId"+id, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get("lessonsByStudentId"+id);
+        }
+        return obj;
     }
 
     public List<Lesson> findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(int teachId, LocalDateTime after, LocalDateTime before){
-        return lessonRepository.findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(teachId, after, before);
-    };
+        List<Lesson> obj;
+        String cacheKey = "lessonsByTeacherAfterBefore"+teachId+"_"+after+"_"+before;
+        if(redis.opsForValue().get(cacheKey) == null){
+            obj = lessonRepository.findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(teachId, after, before);
+            redis.opsForValue().set(cacheKey, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get(cacheKey);
+        }
+        return obj;
+    }
 
     // Перевіряє, чи в базі вже є урок на точний LocalDateTime.
     // Повертає boolean для швидкої перевірки дубля у розкладі.
@@ -99,7 +167,30 @@ public class LessonService {
         existing.setCourse(lesson.getCourse());
         existing.setLessonTime(lesson.getLessonTime());
         existing.setStatus(lesson.getStatus());
-        return lessonRepository.save(existing);
+        existing = lessonRepository.save(existing);
+        redis.delete("lessonById"+id);
+        redis.delete("lessons");
+        if(existing.getTeacher() != null) {
+            int tId = existing.getTeacher().getId();
+            redis.delete("lessonsByTeacherId"+tId);
+            redis.delete("lessonHashMapForTecherById"+tId);
+            redis.delete("lessonDurationsForTecherById"+tId);
+        }
+        if(existing.getStudent() != null) {
+            int sId = existing.getStudent().getId();
+            redis.delete("lessonsByStudentId"+sId);
+            redis.delete("lessonHashMapForStudent"+sId);
+            redis.delete("lessonDurationsForStudent"+sId);
+            redis.delete("lessonHashMapForStudentInAdmin"+sId);
+            redis.delete("lessonDurationsForStudentInAdmin"+sId);
+            if(existing.getTeacher() != null) {
+                int tId = existing.getTeacher().getId();
+                redis.delete("lessonHashMapForTecherAndStudent"+tId+"_"+sId);
+                redis.delete("lessonDurationsForTecherAndStudent"+tId+"_"+sId);
+                redis.delete("lessonsByTeacherAndStudent"+tId+"_"+sId);
+            }
+        }
+        return existing;
     }
 
     // Перевіряє, чи має викладач урок у конкретний час.
@@ -110,13 +201,42 @@ public class LessonService {
     // Видаляє запис модуля «уроки» за id.
     // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
     public void deleteById(Integer id) {
-        getById(id);
+        Lesson existing = getById(id);
         lessonRepository.deleteById(id);
+        redis.delete("lessonById"+id);
+        redis.delete("lessons");
+        if(existing.getTeacher() != null) {
+            int tId = existing.getTeacher().getId();
+            redis.delete("lessonsByTeacherId"+tId);
+            redis.delete("lessonHashMapForTecherById"+tId);
+            redis.delete("lessonDurationsForTecherById"+tId);
+        }
+        if(existing.getStudent() != null) {
+            int sId = existing.getStudent().getId();
+            redis.delete("lessonsByStudentId"+sId);
+            redis.delete("lessonHashMapForStudent"+sId);
+            redis.delete("lessonDurationsForStudent"+sId);
+            redis.delete("lessonHashMapForStudentInAdmin"+sId);
+            redis.delete("lessonDurationsForStudentInAdmin"+sId);
+            if(existing.getTeacher() != null) {
+                int tId = existing.getTeacher().getId();
+                redis.delete("lessonHashMapForTecherAndStudent"+tId+"_"+sId);
+                redis.delete("lessonDurationsForTecherAndStudent"+tId+"_"+sId);
+                redis.delete("lessonsByTeacherAndStudent"+tId+"_"+sId);
+            }
+        }
     }
     // Шукає записи модуля «уроки» за умовами: викладачем.
     // Фактичний запит виконує `lessonRepository.findAllByTeacherId`, а контролер отримує вже готовий результат.
     public List<Lesson> findAllByTeachId(int id) {
-        return lessonRepository.findAllByTeacherId(id);
+        List<Lesson> obj;
+        if(redis.opsForValue().get("lessonsByTeacherId"+id) == null){
+            obj = lessonRepository.findAllByTeacherId(id);
+            redis.opsForValue().set("lessonsByTeacherId"+id, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get("lessonsByTeacherId"+id);
+        }
+        return obj;
     }
     // Шукає урок студента на конкретну дату й час.
     // Такий пошук потрібен, коли дія з UI приходить як вибраний часовий слот.
@@ -125,12 +245,28 @@ public class LessonService {
 //    }
     // Повертає уроки однієї пари викладач-студент у межах одного тижневого слота.
     // Фоновий менеджер уроків використовує це, щоб продовжувати саме потрібний ланцюжок WILL-занять.
-    public List<Lesson> findAllByTeachIdAndStIdAndWeekId(int teachId, int stId, int weekId) {
-        return lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(teachId, stId, weekId);
+    public List<Lesson> findAllByTeachIdAndStIdAndWeekId(int tId, int sId, int wId){
+        List<Lesson> obj;
+        String cacheKey = "lessonsByTeachStWeek"+tId+"_"+sId+"_"+wId;
+        if(redis.opsForValue().get(cacheKey) == null){
+            obj = lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(tId, sId, wId);
+            redis.opsForValue().set(cacheKey, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get(cacheKey);
+        }
+        return obj;
     }
     public List<Lesson> findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(int studentId, LocalDateTime after, LocalDateTime before){
-        return lessonRepository.findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(studentId, after, before);
-    };
+        List<Lesson> obj;
+        String cacheKey = "lessonsByStudentAfterBefore"+studentId+"_"+after+"_"+before;
+        if(redis.opsForValue().get(cacheKey) == null){
+            obj = lessonRepository.findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(studentId, after, before);
+            redis.opsForValue().set(cacheKey, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get(cacheKey);
+        }
+        return obj;
+    }
     // Видаляє уроки, прив’язані до вибраного слота тижня.
     // Метод потрібен, коли адміністратор або викладач прибирає доступний час і треба очистити залежні заняття.
 //    public void deleteAllByTimeOfTheWeekId(int id) {
@@ -140,39 +276,98 @@ public class LessonService {
     // Так курс можна прибрати без зачіпання вже минулих занять.
     public void deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(int stId, int teachId, int tswId, LocalDateTime now) {
         lessonRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekAndLessonTimeAfter(stId, teachId, tswId, now);
+        redis.delete("lessons");
+        redis.delete("lessonsByTeacherId"+teachId);
+        redis.delete("lessonsByStudentId"+stId);
+        redis.delete("lessonsByTeacherAndStudent"+teachId+"_"+stId);
+        redis.delete("lessonHashMapForTecherById"+teachId);
+        redis.delete("lessonDurationsForTecherById"+teachId);
+        redis.delete("lessonHashMapForStudent"+stId);
+        redis.delete("lessonDurationsForStudent"+stId);
+        redis.delete("lessonHashMapForStudentInAdmin"+stId);
+        redis.delete("lessonDurationsForStudentInAdmin"+stId);
+        redis.delete("lessonHashMapForTecherAndStudent"+teachId+"_"+stId);
+        redis.delete("lessonDurationsForTecherAndStudent"+teachId+"_"+stId);
     }
     // Повертає всі уроки між конкретним викладачем і студентом.
     // Ці дані використовують сторінки teacherStudentLessons/studentLessons для календаря однієї навчальної пари.
     public List<Lesson> findAllByIdTandIdSt(int idT, int idSt) {
-        return lessonRepository.findAllByTeacherIdAndStudentId(idT, idSt);
+        List<Lesson> obj;
+        if(redis.opsForValue().get("lessonsByTeacherAndStudent"+idT+"_"+idSt) == null){
+            obj = lessonRepository.findAllByTeacherIdAndStudentId(idT, idSt);
+            redis.opsForValue().set("lessonsByTeacherAndStudent"+idT+"_"+idSt, obj);
+        } else {
+            obj = (List<Lesson>) redis.opsForValue().get("lessonsByTeacherAndStudent"+idT+"_"+idSt);
+        }
+        return obj;
+    }
+    public LocalDateTime manageOneTime(TimeOfTheWeek empTFT, LocalDateTime finalNow, String status){
+        LocalDateTime time = LocalDateTime.now();
+        if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
+            time = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+        } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
+            if (empTFT.getTimeOfTheDay() > finalNow.getHour() + 12) {
+                time = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+            } else {
+                time = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+            }
+
+        } else {
+            if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
+                if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()))) {
+                    time = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+                } else {
+                    time = finalNow.plusDays(8).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+                }
+            } else if(status == "STUDENT" || status == "STUDENTINADMIN"){
+                time = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+            }
+        }
+        return time;
+    }
+    public String manageTimeOfTheLesson(Lesson lesson){
+        String timeOfTheLesson = "";
+        if (lesson.getLessonTime().getMinute() == 0) {
+            timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
+        } else {
+            timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
+        }
+        return timeOfTheLesson;
+    }
+    public String manageDurationOfTheLesson(Lesson lesson, int i){
+        LocalDateTime durationTime = lesson.getLessonTime();
+        durationTime = durationTime.plusMinutes(i * 30);
+        String durationTimeStr = "";
+        if (durationTime.getMinute() == 0) {
+            durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
+        } else {
+            durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
+        }
+        return durationTimeStr;
     }
     // Збирає календар викладача: дні, уроки, клітинки продовження тривалих занять і доступні слоти для перенесення.
     // Метод повертає список з weekDays, lessonHashMap і lessonDurations, щоб контролер одразу передав їх у Thymeleaf.
-
     public List<Object> compileLessonsForTeacher(int teacherId) {
+        String hashKey = "lessonHashMapForTecherById" + teacherId;
+        String durKey = "lessonDurationsForTecherById" + teacherId;
+        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
+            List<Object> retValue = new ArrayList<>();
+            retValue.add(redis.opsForValue().get(hashKey));
+            retValue.add(redis.opsForValue().get(durKey));
+            return retValue;
+        }
+
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Teacher teacher = teacherService.getById(teacherId);
 
         List<Lesson> teacherLessons1 = teacher.getLessons();
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
-            String timeOfTheLesson = "";
-            if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
-            } else {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
-            }
-            lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+
+            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                LocalDateTime durationTime = lesson.getLessonTime();
-                durationTime = durationTime.plusMinutes(i * 30);
-                String durationTimeStr = "";
-                if (durationTime.getMinute() == 0) {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
-                } else {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
-                }
-                lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
         }
         //////////////////
@@ -188,24 +383,7 @@ public class LessonService {
         for (int i = 0; i < 3; i++) {
             LocalDateTime finalNow = now2;
             tswService.getAll().stream().forEach(empTFT -> {
-                if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-                    t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-                    if (empTFT.getTimeOfTheDay() > finalNow.getHour()) {
-                        t[0] = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    } else {
-                        t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-
-                    }
-
-                } else {
-                    if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                        t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    } else {
-                        t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    }
-                }
-
+                t[0] = manageOneTime(empTFT, finalNow, "TEACHER");
                 teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
 
             });
@@ -223,33 +401,33 @@ public class LessonService {
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
+        redis.opsForValue().set(hashKey, lessonHashMap);
+        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
+
     // Збирає календар тільки для однієї пари викладач-студент.
     // Він фільтрує Lesson цієї пари, додає доступні часи викладача і повертає структури для teacherStudentLessons/studentLessons.
     public List<Object> compileLessonsForStudentAndTeacher(int idT, int idSt) {
+        String hashKey = "lessonHashMapForTecherAndStudent"+idT+"_"+idSt;
+        String durKey = "lessonDurationsForTecherAndStudent"+idT+"_"+idSt;
+        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
+            List<Object> retValue = new ArrayList<>();
+            retValue.add(redis.opsForValue().get(hashKey));
+            retValue.add(redis.opsForValue().get(durKey));
+            return retValue;
+        }
+
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         List<Lesson> teacherLessons1 = findAllByIdTandIdSt(idT, idSt);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
-            String timeOfTheLesson = "";
-            if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
-            } else {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
-            }
-            lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                LocalDateTime durationTime = lesson.getLessonTime();
-                durationTime = durationTime.plusMinutes(i * 30);
-                String durationTimeStr = "";
-                if (durationTime.getMinute() == 0) {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
-                } else {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
-                }
-                lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
+
         }
         //////////////////
         LocalDateTime now2 = LocalDateTime.now().withMinute(0).withSecond(0);
@@ -265,23 +443,7 @@ public class LessonService {
         for (int i = 0; i < 3; i++) {
             LocalDateTime finalNow = now2;
             tswService.getAll().stream().forEach(empTFT -> {
-                if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-                    t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-                    if (empTFT.getTimeOfTheDay() > finalNow.getHour()) {
-                        t[0] = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    } else {
-                        t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-
-                    }
-
-                } else {
-                    if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                        t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    } else {
-                        t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    }
-                }
+                t[0] = manageOneTime(empTFT, finalNow, "TEACHERANDSTUDENT");
                 teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
             });
             now2 = now2.plusWeeks(1);
@@ -295,33 +457,31 @@ public class LessonService {
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
+        redis.opsForValue().set(hashKey, lessonHashMap);
+        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
     // Збирає календар студента з уроками всіх його викладачів.
     // Для кожного викладача додає notTakenTimes, щоб студент бачив варіанти перенесення заняття.
     public List<Object> compileLessonsForStudent(int stId) {
+        String hashKey = "lessonHashMapForStudent"+stId;
+        String durKey = "lessonDurationsForStudent"+stId;
+        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
+            List<Object> retValue = new ArrayList<>();
+            retValue.add(redis.opsForValue().get(hashKey));
+            retValue.add(redis.opsForValue().get(durKey));
+            return retValue;
+        }
+
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Student student = studentService.getById(stId);
         List<Lesson> studentLessons = student.getLessons();
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
-            String timeOfTheLesson = "";
-            if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
-            } else {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
-            }
-            lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                LocalDateTime durationTime = lesson.getLessonTime();
-                durationTime = durationTime.plusMinutes(i * 30);
-                String durationTimeStr = "";
-                if (durationTime.getMinute() == 0) {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
-                } else {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
-                }
-                lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
         }
 
@@ -345,26 +505,7 @@ public class LessonService {
             for (int i = 0; i < 3; i++) {
                 LocalDateTime finalNow = now2;
                 theWeekService.getTimesOfTheWeekThroughIds(teacherService.getById(teacher.getId()).getFreeTimeIds()).forEach(empTFT -> {
-                    if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-                        if (empTFT.getTimeOfTheDay() > finalNow.getHour() + 12) {
-                            t[0] = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                        } else {
-                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                        }
-
-                    } else {
-                        if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                            if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()))) {
-                                t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                            } else {
-                                t[0] = finalNow.plusDays(8).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                            }
-                        } else {
-                            t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                        }
-                    }
+                    t[0] = manageOneTime(empTFT, finalNow, "STUDENT");
                     teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
                 });
                 now2 = now2.plusWeeks(1);
@@ -379,33 +520,31 @@ public class LessonService {
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
+        redis.opsForValue().set(hashKey, lessonHashMap);
+        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
     // Збирає адмінську версію календаря студента.
     // Структура така сама, як у студентському кабінеті, але дані готуються для адміністративного шаблону.
     public List<Object> compileLessonsForStudentInAdmin(int stId) {
+        String hashKey = "lessonHashMapForStudentInAdmin"+stId;
+        String durKey = "lessonDurationsForStudentInAdmin"+stId;
+        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
+            List<Object> retValue = new ArrayList<>();
+            retValue.add(redis.opsForValue().get(hashKey));
+            retValue.add(redis.opsForValue().get(durKey));
+            return retValue;
+        }
+
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Student student = studentService.getById(stId);
         List<Lesson> studentLessons = student.getLessons();
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
-            String timeOfTheLesson = "";
-            if (lesson.getLessonTime().getMinute() == 0) {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":00";
-            } else {
-                timeOfTheLesson += String.format("%02d", lesson.getLessonTime().getDayOfMonth()) + "." + String.format("%02d", lesson.getLessonTime().getMonthValue()) + " " + lesson.getLessonTime().getHour() + ":" + lesson.getLessonTime().getMinute();
-            }
-            lessonHashMap.put(timeOfTheLesson, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+
             for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                LocalDateTime durationTime = lesson.getLessonTime();
-                durationTime = durationTime.plusMinutes(i * 30);
-                String durationTimeStr = "";
-                if (durationTime.getMinute() == 0) {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":00";
-                } else {
-                    durationTimeStr = String.format("%02d", durationTime.getDayOfMonth()) + "." + String.format("%02d", durationTime.getMonthValue()) + " " + durationTime.getHour() + ":" + durationTime.getMinute();
-                }
-                lessonDurations.put(durationTimeStr, lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
+                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
             }
         }
 
@@ -429,26 +568,7 @@ public class LessonService {
             for (int i = 0; i < 3; i++) {
                 LocalDateTime finalNow = now2;
                 theWeekService.getTimesOfTheWeekThroughIds(teacherService.getById(teacher.getId()).getFreeTimeIds()).stream().forEach(empTFT -> {
-                    if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                    } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-                        if (empTFT.getTimeOfTheDay() > finalNow.getHour()) {
-                            t[0] = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                        } else {
-                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                        }
-
-                    } else {
-                        if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                            if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()))) {
-                                t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                            } else {
-                                t[0] = finalNow.plusDays(8).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                            }
-                        } else {
-                            t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                        }
-                    }
+                    t[0] = manageOneTime(empTFT, finalNow, "STUDENTINADMIN");
                     teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
                 });
                 now2 = now2.plusWeeks(1);
@@ -462,6 +582,8 @@ public class LessonService {
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
+        redis.opsForValue().set(hashKey, lessonHashMap);
+        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
 

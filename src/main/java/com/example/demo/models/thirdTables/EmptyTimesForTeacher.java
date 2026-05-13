@@ -30,9 +30,7 @@ public class EmptyTimesForTeacher {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
+
 
     @ManyToOne
     @JoinColumn(name = "time_id")
@@ -40,7 +38,7 @@ public class EmptyTimesForTeacher {
     // Отримує через Spring залежності Teacher, TimeOfTheWeek.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «вільний час викладача» без ручного створення об’єктів.
     public EmptyTimesForTeacher(Teacher teacher, TimeOfTheWeek time) {
-        this.teacher = teacher;
+
         this.time = time;
     }
 }

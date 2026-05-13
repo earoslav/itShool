@@ -28,15 +28,14 @@ public class TeacherStudentTimeOfTheWeek {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
-    @ManyToOne
-    @JoinColumn(name = "time_of_the_week_id")
-    private TimeOfTheWeek timeOfTheWeek;
+    @Column(name = "time_of_the_week_id")
+    private int timeOfTheWeek;
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
     // Отримує через Spring залежності Teacher, Student, TimeOfTheWeek, Course.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «постійний розклад викладача зі студентом» без ручного створення об’єктів.
-    public TeacherStudentTimeOfTheWeek(Teacher teacher, Student student, TimeOfTheWeek timeOfTheWeek, Course course) {
+    public TeacherStudentTimeOfTheWeek(Teacher teacher, Student student, int timeOfTheWeek, Course course) {
         this.teacher = teacher;
         this.student = student;
         this.timeOfTheWeek = timeOfTheWeek;

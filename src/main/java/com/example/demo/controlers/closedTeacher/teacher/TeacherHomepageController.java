@@ -1,19 +1,17 @@
 package com.example.demo.controlers.closedTeacher.teacher;
 
 import com.example.demo.dto.entities.TeacherDTO;
-import com.example.demo.dto.other.TimeOfTheWeekDTO;
-import com.example.demo.dto.programe.CourseDTO;
+
 import com.example.demo.mapper.entity.StudentMapper;
 import com.example.demo.mapper.entity.TeacherMapper;
 import com.example.demo.mapper.other.TimeOfTheWeekMapper;
 import com.example.demo.mapper.programe.CourseMapper;
 import com.example.demo.mapper.programe.LessonMapper;
-import com.example.demo.models.email.Mail;
+
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.programe.Course;
-import com.example.demo.models.programe.Lesson;
-import com.example.demo.models.thirdTables.EmptyTimesForTeacher;
+
 import com.example.demo.models.thirdTables.TeacherCourse;
 import com.example.demo.services.email.MailService;
 import com.example.demo.services.entities.StudentService;
@@ -32,10 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,6 +58,7 @@ public class TeacherHomepageController {
     private TimeOfTheWeekMapper theWeekMapper;
     private PasswordEncoder passwordEncoder;
     private UserService userService;
+
     // Отримує через Spring залежності TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService та інші.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
     public TeacherHomepageController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper, TimeOfTheWeekMapper theWeekMapper, PasswordEncoder passwordEncoder, UserService userService) {
@@ -80,73 +79,60 @@ public class TeacherHomepageController {
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
     }
+
     // Відкриває маршрут GET /{idTeach}/homepage і готує дані для шаблону "closedTeacher/teacherHomepage/homepage".
     // У Model додає "teacher", "password", "freeTimes", "teacherFreeTimes", "allCourses", "hours" та інші; дані бере через `teacherService.getById`, `theWeekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO` та інші.
     @GetMapping("/{idTeach}/homepage")
-    public String gotoTeacher(@PathVariable("idTeach") int id, Model model){
+    public String gotoTeacher(@PathVariable("idTeach") int id, Model model) {
         Teacher teacher = teacherService.getById(id);
         teacher.setPassword("");
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
         model.addAttribute("password", "");
         List<TimeOfTheWeek> allfreeTimes = theWeekService.getAll();
         List<Integer> teacherFreeTimes = new ArrayList<>();
-        List<Course> allCourses = new ArrayList<>();
+        List<Course> allCourses = courseService.getAll();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
-
-        ///////////////
-        try{
-            teacher.getEmptyTimesForTeachers().stream().forEach(time->teacherFreeTimes.add(time.getTime().getId()));
-            allCourses = courseService.getAll();
-
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-
+        if (teacher.getFreeTimeIds() != null && !teacher.getFreeTimeIds().isEmpty()) {
+            teacherFreeTimes = Arrays.stream(teacher.getFreeTimeIds().split(",")).map(Integer::parseInt).toList();
         }
-
-        model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("freeTimes", allfreeTimes.stream().map(el -> theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         model.addAttribute("teacherFreeTimes", teacherFreeTimes);
-        model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("allCourses", allCourses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         model.addAttribute("dayNames", dayNames);
         model.addAttribute("days", days);
         //////
         return "closedTeacher/teacherHomepage/homepage";
     }
+
     // Відкриває маршрут GET /{idTeach}/homepage/{output} і готує дані для шаблону "closedTeacher/teacherHomepage/homepage".
     // У Model додає "teacher", "password", "output", "freeTimes", "teacherFreeTimes", "allCourses" та інші; дані бере через `teacherService.getById`, `theWeekService.getAll`, `courseService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO` та інші.
     @GetMapping("/{idTeach}/homepage/{output}")
-    public String gotoTeacher(@PathVariable("idTeach") int id,@PathVariable("output") String output, Model model){
+    public String gotoTeacher(@PathVariable("idTeach") int id, @PathVariable("output") String output, Model model) {
         Teacher teacher = teacherService.getById(id);
         teacher.setPassword("");
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
         model.addAttribute("password", "");
         List<TimeOfTheWeek> allfreeTimes = theWeekService.getAll();
         List<Integer> teacherFreeTimes = new ArrayList<>();
-        List<Course> allCourses = new ArrayList<>();
+        List<Course> allCourses = courseService.getAll();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
-
-        ///////////////
-        try{
-            teacher.getEmptyTimesForTeachers().stream().forEach(time->teacherFreeTimes.add(time.getTime().getId()));
-            allCourses = courseService.getAll();
-
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-
+        if (teacher.getFreeTimeIds() != null && !teacher.getFreeTimeIds().isEmpty()) {
+            teacherFreeTimes = Arrays.stream(teacher.getFreeTimeIds().split(",")).map(Integer::parseInt).toList();
         }
-
         model.addAttribute("output", output);
-        model.addAttribute("freeTimes", allfreeTimes.stream().map(el->theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("freeTimes", allfreeTimes.stream().map(el -> theWeekMapper.mapTTheWeekToTTheWeekDTO(el)).collect(Collectors.toList()));
         model.addAttribute("teacherFreeTimes", teacherFreeTimes);
-        model.addAttribute("allCourses", allCourses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("allCourses", allCourses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         model.addAttribute("dayNames", dayNames);
         model.addAttribute("days", days);
         //////
         return "closedTeacher/teacherHomepage/homepage";
     }
+
     // Оновлює дані за маршрутом POST /{id}/homepage/{password} у модулі «викладачі».
     // Викликає `userService.checkIfExistsByEmail`, `teacherService.getById`, `teacherCourseService.create`, `courseService.getById`, `emptyTimesForTeacherService.findAllByTeachId` та інші; після завершення повертає "redirect:/teacher/".
     @PostMapping("/{id}/homepage/{password}")
@@ -155,49 +141,67 @@ public class TeacherHomepageController {
                                 @ModelAttribute("teacher") TeacherDTO teacher,
                                 @PathVariable("password") String password,
                                 @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimeIds,
-                                @RequestParam(value = "days", required = false) List<Integer> days,
-                                @RequestParam(value = "dayNames", required = false) List<String> dayNames,
-                                @RequestParam(value = "newCourseIds", required = false) List<Integer> newCourseIds,
-                                @RequestParam(value = "freeTimes", required = false) List<TimeOfTheWeekDTO> allfreeTimes,
-                                @RequestParam(value = "teacherFreeTimes", required = false) List<Integer> teacherFreeTimes,
-                                @RequestParam(value = "allCourses", required = false) List<CourseDTO> allCourses,
-                                Model model) throws MessagingException {
-        if(userService.checkIfExistsByEmail(teacher.getUser().getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getUser().getEmail())){
-            return "redirect:/teacher/"+teacher.getId()+"/homepage/EXISTS";
-        }
-        else{
-            if(newCourseIds!=null || !newCourseIds.isEmpty()){
-                for (int cId : newCourseIds){
-                                    teacherCourseService.create(new TeacherCourse(courseService.getById(cId), teacherMapper.mapTeacherDTOToTeacher(teacher)));
+                                @RequestParam(value = "newCourseIds", required = false) List<Integer> newCourseIds) throws MessagingException {
+        if (userService.checkIfExistsByEmail(teacher.getUser().getEmail()) && !teacherService.getById(teacher.getId()).getEmail().equals(teacher.getUser().getEmail())) {
+            return "redirect:/teacher/" + teacher.getId() + "/homepage/EXISTS";
+        } else {
+            if (newCourseIds != null && !newCourseIds.isEmpty()) {
+                for (int cId : newCourseIds) {
+                    teacherCourseService.create(new TeacherCourse(courseService.getById(cId), teacherMapper.mapTeacherDTOToTeacher(teacher)));
                 }
             }
-            if(freeTimeIds==null){
+            if (freeTimeIds == null) {
                 freeTimeIds = new ArrayList<>();
             }
             List<Integer> oldTimeIds = new ArrayList<>();
+            if (teacherService.getById(id).getFreeTimeIds() != null) {
+                oldTimeIds = Arrays.stream(teacherService.getById(id).getFreeTimeIds().split(",")).map(Integer::parseInt).toList();
+            }
 
-            emptyTimesForTeacherService.findAllByTeachId(id).stream().forEach(time->oldTimeIds.add(time.getTime().getId()));
-            if(!oldTimeIds.equals(freeTimeIds)){
-                emptyTimesForTeacherService.removeAllByTeacherId(teacher.getId());
-                for(int iD : freeTimeIds){
-                    oldTimeIds.remove(Integer.valueOf(iD));
-                    emptyTimesForTeacherService.create(new EmptyTimesForTeacher(teacherMapper.mapTeacherDTOToTeacher(teacher), theWeekService.getById(iD)));
+//            List<Integer> finalFreeTimeIds = freeTimeIds;
+//            emptyTimesForTeacherService.findAllByTeachId(id).stream().forEach(time->oldTimeIds.add(time.getTime().getId()));
+            if (!oldTimeIds.equals(freeTimeIds)) {
+                String ids = "";
+                for (int idT : freeTimeIds) {
+                    ids = ids + idT + ",";
                 }
+                teacher.setFreeTimeIds(ids);
+//                List<Integer> timeIdsToAdd = freeTimeIds.stream().filter(idt->!oldTimeIds.contains(idt)).toList();
+//                List<Integer> timeIdsToRemove = oldTimeIds.stream().filter(idt->!finalFreeTimeIds.contains(idt)).toList();
+//                timeIdsToAdd.stream().forEach(idt-> emptyTimesForTeacherService.create(new EmptyTimesForTeacher(teacherMapper.mapTeacherDTOToTeacher(teacher), theWeekService.getById(idt))));
+//                timeIdsToRemove.stream().forEach(idt-> emptyTimesForTeacherService.removeAllByTeachIdAndTimeId(id, idt));
+                //                emptyTimesForTeacherService.removeAllByTeacherId(teacher.getId());
+//                for(int iD : freeTimeIds){
+//                    oldTimeIds.remove(Integer.valueOf(iD));
+//                    emptyTimesForTeacherService.create(new EmptyTimesForTeacher(teacherMapper.mapTeacherDTOToTeacher(teacher), theWeekService.getById(iD)));
+//                }
 
             }
-            if(password.equals("OLDPASS")){
+            if (password.equals("OLDPASS")) {
                 password = teacherService.getById(teacher.getId()).getPassword();
                 Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
                 teacher1.setPassword(password);
                 teacherService.update(teacher.getId(), teacher1);
-                return "redirect:/teacher/"+teacher.getId()+"/homepage/TEACHER_EDITED";
-            }else{
+                return "redirect:/teacher/" + teacher.getId() + "/homepage/TEACHER_EDITED";
+            } else {
                 Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
                 teacher1.setPassword(passwordEncoder.encode(password));
                 teacherService.update(teacher.getId(), teacher1);
             }
 
         }
-        return "redirect:/teacher/"+teacher.getId()+"/homepage/TEACHER_EDITED";
+        return "redirect:/teacher/" + teacher.getId() + "/homepage/TEACHER_EDITED";
+    }
+
+    @PostMapping("/{teachId}/deleteCourse/{courseId}")
+    @Transactional
+    public String deleteCourse(@PathVariable("courseId") int courseId, @PathVariable("teachId") int teachId) {
+        if (courseId != 0 && teachId != 0) {
+            teacherCourseService.deleteByCourseIdAndTeacherId(courseId, teachId);
+            return "redirect:/teacher/" + teachId + "/homepage/TEACHER_EDITED";
+        } else {
+            return "redirect:/teacher/" + teachId + "/homepage/GENERAL";
+        }
+
     }
 }

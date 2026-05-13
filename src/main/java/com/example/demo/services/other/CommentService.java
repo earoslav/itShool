@@ -2,7 +2,7 @@ package com.example.demo.services.other;
 
 import com.example.demo.models.other.Comment;
 import com.example.demo.models.entities.Student;
-import com.example.demo.repositories.other.commentRepository;
+import com.example.demo.repositories.other.CommentRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 // Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
 @Service
 public class CommentService {
-    private final commentRepository commentRepository;
+    private final CommentRepository commentRepository;
     // Отримує через Spring залежності commentRepository.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «коментарі студентів» без ручного створення об’єктів.
-    public CommentService(commentRepository commentRepository) {
+    public CommentService(CommentRepository commentRepository) {
         this.commentRepository = commentRepository;
     }
     // Повертає всі коментарі студентів з репозиторію.

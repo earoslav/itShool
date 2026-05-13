@@ -79,9 +79,9 @@ public class TeacherLessonsWithStudentController {
         Teacher teacher = teacherService.getById(idT);
         Student student = studentService.getById(idSt);
         List<Object> values = lessonService.compileLessonsForStudentAndTeacher(idT, idSt);
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
 
         List<Course> courses = new ArrayList<>();
@@ -103,9 +103,9 @@ public class TeacherLessonsWithStudentController {
         Teacher teacher = teacherService.getById(idT);
         Student student = studentService.getById(idSt);
         List<Object> values = lessonService.compileLessonsForStudentAndTeacher(idT, idSt);
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
         List<Course> courses = new ArrayList<>();
         teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
 
@@ -153,8 +153,8 @@ public class TeacherLessonsWithStudentController {
         mail.setBody("");
         Teacher teacher = teacherService.getById(idTeach);
         mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), lesson.getDuration());
-        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
-        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId());
+        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek(), LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek());
         return "redirect:/teacher/" + idTeach + "/student/" + lesson.getStudent().getId() + "/lessons/COURSE_DELETED";
     }
 
@@ -191,7 +191,7 @@ public class TeacherLessonsWithStudentController {
         LocalDateTime time = (LocalDateTime) objs.get(1);
 
         if (status == Statuses.SUCCESS) {
-            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "WILL");
+            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
             lessonService.create(lesson);
             Mail mail = new Mail();
             mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
@@ -215,12 +215,12 @@ public class TeacherLessonsWithStudentController {
 
         if (status == Statuses.SUCCESS) {
             for (int i = 1; i <= 4; i++) {
-                Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "WILL");
+                Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
                 lessonService.create(lesson);
 
                 time = time.plusWeeks(1);
             }
-            TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), courseService.getById(cId));
+            TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), courseService.getById(cId));
             tswService.create(tsw);
 
             Mail mail = new Mail();

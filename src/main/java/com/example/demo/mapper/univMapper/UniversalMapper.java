@@ -55,8 +55,15 @@
 //}
 package com.example.demo.mapper.univMapper;
 
+import com.example.demo.dto.adminLessons.LessonAdminLessonsDTO;
+import com.example.demo.dto.adminLessons.TimeOfTheWeekAdminLessonsDTO;
+import com.example.demo.dto.other.TimeOfTheWeekDTO;
+import com.example.demo.dto.programe.LessonDTO;
+import com.example.demo.mapper.other.TimeOfTheWeekMapper;
+import com.example.demo.services.other.TimeOfTheWeekService;
 import org.springframework.stereotype.Service;
 
+import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -142,8 +149,8 @@ public class UniversalMapper {
 //    }
 // Створює порожній UniversalMapper для Spring, JPA або UniversalMapper.
 // Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
-public UniversalMapper() {
-}
+
+    public UniversalMapper() {}
     // Копіює однакові за назвою поля з source у targetClass через reflection.
     // Якщо поле є LocalDateTime, воно стає рядком, а складні вкладені об’єкти мапляться рекурсивно.
     public static  <S, T> T generalMapper(S source, Class<T> targetClass){

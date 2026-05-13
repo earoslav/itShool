@@ -1,9 +1,6 @@
 package com.example.demo.dto.adminLessons;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 // Такий клас відокремлює зовнішнє представлення інформації від JPA-сутностей.
@@ -15,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Setter
 @Getter
+@ToString
 public class LessonAdminLessonsDTO {
     private int id;
 
@@ -33,6 +31,6 @@ public class LessonAdminLessonsDTO {
 
     private String status;
 
-    private TimeOfTheWeekAdminLessonsDTO timeOfTheWeek;
+
 
 }

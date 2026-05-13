@@ -170,6 +170,14 @@ function managePassNew() {
     }
 }
 
+function manageButtonWithoutFormInAdmin(el){
+    document.querySelector("#form").action = "/admin/teacher/"+el.dataset.tid+"/deleteCourse/"+el.dataset.cid;
+
+}
+function manageButtonWithoutFormInTeacher(el){
+    document.querySelector("#form").action = "/teacher/"+el.dataset.tid+"/deleteCourse/"+el.dataset.cid;
+
+}
 // editStudent.html (admin)
 // ПЕРЕЙМЕНОВАНО: managePassEditStudent (оригінал — parsePass)
 // Функція готує пароль перед відправкою форми на сервер.

@@ -19,5 +19,6 @@ public class CourseDTO {
     private Integer costPerLesson;
     private Integer teacherShare;
     private String description;
+    private String program;
 
 }

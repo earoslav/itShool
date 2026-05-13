@@ -14,4 +14,5 @@ public interface EmptyTimesForTeacherRepository extends JpaRepository<EmptyTimes
     // Шукає записи модуля «вільний час викладача» за умовами: викладачем.
     // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
     public List<EmptyTimesForTeacher> findAllByTeacherId(int id);
+    public void removeAllByTeacherIdAndTime_Id(int tId, int timeId);
 }

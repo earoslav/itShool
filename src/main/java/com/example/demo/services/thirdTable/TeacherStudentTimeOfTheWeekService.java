@@ -44,12 +44,12 @@ public class TeacherStudentTimeOfTheWeekService {
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: remove by teacher id, часовим слотом тижня.
     // Операція делегується `tSWRepository.removeAllByTeacherIdAndTimeOfTheWeekId`, щоб очистити пов’язані дані після дії користувача.
     public void removeByTIdAndWId(int tId, int wId){
-        tSWRepository.removeAllByTeacherIdAndTimeOfTheWeekId(tId, wId);
+        tSWRepository.removeAllByTeacherIdAndTimeOfTheWeek(tId, wId);
     }
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом, викладачем, часовим слотом тижня.
     // Операція делегується `tSWRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekId`, щоб очистити пов’язані дані після дії користувача.
     public void removeAllByStIdAndTeachIdAndTswId(int stId, int teachId, int tswId){
-        tSWRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekId(stId, teachId, tswId);
+        tSWRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeek(stId, teachId, tswId);
     }
     // Шукає записи модуля «постійний розклад викладача зі студентом» за умовами: викладачем.
     // Фактичний запит виконує `tSWRepository.findAllByTeacherId`, а контролер отримує вже готовий результат.
@@ -63,5 +63,5 @@ public class TeacherStudentTimeOfTheWeekService {
     }
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: id st, is tsw.
     // Операція делегується `tSWRepository.removeAllByStudentIdAndTimeOfTheWeekId`, щоб очистити пов’язані дані після дії користувача.
-    public void removeAllByIdStAndIsTsw(int idst, int idTsw){tSWRepository.removeAllByStudentIdAndTimeOfTheWeekId(idst, idTsw);}
+    public void removeAllByIdStAndIsTsw(int idst, int idTsw){tSWRepository.removeAllByStudentIdAndTimeOfTheWeek(idst, idTsw);}
 }

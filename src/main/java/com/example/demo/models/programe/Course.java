@@ -38,6 +38,8 @@ public class Course {
 
     @Column(name = "description", length = 1000)
     private String description;
+    @Column(name = "program")
+    private String program;
 
     @OneToMany(mappedBy = "course")
     private List<TeacherCourse> teacherCourses;
@@ -63,5 +65,14 @@ public class Course {
         this.costPerLesson = costPerLesson;
         this.teacherShare = teacherShare;
         this.description = description;
+    }
+
+    public Course(int id, String name, Integer costPerLesson, Integer teacherShare, String description, String program) {
+        this.id = id;
+        this.name = name;
+        this.costPerLesson = costPerLesson;
+        this.teacherShare = teacherShare;
+        this.description = description;
+        this.program = program;
     }
 }

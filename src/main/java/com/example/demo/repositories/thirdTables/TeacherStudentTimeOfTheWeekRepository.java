@@ -14,7 +14,7 @@ import java.util.List;
 public interface TeacherStudentTimeOfTheWeekRepository extends JpaRepository<TeacherStudentTimeOfTheWeek, Integer> {
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: викладачем, time of the time of the week id.
     // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
-    public void removeAllByTeacherIdAndTimeOfTheWeekId(int tId, int wId);
+    public void removeAllByTeacherIdAndTimeOfTheWeek(int tId, int wId);
     // Шукає записи модуля «постійний розклад викладача зі студентом» за умовами: викладачем.
     // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
     public List<TeacherStudentTimeOfTheWeek> findAllByTeacherId(int id);
@@ -23,10 +23,10 @@ public interface TeacherStudentTimeOfTheWeekRepository extends JpaRepository<Tea
     public void removeAllByTeacherIdAndStudentId(int idT, int idSt);
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом, time of the time of the week id.
     // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
-    public void removeAllByStudentIdAndTimeOfTheWeekId(int idSt, int idTsw);
+    public void removeAllByStudentIdAndTimeOfTheWeek(int idSt, int idTsw);
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом, викладачем, time of the time of the week id.
     // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
-    public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekId(int stId, int teachId, int tswId);
+    public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeek(int stId, int teachId, int tswId);
     // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом.
     // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
     public void removeAllByStudentId(int id);

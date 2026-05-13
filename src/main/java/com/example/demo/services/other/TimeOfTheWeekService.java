@@ -3,7 +3,10 @@ package com.example.demo.services.other;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.repositories.other.TimeOfTheWeekRepository;
 
+import java.sql.Time;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,62 +21,130 @@ import org.springframework.stereotype.Service;
 @Service
 public class TimeOfTheWeekService {
     private final TimeOfTheWeekRepository timeOfTheWeekRepository;
+    private TimesService timesService;
     // Отримує через Spring залежності TimeOfTheWeekRepository.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «часові слоти тижня» без ручного створення об’єктів.
     @Autowired
-    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository) {
+    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService) {
         this.timeOfTheWeekRepository = timeOfTheWeekRepository;
+        this.timesService = timesService;
     }
     // Знаходить часовий слот за днем тижня і годиною.
     // Метод потрібен старішим сценаріям, де хвилини ще не передаються окремо.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour){
-        return timeOfTheWeekRepository.findFirstByDayOfTheWeekAndTimeOfTheDay(day,hour);
+        for(String time : timesService.getTimes().split(",")){
+            int dayRet = Integer.parseInt(time.split("-")[1]);
+            int hourRet = Integer.parseInt(time.split("-")[2]);
+            if(day == dayRet && hour == hourRet){
+                int id = Integer.parseInt(time.split("-")[0]);
+                return  new TimeOfTheWeek(id, day, hour, 0);
+            }
+        }
+        return new TimeOfTheWeek(1, 1, 8, 0);
     }
     // Знаходить точний часовий слот за днем тижня, годиною і хвилиною.
     // Його використовують форми створення розкладу, де час може бути 8:00 або 8:30.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute){
-        return timeOfTheWeekRepository.findByDayOfTheWeekAndTimeOfTheDayAndMinute( day, hour, minute);
+        for(String time : timesService.getTimes().split(",")){
+            int minuteRet = Integer.parseInt(time.split("-")[3]);
+            int dayRet = Integer.parseInt(time.split("-")[1]);
+            int hourRet = Integer.parseInt(time.split("-")[2]);
+            if(day == dayRet && hour == hourRet && minute == minuteRet){
+                int id = Integer.parseInt(time.split("-")[0]);
+                return  new TimeOfTheWeek(id, day, hour, minute);
+            }
+        }
+        return new TimeOfTheWeek(1, 1, 8, 0);
     }
     // Повертає всі часові слоти тижня з репозиторію.
     // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
     public List<TimeOfTheWeek> getAll() {
-        return timeOfTheWeekRepository.findAll();
+        List<TimeOfTheWeek> times = new ArrayList<>();
+        for(String time : timesService.getTimes().split(",")){
+            int id = Integer.parseInt(time.split("-")[0]);
+            int day = Integer.parseInt(time.split("-")[1]);
+            int hour = Integer.parseInt(time.split("-")[2]);
+            int minute = Integer.parseInt(time.split("-")[3]);
+            TimeOfTheWeek timeOfTheWeek = new TimeOfTheWeek(id, day, hour, minute);
+            times.add(timeOfTheWeek);
+        }
+        return times;
     }
     // Знаходить один запис модуля «часові слоти тижня» за id.
     // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
     public TimeOfTheWeek getById(Integer id) {
-        return timeOfTheWeekRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TimeOfTheWeek not found with id: " + id));
+        for(String time : timesService.getTimes().split(",")){
+            int idRet = Integer.parseInt(time.split("-")[0]);
+            if(id == idRet){
+                int dayRet = Integer.parseInt(time.split("-")[1]);
+                int hourRet = Integer.parseInt(time.split("-")[2]);
+                int minuteRet = Integer.parseInt(time.split("-")[3]);
+                return  new TimeOfTheWeek(id, dayRet, hourRet, minuteRet);
+            }
+        }
+        return new TimeOfTheWeek(1, 1, 8, 0);
+//        return timeOfTheWeekRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("TimeOfTheWeek not found with id: " + id));
+    }
+    public List<String> compileWeekDays(){
+        LocalDate now = LocalDate.now();
+        now = now.minusWeeks(2);
+        List<String> weekDaysTemp = new ArrayList<>();
+        weekDaysTemp.add("ПОН");
+        weekDaysTemp.add("ВІВТ");
+        weekDaysTemp.add("СЕР");
+        weekDaysTemp.add("ЧЕТ");
+        weekDaysTemp.add("ПЯТ");
+        weekDaysTemp.add("СУБ");
+        weekDaysTemp.add("НЕД");
+        List<String> weekDays = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            for (String weekDay : weekDaysTemp) {
+                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
+                now = now.plusDays(1);
+            }
+        }
+        return weekDays;
     }
     // Зберігає новий запис модуля «часові слоти тижня».
     // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
-    public TimeOfTheWeek create(TimeOfTheWeek timeOfTheWeek) {
-        return timeOfTheWeekRepository.save(timeOfTheWeek);
-    }
+//    public TimeOfTheWeek create(TimeOfTheWeek timeOfTheWeek) {
+//        return timeOfTheWeekRepository.save(timeOfTheWeek);
+//    }
 
     // Оновлює існуючий запис модуля «часові слоти тижня».
     // Спочатку знаходить поточну сутність, переносить поля dayOfTheWeek, timeOfTheDay і зберігає її назад у репозиторій.
-    public TimeOfTheWeek update(Integer id, TimeOfTheWeek timeOfTheWeek) {
-        TimeOfTheWeek existing = getById(id);
-        existing.setDayOfTheWeek(timeOfTheWeek.getDayOfTheWeek());
-        existing.setTimeOfTheDay(timeOfTheWeek.getTimeOfTheDay());
-        return timeOfTheWeekRepository.save(existing);
-    }
+//    public TimeOfTheWeek update(Integer id, TimeOfTheWeek timeOfTheWeek) {
+//        TimeOfTheWeek existing = getById(id);
+//        existing.setDayOfTheWeek(timeOfTheWeek.getDayOfTheWeek());
+//        existing.setTimeOfTheDay(timeOfTheWeek.getTimeOfTheDay());
+//        return timeOfTheWeekRepository.save(existing);
+//    }
     // Видаляє запис модуля «часові слоти тижня» за id.
     // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
-    public void deleteById(Integer id) {
-        getById(id);
-        timeOfTheWeekRepository.deleteById(id);
-    }
+//    public void deleteById(Integer id) {
+//        getById(id);
+//        timeOfTheWeekRepository.deleteById(id);
+//    }
     // Перетворює id з checkbox-ів форми на об’єкти TimeOfTheWeek.
     // Якщо список порожній або null, повертає всі слоти, щоб форма не залишилася без варіантів.
-    public List<TimeOfTheWeek> getTimesOfTheWeekThroughIds(List<Integer> ids){
+    public List<TimeOfTheWeek> getTimesOfTheWeekThroughIds(String idsStr){
+        List<Integer> ids = new ArrayList<>();
+        Arrays.stream(idsStr.split(",")).forEach(id->ids.add(Integer.valueOf(id)));
+        List<TimeOfTheWeek> freeTimes = new ArrayList<>();
         if(ids!=null && !ids.isEmpty()){
-            List<TimeOfTheWeek> freeTimes = new ArrayList<>();
-            ids.stream().forEach(time-> freeTimes.add(getById(time)));
+            for(String time : timesService.getTimes().split(",")){
+                int idRet = Integer.parseInt(time.split("-")[0]);
+                if(ids.contains(idRet)){
+                    int dayRet = Integer.parseInt(time.split("-")[1]);
+                    int hourRet = Integer.parseInt(time.split("-")[2]);
+                    int minuteRet = Integer.parseInt(time.split("-")[3]);
+                    freeTimes.add(new TimeOfTheWeek(idRet, dayRet, hourRet, minuteRet));
+                }
+            }
             return freeTimes;
         }else{
-            List<TimeOfTheWeek> freeTimes = getAll();
+            freeTimes = getAll();
             return freeTimes;
         }
     }

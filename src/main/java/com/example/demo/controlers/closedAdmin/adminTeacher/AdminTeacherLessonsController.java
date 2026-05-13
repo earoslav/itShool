@@ -6,11 +6,13 @@ import com.example.demo.mapper.entity.TeacherMapper;
 import com.example.demo.mapper.programe.CourseMapper;
 import com.example.demo.mapper.programe.LessonMapper;
 import com.example.demo.models.email.Mail;
+import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.programe.Course;
 import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
+import com.example.demo.services.Redis.RedisService;
 import com.example.demo.services.Statuses;
 import com.example.demo.services.email.MailService;
 import com.example.demo.services.entities.AdminService;
@@ -25,6 +27,7 @@ import com.example.demo.services.thirdTable.StudentCourseService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import jakarta.mail.MessagingException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -61,9 +64,11 @@ public class AdminTeacherLessonsController {
     private TeacherMapper teacherMapper;
     private StudentMapper studentMapper;
     private CourseMapper courseMapper;
+    private RedisTemplate redis;
+    private RedisService redisService;
     // Отримує через Spring залежності TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService, CommentService та інші.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
-    public AdminTeacherLessonsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, TeacherMapper teacherMapper, StudentMapper studentMapper, CourseMapper courseMapper) {
+    public AdminTeacherLessonsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, TeacherMapper teacherMapper, StudentMapper studentMapper, CourseMapper courseMapper, RedisTemplate redisTemplate) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
         this.emptyTimesForTeacherService = emptyTimesForTeacherService;
@@ -80,23 +85,63 @@ public class AdminTeacherLessonsController {
         this.teacherMapper = teacherMapper;
         this.studentMapper = studentMapper;
         this.courseMapper = courseMapper;
+        this.redis = redisTemplate;
     }
     // Відкриває маршрут GET /teacher/{id}/lessons і готує дані для шаблону "closedAdmin/adminTeachers/teacherLessons".
     // У Model додає "lessonDurations", "lessons", "students", "courses", "weekDays", "teacher" та інші; дані бере через `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO` та інші.
+
     @GetMapping("/teacher/{id}/lessons")
     public String gotoLessons(@PathVariable("id") int id, Model model) {
-        Teacher teacher = teacherService.getById(id);
-        List<Object> values = lessonService.compileLessonsForTeacher(teacher.getId());
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        Teacher teacher = new Teacher();
+        if(redis.opsForValue().get("teacherById"+id)==null){
+            teacher = teacherService.getById(id);
+            redis.opsForValue().set("teacherById"+id, teacher);
+        }else{
+            teacher = (Teacher) redis.opsForValue().get("teacherById"+id);
+        }
 
+
+
+        List<String> weekDays = new ArrayList<>();
+        if(redis.opsForValue().get("weekDays")==null){
+            weekDays = theWeekService.compileWeekDays();
+            redis.opsForValue().set("weekDays", weekDays);
+        }else{
+            weekDays = (List<String>) redis.opsForValue().get("weekDays");
+        }
+        List<Object> values = new ArrayList<>();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
+        if(redis.opsForValue().get("weekDays")==null || redis.opsForValue().get("lessonHashMapForTecherById"+id)==null || redis.opsForValue().get("lessonDurationsForTecherById"+id)==null){
+            values = lessonService.compileLessonsForTeacher(teacher.getId());
+            lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+            lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
+
+            redis.opsForValue().set("lessonHashMapForTecherById"+id, lessonHashMap);
+            redis.opsForValue().set("lessonDurationsForTecherById"+id, lessonDurations);
+        }else{
+            lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) redis.opsForValue().get("lessonHashMapForTecherById"+id);
+            lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) redis.opsForValue().get("lessonDurationsForTecherById"+id);
+        }
+        List<Student> students = new ArrayList<>();
+        if(redis.opsForValue().get("students")==null){
+            students = studentService.getAll();
+            redis.opsForValue().set("students", students);
+        }else {
+            students = (List<Student>) redis.opsForValue().get("students");
+        }
         List<Course> courses = new ArrayList<>();
-        teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
+        if(redis.opsForValue().get("coursesByTeacherId"+id)==null){
+            courses = teacher.getTeacherCourses().stream().map(course -> course.getCourse()).collect(Collectors.toList());
+            redis.opsForValue().set("coursesByTeacherId"+id, courses);
+        }else{
+            courses = (List<Course>) redis.opsForValue().get("coursesByTeacherId"+id);
+        }
+
 
         model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("lessons", lessonHashMap);
-        model.addAttribute("students", studentService.getAll().stream().map(el -> studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("students", students.stream().map(el -> studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
         model.addAttribute("courses", courses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
         model.addAttribute("weekDays", weekDays);
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
@@ -107,15 +152,49 @@ public class AdminTeacherLessonsController {
     // У Model додає "lessonDurations", "output", "lessons", "students", "courses", "weekDays" та інші; дані бере через `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO` та інші.
     @GetMapping("/teacher/{id}/lessons/{output}")
     public String gotoLessons(@PathVariable("id") int id, @PathVariable("output") String output, Model model) {
-        Teacher teacher = teacherService.getById(id);
+        Teacher teacher = new Teacher();
+        if(redis.opsForValue().get("teacherById"+id)==null){
+            teacher = teacherService.getById(id);
+            redis.opsForValue().set("teacherById"+id, teacher);
+        }else{
+            teacher = (Teacher) redis.opsForValue().get("teacherById"+id);
+        }
 
-        List<Object> values = lessonService.compileLessonsForTeacher(teacher.getId());
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
 
+        List<String> weekDays = new ArrayList<>();
+        if(redis.opsForValue().get("weekDays")==null){
+            weekDays = theWeekService.compileWeekDays();
+            redis.opsForValue().set("weekDays", weekDays);
+        }else{
+            weekDays = (List<String>) redis.opsForValue().get("weekDays");
+        }
+        List<Object> values = new ArrayList<>();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
+        if(redis.opsForValue().get("weekDays")==null || redis.opsForValue().get("lessonHashMapForTecherById"+id)==null || redis.opsForValue().get("lessonDurationsForTecherById"+id)==null){
+            values = lessonService.compileLessonsForTeacher(teacher.getId());
+            lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+            lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
+            redis.opsForValue().set("lessonHashMapForTecherById"+id, lessonHashMap);
+            redis.opsForValue().set("lessonDurationsForTecherById"+id, lessonDurations);
+        }else{
+            lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) redis.opsForValue().get("lessonHashMapForTecherById"+id);
+            lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) redis.opsForValue().get("lessonDurationsForTecherById"+id);
+        }
+        List<Student> students = new ArrayList<>();
+        if(redis.opsForValue().get("students")==null){
+            students = studentService.getAll();
+            redis.opsForValue().set("students", students);
+        }else {
+            students = (List<Student>) redis.opsForValue().get("students");
+        }
         List<Course> courses = new ArrayList<>();
-        teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
+        if(redis.opsForValue().get("coursesByTeacherId"+id)==null){
+            courses = teacher.getTeacherCourses().stream().map(course -> course.getCourse()).collect(Collectors.toList());
+            redis.opsForValue().set("coursesByTeacherId"+id, courses);
+        }else{
+            courses = (List<Course>) redis.opsForValue().get("coursesByTeacherId"+id);
+        }
 
         model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("output", output);
@@ -153,8 +232,8 @@ public class AdminTeacherLessonsController {
         mail.setBody("");
         Teacher teacher = teacherService.getById(idTeach);
         mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), lesson.getDuration());
-        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
-        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId());
+        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek(), LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek());
         return "redirect:/admin/teacher/" + idTeach + "/lessons/COURSE_DELETED";
     }
     // Оновлює дані за маршрутом POST /teacher/{idTeach}/lessons/editLesson/notPicked у модулі «уроки».
@@ -167,7 +246,7 @@ public class AdminTeacherLessonsController {
     // Оновлює дані за маршрутом POST /teacher/{idTeach}/lessons/editLesson/{id}/{nTId}/{date} у модулі «уроки».
     // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/admin/teacher/".
     @PostMapping("/teacher/{idTeach}/lessons/editLesson/{id}/{nTId}/{date}")
-    public String editLessonFromTeacher(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
+    public String editLessonFromTeacher(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("date") String date, Model model) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);
         List<Object> objs = lessonService.checkIfLessonValidWithReputitions(idTeach, lesson.getStudent().getId(),lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
         Statuses status = (Statuses) objs.get(0);
@@ -197,7 +276,7 @@ public class AdminTeacherLessonsController {
         LocalDateTime time = (LocalDateTime) objs.get(1);
 
         if (status == Statuses.SUCCESS) {
-                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur,theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "WILL");
+                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur,theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
                             lessonService.create(lesson);
                             Mail mail = new Mail();
                             mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
@@ -221,12 +300,12 @@ public class AdminTeacherLessonsController {
 
         if (status == Statuses.SUCCESS) {
                         for (int i = 1; i <= 4; i++) {
-                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "WILL");
+                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
                             lessonService.create(lesson);
 
                             time = time.plusWeeks(1);
                         }
-                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), courseService.getById(cId));
+                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), courseService.getById(cId));
                         tswService.create(tsw);
 
 

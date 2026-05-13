@@ -51,4 +51,10 @@ public class TimeOfTheWeek {
         this.lessons = lessons;
     }
 
+    public TimeOfTheWeek(Integer id, Integer dayOfTheWeek, Integer timeOfTheDay, Integer minute) {
+        this.id = id;
+        this.dayOfTheWeek = dayOfTheWeek;
+        this.minute = minute;
+        this.timeOfTheDay = timeOfTheDay;
+    }
 }

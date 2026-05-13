@@ -82,9 +82,9 @@ public class StudentLessonsController {
         Student student = studentService.getById(id);
 
         List<Object> values = lessonService.compileLessonsForStudent(student.getId());
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
 
         model.addAttribute("lessonDurations", lessonDurations);
@@ -101,9 +101,9 @@ public class StudentLessonsController {
         Student student = studentService.getById(id);
 
         List<Object> values = lessonService.compileLessonsForStudent(student.getId());
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
 
         model.addAttribute("lessonDurations", lessonDurations);
@@ -152,15 +152,15 @@ public class StudentLessonsController {
         mail.setBody("");
         Student student = studentService.getById(idSt);
         mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), lesson.getDuration());
-        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
-        tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId());
+        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek(), LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek());
         return "redirect:/student/" + idSt + "/lessons/COURSE_DELETED";
     }
 
     // Видаляє або від’єднує дані за маршрутом POST /{idSt}/lessons/editLesson/{id}/{nTId}/{date} у модулі «уроки».
     // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/student/".
     @PostMapping("/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
-    public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
+    public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("date") String date, Model model) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);
         List<Object> objs = lessonService.checkIfLessonValidWithReputitions(lesson.getTeacher().getId(), lesson.getStudent().getId(), lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
         Statuses status = (Statuses) objs.get(0);

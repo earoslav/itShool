@@ -2,12 +2,14 @@ package com.example.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 // Після старту Spring піднімає контролери, сервіси, репозиторії та фоновий менеджер уроків.
 
 // Головний клас запускає Spring Boot застосунок demo16 і вмикає планувальник.
 // Після старту Spring піднімає контролери, сервіси, репозиторії та фоновий менеджер уроків.
 @SpringBootApplication
+@EnableCaching
 @EnableScheduling
 public class Demo16Application {
     // Запускає SpringApplication для класу Demo16Application.

@@ -26,6 +26,9 @@ public class TeacherCourseService {
         return teacherCourseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TeacherCourse not found with id: " + id));
     }
+    public void deleteByCourseIdAndTeacherId(int cId, int tId){
+        teacherCourseRepository.deleteByCourse_IdAndTeacherId(cId, tId);
+    }
     // Зберігає новий запис модуля «курси викладача».
     // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
     public TeacherCourse create(TeacherCourse teacherCourse) {

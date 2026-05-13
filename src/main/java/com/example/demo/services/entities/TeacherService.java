@@ -52,6 +52,7 @@ public class TeacherService {
         existing.setPhoneNumber(teacher.getPhoneNumber());
         existing.setUnpaidMoney(teacher.getUnpaidMoney());
         existing.setTgUsername(teacher.getTgUsername());
+        existing.setFreeTimeIds(teacher.getFreeTimeIds());
         return teacherRepository.save(existing);
     }
     // Перевіряє, чи вже існує запис модуля «викладачі» за умовою: email.

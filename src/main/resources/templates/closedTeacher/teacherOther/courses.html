@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<!-- Сторінка перегляду програм курсів для вчителя -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IT Kids School - Програми курсів</title>
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
+
+<section class="hero">
+  <div class="container">
+    <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+    <h3 class="ml-20">Програми курсів</h3>
+  </div>
+</section>
+
+<div class="container">
+  <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+  <form id="form">
+    <div class="form-grid">
+
+      <!-- Вибір курсу -->
+      <div class="block">
+        <h2>Оберіть курс</h2>
+
+        <input type="text" id="courseSearch" onkeyup="searchProgramCourse()"
+               placeholder="Пошук за назвою..">
+
+        <div class="course-tabs" id="courseTabs">
+          <button type="button"
+                  class="course-tab"
+                  th:each="c, iter : ${courses}"
+                  th:classappend="${iter.first} ? 'active' : ''"
+                  th:attr="data-course-id=${c.id}"
+                  th:text="${c.name}"
+                  onclick="selectProgramCourse(this)">
+          </button>
+        </div>
+
+        <p class="hint" th:if="${courses == null or courses.isEmpty()}">
+          Наразі немає доступних курсів.
+        </p>
+      </div>
+
+      <!-- Програма курсу -->
+      <div class="block program-block"
+           th:each="c, iter : ${courses}"
+           th:id="'course-' + ${c.id}"
+           th:classappend="${iter.first} ? '' : 'd-none'">
+
+        <h2 th:text="${c.name}"></h2>
+
+        <!-- Сирий текст програми (схований, використовується JS) -->
+        <pre class="program-raw d-none" th:text="${c.program}"></pre>
+
+        <!-- Сюди JS вставить красиво відформатовану програму -->
+        <div class="program-pretty"></div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+
+<script>
+  function selectProgramCourse(btn) {
+    document.querySelectorAll('#courseTabs .course-tab')
+            .forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    const id = btn.getAttribute('data-course-id');
+    document.querySelectorAll('.program-block').forEach(b => b.classList.add('d-none'));
+    const target = document.getElementById('course-' + id);
+    if (target) target.classList.remove('d-none');
+  }
+
+  function searchProgramCourse() {
+    const filter = document.getElementById('courseSearch').value.toUpperCase();
+    document.querySelectorAll('#courseTabs .course-tab').forEach(tab => {
+      const txt = (tab.textContent || tab.innerText).toUpperCase();
+      tab.style.display = txt.indexOf(filter) > -1 ? '' : 'none';
+    });
+  }
+
+  /* ===== Форматер тексту програми ===== */
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  function renderProgramText(raw) {
+    // Прибираємо markdown-маркери ### / ## / # та зайві пробіли
+    const lines = raw.split('\n').map(l => l.replace(/\s+$/, ''));
+    let html = '';
+    let inLevel = false;
+    let inLesson = false;
+    let inTopics = false;
+
+    const closeTopics = () => { if (inTopics) { html += '</ul>'; inTopics = false; } };
+    const closeLesson = () => { closeTopics(); if (inLesson) { html += '</div>'; inLesson = false; } };
+    const closeLevel  = () => { closeLesson(); if (inLevel)  { html += '</div>'; inLevel  = false; } };
+
+    for (let raw of lines) {
+      let line = raw.replace(/^#{1,6}\s*/, '').trim();
+      if (!line) continue;
+      if (/^[-–—]{3,}$/.test(line)) { closeLevel(); continue; }
+
+      // Заголовок рівня
+      if (/^Рівень\s*\d+/i.test(line)) {
+        closeLevel();
+        html += '<div class="level-card"><div class="level-header"><h3>'
+                + escapeHtml(line) + '</h3></div>';
+        inLevel = true;
+        continue;
+      }
+
+      // Мета рівня
+      if (/^\**\s*Мета[:：]/i.test(line)) {
+        const txt = line.replace(/^\**\s*Мета[:：]\s*/i, '');
+        if (!inLevel) { html += '<div class="level-card"><div class="level-header">'; inLevel = true; }
+        html += '<p class="level-goal"><strong>Мета:</strong> ' + escapeHtml(txt) + '</p></div>';
+        continue;
+      }
+
+      // Урок
+      const lessonMatch = line.match(/^[·•\-*]?\s*Урок\s*(\d+)\s*[:：.\-]?\s*(.*)$/i);
+      if (lessonMatch) {
+        closeLesson();
+        if (!inLevel) { html += '<div class="level-card">'; inLevel = true; }
+        html += '<div class="lesson-item">'
+                +  '<div class="lesson-title">'
+                +    '<span class="lesson-number">Урок ' + escapeHtml(lessonMatch[1]) + '</span>'
+                +    '<span>' + escapeHtml(lessonMatch[2]) + '</span>'
+                +  '</div>';
+        inLesson = true;
+        continue;
+      }
+
+      // Практика
+      const pracMatch = line.match(/^[·•\-*]?\s*Практика[:：]\s*(.*)$/i);
+      if (pracMatch) {
+        closeTopics();
+        if (!inLesson) { html += '<div class="lesson-item">'; inLesson = true; }
+        html += '<p class="lesson-practice"><strong>Практика:</strong> '
+                + escapeHtml(pracMatch[1]) + '</p>';
+        continue;
+      }
+
+      // Підпункт (буле)
+      if (/^[·•\-*]/.test(line)) {
+        const txt = line.replace(/^[·•\-*]\s*/, '');
+        if (!inLesson) {
+          if (!inLevel) { html += '<div class="level-card">'; inLevel = true; }
+          html += '<div class="lesson-item">';
+          inLesson = true;
+        }
+        if (!inTopics) { html += '<ul class="lesson-topics">'; inTopics = true; }
+        html += '<li>' + escapeHtml(txt) + '</li>';
+        continue;
+      }
+
+      // Звичайний абзац
+      closeTopics();
+      html += '<p class="program-paragraph">' + escapeHtml(line) + '</p>';
+    }
+    closeLevel();
+    return html;
+  }
+
+  document.querySelectorAll('.program-block').forEach(block => {
+    const raw = block.querySelector('.program-raw');
+    const out = block.querySelector('.program-pretty');
+    if (raw && out) out.innerHTML = renderProgramText(raw.textContent || '');
+  });
+</script>
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>

@@ -44,7 +44,8 @@ public class Teacher{
     private int approved;
     @Column(name = "unpaid_money")
     private float unpaidMoney;
-
+    @Column(name = "free_time_ids")
+    private String freeTimeIds;
 
     @OneToMany(mappedBy = "teacher")
 
@@ -60,6 +61,7 @@ public class Teacher{
     private List<Lesson> lessons;
     @OneToMany(mappedBy = "teacher")
     private List<Comment> myComments;
+
 
 
     // Повертає поле user об’єкта Teacher.

@@ -45,15 +45,15 @@ public class Lesson {
     @Column(name = "duration")
     private float duration;
 
-    @ManyToOne
-    @JoinColumn(name = "planed_date_id")
-    private TimeOfTheWeek timeOfTheWeek;
+
+    @Column(name = "planed_date_id")
+    private int timeOfTheWeek;
 
     @Column(name = "status", length = 30)
     private String status;
     // Отримує через Spring залежності Student, Teacher, Course, LocalDateTime, float, TimeOfTheWeek, String.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
-    public Lesson(Student student, Teacher teacher, Course course, LocalDateTime lessonTime, float duration, TimeOfTheWeek timeOfTheWeek, String status) {
+    public Lesson(Student student, Teacher teacher, Course course, LocalDateTime lessonTime, float duration, int timeOfTheWeek, String status) {
         this.student = student;
         this.teacher = teacher;
         this.course = course;

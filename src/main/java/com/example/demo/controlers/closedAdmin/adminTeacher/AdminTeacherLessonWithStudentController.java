@@ -91,9 +91,9 @@ public class AdminTeacherLessonWithStudentController {
         Teacher teacher = teacherService.getById(idT);
         Student student = studentService.getById(idSt);
         List<Object> values = lessonService.compileLessonsForStudentAndTeacher(idT, idSt);
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
         List<Course> courses = new ArrayList<>();
         teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
@@ -114,9 +114,9 @@ public class AdminTeacherLessonWithStudentController {
         Teacher teacher = teacherService.getById(idT);
         Student student = studentService.getById(idSt);
         List<Object> values = lessonService.compileLessonsForStudentAndTeacher(idT, idSt);
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
         List<Course> courses = new ArrayList<>();
         teacher.getTeacherCourses().stream().forEach(course -> courses.add(course.getCourse()));
@@ -161,15 +161,15 @@ public class AdminTeacherLessonWithStudentController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM HH:mm", new Locale("uk", "UA"));
         String formattedDate = lesson.getLessonTime().format(formatter);
         mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), lesson.getDuration());
-        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
-        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek().getId());
+        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek(), LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek());
         return "redirect:/admin/teacher/" + idTeach + "/lessonsWithStudent/" + lesson.getStudent().getId() + "/COURSE_DELETED";
     }
 
     // Оновлює дані за маршрутом POST /teacher/{idTeach}/lessonsWithStudent/editLesson/{id}/{nTId}/{date} у модулі «уроки».
     // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/admin/teacher/".
     @PostMapping("/teacher/{idTeach}/lessonsWithStudent/editLesson/{id}/{nTId}/{date}")
-    public String editLessonForStudent(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
+    public String editLessonForStudent(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes,  @PathVariable("date") String date, Model model) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);
         List<Object> objs = lessonService.checkIfLessonValidWithReputitions(idTeach, lesson.getStudent().getId(),lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
         Statuses status = (Statuses) objs.get(0);
@@ -199,7 +199,7 @@ public class AdminTeacherLessonWithStudentController {
         LocalDateTime time = (LocalDateTime) objs.get(1);
 
         if (status == Statuses.SUCCESS) {
-                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "WILL");
+                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
                             lessonService.create(lesson);
                             Mail mail = new Mail();
                             mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
@@ -223,12 +223,12 @@ public class AdminTeacherLessonWithStudentController {
 
         if (status == Statuses.SUCCESS) {
                         for (int i = 1; i <= 5; i++) {
-                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), "WILL");
+                            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
                             lessonService.create(lesson);
 
                             time = time.plusWeeks(1);
                         }
-                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()), courseService.getById(cId));
+                        TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), courseService.getById(cId));
                         tswService.create(tsw);
 
                         Mail mail = new Mail();

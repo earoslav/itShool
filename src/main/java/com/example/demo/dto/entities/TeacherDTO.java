@@ -26,8 +26,10 @@ public class TeacherDTO {
     public float unpaidMoney;
     private String phoneNumber;
     private String tgUsername;
+    private String freeTimeIds;
     // Отримує через Spring залежності Integer, String, int, List<TeacherCourseDTO>, List<EmptyTimesForTeacherDTO>, UserDTO, float.
     // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
+
     public TeacherDTO(Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, List<EmptyTimesForTeacherDTO> emptyTimesForTeachers, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername) {
         this.age = age;
         this.comment = comment;
@@ -48,5 +50,19 @@ public class TeacherDTO {
         this.approved = approved;
         this.phoneNumber = phoneNumber;
         this.tgUsername = tgUsername;
+    }
+
+    public TeacherDTO( Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, List<EmptyTimesForTeacherDTO> emptyTimesForTeachers, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername, String freeTimeIds) {
+
+        this.age = age;
+        this.comment = comment;
+        this.approved = approved;
+        this.teacherCourses = teacherCourses;
+        this.emptyTimesForTeachers = emptyTimesForTeachers;
+        this.user = user;
+        this.unpaidMoney = unpaidMoney;
+        this.phoneNumber = phoneNumber;
+        this.tgUsername = tgUsername;
+        this.freeTimeIds = freeTimeIds;
     }
 }

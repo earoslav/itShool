@@ -24,16 +24,16 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
     public Lesson findByLessonTimeAndStudentId(LocalDateTime time, int id);
     // Шукає записи модуля «уроки» за умовами: time of the time of the week id, викладачем.
     // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
-    public List<Lesson> findAllByTimeOfTheWeekIdAndTeacherId(int timeOfTheWeekId, int teacherId);
+    public List<Lesson> findAllByTimeOfTheWeekAndTeacherId(int timeOfTheWeekId, int teacherId);
     // Шукає записи модуля «уроки» за умовами: викладачем, студентом.
     // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
     public List<Lesson> findAllByTeacherIdAndStudentId(int teacherId, int studentId);
     // Видаляє записи модуля «уроки» за умовами: студентом, викладачем, time of the time of the week id, уроками після заданого часу.
     // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
-    public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekIdAndLessonTimeAfter(int stId,int teachId, int tswId, LocalDateTime now);
+    public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekAndLessonTimeAfter(int stId,int teachId, int tswId, LocalDateTime now);
     // Видаляє записи модуля «уроки» за умовами: time of the time of the week id.
     // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
-    public void removeAllByTimeOfTheWeekId(int id);
+    public void removeAllByTimeOfTheWeek(int id);
     // Шукає записи модуля «уроки» за умовами: викладачем, датою уроку.
     // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
     public List<Lesson> findAllByTeacherIdAndLessonTime(int id, LocalDateTime time);
@@ -48,5 +48,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
     public Lesson findByLessonTime(LocalDateTime time);
     // Шукає записи модуля «уроки» за умовами: викладачем, студентом, time of the time of the week id.
     // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
-    public List<Lesson> findAllByTeacherIdAndStudentIdAndTimeOfTheWeekId(int teachId, int stId, int weekId);
+    public List<Lesson> findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(int teachId, int stId, int weekId);
+
+    public List<Lesson> findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(int teachId, LocalDateTime after, LocalDateTime before);
+    public List<Lesson> findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(int studentId, LocalDateTime after, LocalDateTime before);
 }

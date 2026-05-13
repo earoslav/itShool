@@ -95,9 +95,9 @@ public class AdminStudentLessonsController {
         Student student = studentService.getById(idSt);
 
         List<Object> values = lessonService.compileLessonsForStudentInAdmin(student.getId());
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
         List<Course> courses = courseService.getAll();
 
@@ -118,9 +118,9 @@ public class AdminStudentLessonsController {
         List<Teacher> teachers = teacherService.getAll();
         Student student = studentService.getById(idSt);
         List<Object> values = lessonService.compileLessonsForStudentInAdmin(student.getId());
-        List<String> weekDays = (List<String>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(2);
+        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
+        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
         List<Course> courses = courseService.getAll();
         model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("lessonDurations", lessonDurations);
@@ -162,8 +162,8 @@ public class AdminStudentLessonsController {
         mail.setBody("");
         StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
         mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(mail, student, lesson.getLessonTime(), lesson.getDuration());
-        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId(), LocalDateTime.now().minusMinutes(30));
-        tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek().getId());
+        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek(), LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek());
         return "redirect:/admin/student/" + idSt + "/lessons/COURSE_DELETED";
     }
     // Оновлює дані за маршрутом POST /student/{idSt}/lessons/editLesson/notPicked у модулі «уроки».

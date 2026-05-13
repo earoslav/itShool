@@ -72,7 +72,7 @@ public class LessonService {
     // Повертає уроки викладача, прив’язані до конкретного тижневого слота.
     // Це потрібно під час зміни доступного часу, щоб знайти заняття, які залежать від цього слота.
     public List<Lesson> findAllByTimeOfTheWeekIdAndTeacherId(int timeOfWeekId, int teachId) {
-        return lessonRepository.findAllByTimeOfTheWeekIdAndTeacherId(timeOfWeekId, teachId);
+        return lessonRepository.findAllByTimeOfTheWeekAndTeacherId(timeOfWeekId, teachId);
     }
     // Повертає всі уроки конкретного студента.
     // Метод використовують календар студента і перевірка перетинів перед перенесенням або створенням заняття.
@@ -80,11 +80,15 @@ public class LessonService {
         return lessonRepository.findByStudentId(id);
     }
 
+    public List<Lesson> findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(int teachId, LocalDateTime after, LocalDateTime before){
+        return lessonRepository.findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(teachId, after, before);
+    };
+
     // Перевіряє, чи в базі вже є урок на точний LocalDateTime.
     // Повертає boolean для швидкої перевірки дубля у розкладі.
-    public boolean checkIfExistsByLessonTime(LocalDateTime time) {
-        return lessonRepository.findByLessonTime(time) != null;
-    }
+//    public boolean checkIfExistsByLessonTime(LocalDateTime time) {
+//        return lessonRepository.findByLessonTime(time) != null;
+//    }
 
     // Оновлює існуючий запис модуля «уроки».
     // Спочатку знаходить поточну сутність, переносить поля student, teacher, course, lessonTime, status і зберігає її назад у репозиторій.
@@ -100,9 +104,9 @@ public class LessonService {
 
     // Перевіряє, чи має викладач урок у конкретний час.
     // Метод дивиться у LessonRepository за teacherId і lessonTime та повертає true, якщо слот зайнятий.
-    public boolean check(LocalDateTime time, int id) {
-        return !lessonRepository.findAllByTeacherIdAndLessonTime(id, time).isEmpty();
-    }
+//    public boolean check(LocalDateTime time, int id) {
+//        return !lessonRepository.findAllByTeacherIdAndLessonTime(id, time).isEmpty();
+//    }
     // Видаляє запис модуля «уроки» за id.
     // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
     public void deleteById(Integer id) {
@@ -116,23 +120,26 @@ public class LessonService {
     }
     // Шукає урок студента на конкретну дату й час.
     // Такий пошук потрібен, коли дія з UI приходить як вибраний часовий слот.
-    public Lesson findByStudentIdAndTime(LocalDateTime time, int id) {
-        return lessonRepository.findByLessonTimeAndStudentId(time, id);
-    }
+//    public Lesson findByStudentIdAndTime(LocalDateTime time, int id) {
+//        return lessonRepository.findByLessonTimeAndStudentId(time, id);
+//    }
     // Повертає уроки однієї пари викладач-студент у межах одного тижневого слота.
     // Фоновий менеджер уроків використовує це, щоб продовжувати саме потрібний ланцюжок WILL-занять.
     public List<Lesson> findAllByTeachIdAndStIdAndWeekId(int teachId, int stId, int weekId) {
-        return lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeekId(teachId, stId, weekId);
+        return lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(teachId, stId, weekId);
     }
+    public List<Lesson> findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(int studentId, LocalDateTime after, LocalDateTime before){
+        return lessonRepository.findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(studentId, after, before);
+    };
     // Видаляє уроки, прив’язані до вибраного слота тижня.
     // Метод потрібен, коли адміністратор або викладач прибирає доступний час і треба очистити залежні заняття.
-    public void deleteAllByTimeOfTheWeekId(int id) {
-        lessonRepository.removeAllByTimeOfTheWeekId(id);
-    }
+//    public void deleteAllByTimeOfTheWeekId(int id) {
+//        lessonRepository.removeAllByTimeOfTheWeekId(id);
+//    }
     // Видаляє майбутні уроки конкретної пари студент-викладач у заданому слоті.
     // Так курс можна прибрати без зачіпання вже минулих занять.
     public void deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(int stId, int teachId, int tswId, LocalDateTime now) {
-        lessonRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekIdAndLessonTimeAfter(stId, teachId, tswId, now);
+        lessonRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekAndLessonTimeAfter(stId, teachId, tswId, now);
     }
     // Повертає всі уроки між конкретним викладачем і студентом.
     // Ці дані використовують сторінки teacherStudentLessons/studentLessons для календаря однієї навчальної пари.
@@ -141,26 +148,11 @@ public class LessonService {
     }
     // Збирає календар викладача: дні, уроки, клітинки продовження тривалих занять і доступні слоти для перенесення.
     // Метод повертає список з weekDays, lessonHashMap і lessonDurations, щоб контролер одразу передав їх у Thymeleaf.
+
     public List<Object> compileLessonsForTeacher(int teacherId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Teacher teacher = teacherService.getById(teacherId);
-        LocalDate now = LocalDate.now();
-        now = now.minusWeeks(2);
-        List<String> weekDaysTemp = new ArrayList<>();
-        weekDaysTemp.add("ПОН");
-        weekDaysTemp.add("ВІВТ");
-        weekDaysTemp.add("СЕР");
-        weekDaysTemp.add("ЧЕТ");
-        weekDaysTemp.add("ПЯТ");
-        weekDaysTemp.add("СУБ");
-        weekDaysTemp.add("НЕД");
-        List<String> weekDays = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
-                now = now.plusDays(1);
-            }
-        }
+
         List<Lesson> teacherLessons1 = teacher.getLessons();
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
@@ -229,7 +221,6 @@ public class LessonService {
 
         //////////////////
         List<Object> retValue = new ArrayList<>();
-        retValue.add(weekDays);
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
         return retValue;
@@ -238,24 +229,6 @@ public class LessonService {
     // Він фільтрує Lesson цієї пари, додає доступні часи викладача і повертає структури для teacherStudentLessons/studentLessons.
     public List<Object> compileLessonsForStudentAndTeacher(int idT, int idSt) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
-        Teacher teacher = teacherService.getById(idT);
-        LocalDate now = LocalDate.now();
-        now = now.minusWeeks(2);
-        List<String> weekDaysTemp = new ArrayList<>();
-        weekDaysTemp.add("ПОН");
-        weekDaysTemp.add("ВІВТ");
-        weekDaysTemp.add("СЕР");
-        weekDaysTemp.add("ЧЕТ");
-        weekDaysTemp.add("ПЯТ");
-        weekDaysTemp.add("СУБ");
-        weekDaysTemp.add("НЕД");
-        List<String> weekDays = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
-                now = now.plusDays(1);
-            }
-        }
         List<Lesson> teacherLessons1 = findAllByIdTandIdSt(idT, idSt);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
@@ -320,7 +293,6 @@ public class LessonService {
         ///////////
         //////////////////
         List<Object> retValue = new ArrayList<>();
-        retValue.add(weekDays);
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
         return retValue;
@@ -330,23 +302,6 @@ public class LessonService {
     public List<Object> compileLessonsForStudent(int stId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Student student = studentService.getById(stId);
-        LocalDate now = LocalDate.now();
-        now = now.minusWeeks(2);
-        List<String> weekDaysTemp = new ArrayList<>();
-        weekDaysTemp.add("ПОН");
-        weekDaysTemp.add("ВІВТ");
-        weekDaysTemp.add("СЕР");
-        weekDaysTemp.add("ЧЕТ");
-        weekDaysTemp.add("ПЯТ");
-        weekDaysTemp.add("СУБ");
-        weekDaysTemp.add("НЕД");
-        List<String> weekDays = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
-                now = now.plusDays(1);
-            }
-        }
         List<Lesson> studentLessons = student.getLessons();
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
@@ -386,32 +341,31 @@ public class LessonService {
         });
         for (TeacherAdminLessonsDTO teacher : teachers) {
             now2 = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
-            final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less.stream().filter(lesss -> lesss.getTeacher().equals(teacher)).toList()};
             HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
             for (int i = 0; i < 3; i++) {
                 LocalDateTime finalNow = now2;
-                teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT -> {
-                    if (empTFT.getTime().getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
-                    } else if (empTFT.getTime().getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-                        if (empTFT.getTime().getTimeOfTheDay() > finalNow.getHour() + 12) {
-                            t[0] = finalNow.withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                theWeekService.getTimesOfTheWeekThroughIds(teacherService.getById(teacher.getId()).getFreeTimeIds()).forEach(empTFT -> {
+                    if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
+                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+                    } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
+                        if (empTFT.getTimeOfTheDay() > finalNow.getHour() + 12) {
+                            t[0] = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                         } else {
-                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                         }
 
                     } else {
-                        if (empTFT.getTime().getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                            if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))) {
-                                t[0] = finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                        if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
+                            if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()))) {
+                                t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                             } else {
-                                t[0] = finalNow.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                                t[0] = finalNow.plusDays(8).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                             }
                         } else {
-                            t[0] = finalNow.plusDays(empTFT.getTime().getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                            t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                         }
                     }
-                    teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT.getTime(), TimeOfTheWeekAdminLessonsDTO.class));
+                    teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
                 });
                 now2 = now2.plusWeeks(1);
             }
@@ -423,7 +377,6 @@ public class LessonService {
         }
 
         List<Object> retValue = new ArrayList<>();
-        retValue.add(weekDays);
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
         return retValue;
@@ -433,23 +386,6 @@ public class LessonService {
     public List<Object> compileLessonsForStudentInAdmin(int stId) {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         Student student = studentService.getById(stId);
-        LocalDate now = LocalDate.now();
-        now = now.minusWeeks(2);
-        List<String> weekDaysTemp = new ArrayList<>();
-        weekDaysTemp.add("ПОН");
-        weekDaysTemp.add("ВІВТ");
-        weekDaysTemp.add("СЕР");
-        weekDaysTemp.add("ЧЕТ");
-        weekDaysTemp.add("ПЯТ");
-        weekDaysTemp.add("СУБ");
-        weekDaysTemp.add("НЕД");
-        List<String> weekDays = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
-                now = now.plusDays(1);
-            }
-        }
         List<Lesson> studentLessons = student.getLessons();
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
@@ -492,28 +428,28 @@ public class LessonService {
             HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
             for (int i = 0; i < 3; i++) {
                 LocalDateTime finalNow = now2;
-                teacherService.getById(teacher.getId()).getEmptyTimesForTeachers().stream().forEach(empTFT -> {
-                    if (empTFT.getTime().getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getTime().getDayOfTheWeek()).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
-                    } else if (empTFT.getTime().getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-                        if (empTFT.getTime().getTimeOfTheDay() > finalNow.getHour()) {
-                            t[0] = finalNow.withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                theWeekService.getTimesOfTheWeekThroughIds(teacherService.getById(teacher.getId()).getFreeTimeIds()).stream().forEach(empTFT -> {
+                    if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
+                        t[0] = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
+                    } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
+                        if (empTFT.getTimeOfTheDay() > finalNow.getHour()) {
+                            t[0] = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                         } else {
-                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                            t[0] = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                         }
 
                     } else {
-                        if (empTFT.getTime().getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                            if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()))) {
-                                t[0] = finalNow.plusDays(1).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                        if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
+                            if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()))) {
+                                t[0] = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                             } else {
-                                t[0] = finalNow.plusDays(8).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                                t[0] = finalNow.plusDays(8).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                             }
                         } else {
-                            t[0] = finalNow.plusDays(empTFT.getTime().getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTime().getTimeOfTheDay()).withMinute(empTFT.getTime().getMinute());
+                            t[0] = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
                         }
                     }
-                    teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT.getTime(), TimeOfTheWeekAdminLessonsDTO.class));
+                    teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
                 });
                 now2 = now2.plusWeeks(1);
             }
@@ -524,19 +460,13 @@ public class LessonService {
         }
 
         List<Object> retValue = new ArrayList<>();
-        retValue.add(weekDays);
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
         return retValue;
     }
 
 
-    // Метод-заглушка зараз не впливає на бізнес-логіку уроків.
-    // Усередині створюється локальна мапа статусів, але вона нікуди не повертається і не використовується далі.
-    public void dosometh() {
-        HashMap<Statuses, Boolean> retValues = new HashMap<>();
-        retValues.put(Statuses.LESSON_DELETED, true);
-    }
+
     // Перевіряє, чи новий інтервал уроку перетинається з уроками викладача або студента.
     // Метод рахує кінець заняття з duration, порівнює часові проміжки і пропускає урок, який зараз редагується.
     public boolean checkIfLessonOverlap(int tId, int sId, int lId, float dur, String date) {
@@ -560,7 +490,7 @@ public class LessonService {
         /////////////////
 
         AtomicBoolean overlap = new AtomicBoolean(false);
-        List<Lesson> teacherLessons = findAllByTeachId(tId);
+        List<Lesson> teacherLessons = findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(tId, newDate.minusHours(4), newDate.plusHours(4));
         LocalDateTime finalLessonFinish = lessonFinish;
         LocalDateTime finalTime = time;
         teacherLessons.stream().filter(les -> les.getId() != lId).forEach(l -> {
@@ -577,7 +507,7 @@ public class LessonService {
         });
 
 ////////////////////////////////////
-        List<Lesson> studentLessons = findAllByStudentId(sId);
+        List<Lesson> studentLessons = findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(sId, newDate.minusHours(4), newDate.plusHours(4));
         studentLessons.stream().filter(les -> les.getId() != lId).forEach(l -> {
             LocalDateTime lFinish = l.getLessonTime();
             float lDur = l.getDuration();

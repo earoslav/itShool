@@ -232,6 +232,8 @@ public class LessonService {
         }
         return time;
     }
+
+    // convert data from format (LOCALDATA TIME) to "HH::MM"
     public String manageTimeOfTheLesson(Lesson lesson){
         String timeOfTheLesson = "";
         if (lesson.getLessonTime().getMinute() == 0) {
@@ -356,10 +358,23 @@ public class LessonService {
     }
     // Assembles the student's calendar with lessons from all their teachers.
     // For each teacher, it adds notTakenTimes so the student can see rescheduling options.
+    // todo check returned type and value also
     public List<Object> compileLessonsForStudent(int stId) throws JsonProcessingException {
+
+        // "12:30"
+        // "13:00"
+        // "12:30"
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
-        List<Lesson> studentLessons = findAllByStudentId(stId);
+
+        //
+
+        // "12:00" : "LESSON"
+
+        //tod
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
+
+        List<Lesson> studentLessons = findAllByStudentId(stId);
+
         for (Lesson lesson : studentLessons) {
             lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
 

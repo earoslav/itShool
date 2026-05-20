@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>IT Kids School | Розклад занять</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: studentHeader}"></header>
+
+<section class="hero">
+    <div class="container" style="height: 0px;">
+        <p th:text="'Учень: '+${student.user.name}"></p>
+        <h3 class="lesson-page-title">Уроки:</h3>
+    </div>
+</section>
+
+<div class="dashboard lesson-dashboard">
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+</div>
+
+<div class="table-wrapper lesson-table-wrapper" id="tableWrapper">
+    <table>
+        <thead>
+        <tr>
+            <th>Час</th>
+            <th th:each="day : ${weekDays}"
+                th:text="${day}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="hour : ${hours}">
+            <td th:text="${hour}"></td>
+
+            <td th:each="day : ${weekDays}">
+
+                <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
+                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}"
+                            th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
+                            th:data-sn="${lessonDur.student.user.name}"
+                            th:data-cn="${lessonDur.course.name}"
+                            th:data-tn="${lessonDur.teacher.user.name}"
+                            th:data-cost="${lessonDur.course.costPerLesson * lessonDur.duration}"
+                            th:data-hour="${hour}"
+                            th:data-date="${day}"
+                            th:data-status="${lessonDur.status}"
+                            th:data-dur="${lessonDur.duration}"
+                            th:data-id="${lessonDur.id}"
+                            th:onclick="'openPastLessonPopup(this)'"
+                            class="btn-red form-btn lesson-segment-continuation">
+                    </button>
+                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WAS'}"
+                            th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
+                            th:data-sn="${lessonDur.student.user.name}"
+                            th:data-cn="${lessonDur.course.name}"
+                            th:data-tn="${lessonDur.teacher.user.name}"
+                            th:data-hour="${hour}"
+                            th:data-date="${day}"
+                            th:data-cost="${lessonDur.course.costPerLesson * lessonDur.duration}"
+                            th:data-status="${lessonDur.status}"
+                            th:data-dur="${lessonDur.duration}"
+                            th:data-id="${lessonDur.id}"
+                            th:onclick="'openPastLessonPopup(this)'"
+                            class="btn-darkgreen form-btn lesson-segment-continuation">
+                    </button>
+                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WILL'}"
+                            th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
+                            class="btn-green form-btn lesson-segment-continuation"
+                            th:data-date="${day}"
+                            th:data-id="${lessonDur.id}"
+                            th:data-lesson="${lessonDur}"
+                            th:data-tfts="${lessonDur.teacher.notTakenTimes}"
+                            th:data-dur="${lessonDur.duration}"
+                            th:date-stId="${student.id}"
+                            th:data-hour="${hour}"
+                            th:data-tn="${lessonDur.teacher.user.name}"
+                            th:data-cn="${lessonDur.course.name}"
+                            th:onclick="'openPopup(this)'">
+                    </button>
+
+                    <button th:if="${lesson != null and (lesson.status=='WASNT')}"
+                            th:data-sn="${lesson.student.user.name}"
+                            th:data-cn="${lesson.course.name}"
+                            th:data-tn="${lesson.teacher.user.name}"
+                            th:data-hour="${hour}"
+                            th:data-date="${day}"
+                            th:data-status="${lesson.status}"
+                            th:data-cost="${lesson.course.costPerLesson * lesson.duration}"
+                            th:data-dur="${lesson.duration}"
+                            th:data-id="${lesson.id}"
+                            th:onclick="'openPastLessonPopup(this)'"
+                            class="btn-red form-btn lesson-segment-start">
+                        <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                    </button>
+                    <button th:if="${lesson != null and (lesson.status=='WAS')}"
+                            th:data-sn="${lesson.student.user.name}"
+                            th:data-cn="${lesson.course.name}"
+                            th:data-cost="${lesson.course.costPerLesson * lesson.duration}"
+                            th:data-tn="${lesson.teacher.user.name}"
+                            th:data-hour="${hour}"
+                            th:data-date="${day}"
+                            th:data-status="${lesson.status}"
+                            th:data-dur="${lesson.duration}"
+                            th:data-id="${lesson.id}"
+                            th:onclick="'openPastLessonPopup(this)'"
+                            class="btn-darkgreen form-btn lesson-segment-start">
+                        <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                    </button>
+                    <button th:if="${lesson != null and (lesson.status=='WILL')}"
+                            class="btn-green form-btn lesson-segment-start"
+                            th:data-date="${day}"
+                            th:data-id="${lesson.id}"
+                            th:data-lesson="${lesson}"
+                            th:data-tfts="${lesson.teacher.notTakenTimes}"
+                            th:data-dur="${lesson.duration}"
+                            th:date-stId="${student.id}"
+                            th:data-hour="${hour}"
+                            th:data-tn="${lesson.teacher.user.name}"
+                            th:data-cn="${lesson.course.name}"
+                            th:onclick="'openPopup(this)'">
+                        <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                    </button>
+                    <button th:if="${lesson == null and !lessonDurations.keySet().contains(day.split(' ')[1]+' '+hour)}"
+                            th:data-date="${day}"
+                            th:data-lesson="${null}"
+                            th:data-idSt="${student.id}"
+                            th:data-hour="${hour}"
+
+                            th:onclick="'openPopup(this)'">
+                        <span class="empty-cell-label">emptyy</span>
+                    </button>
+                </div>
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<div id="lessonPopup" class="popup-overlay hide">
+    <div class="popup-overlay hide" id="pastLessonPopup">
+        <div id="pastLessonPopupMain" class="popup-content">
+            <div class="popup-header">
+                <h3>розглянути заняття</h3>
+                <span class="popup-close" onclick="closePopup()">&times;</span>
+            </div>
+            <div class="popup-body">
+                <p><strong>Дата:</strong> <span id="popupDateInPastPopup"></span></p>
+                <p><strong>Час:</strong> <span id="popupTimeInPastPopup"></span></p>
+                <p><strong>Тривалість:</strong> <span id="durInPast"></span> год</p>
+                <p><strong>Учень:</strong> <span id="studentNameInPastPopup"></span></p>
+                <p><strong>Курс:</strong> <span id="courseNameInPastPopup"></span></p>
+                <p><strong>Вартість:</strong> <span id="lessonCost"></span> грн</p>
+                <p><strong>статус:</strong> <span id="statusInPastPopup"></span></p>
+            </div>
+        </div>
+    </div>
+    <div id="popupMain" class="popup-content hide">
+        <div class="popup-header">
+            <h3>Керування заняттям</h3>
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+        </div>
+        <div class="popup-body">
+            <p hidden><strong></strong> studentId<span id="studentId" th:text="${student.id}"></span></p>
+            <p hidden><strong></strong> LessonId<span id="lessonId"></span></p>
+            <p><strong>Дата:</strong> <span id="popupDate"></span></p>
+            <p><strong>Час:</strong> <span id="popupTime"></span></p>
+            <p><strong>Тривалість:</strong> <span id="durInMain"></span> год</p>
+            <p><strong>Вчитель:</strong> <span id="teacherName"></span></p>
+            <p><strong>Курс:</strong> <span id="courseName"></span></p>
+
+        </div>
+        <div class="popup-footer">
+
+            <button id="editLessonBtn" class="popup-btn edit-btn">✏️ Змінити</button>
+            <form th:action="@{/student/{id}/lessons/deleteLesson/0(id=${student.id})}" method="post" id="deleteLessonForm">
+                <button id="deleteLessonBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')">🗑️
+                    Видалити одиничне заняття
+                </button>
+            </form>
+            <form th:action="@{/student/{id}/lessons/deleteCourse/0(id=${student.id})}" method="post" id="deleteCourseForm">
+                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')">🗑️
+                    Видалити курс з вчителем
+                </button>
+            </form>
+            <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>
+        </div>
+    </div>
+    <div id="editPopup" class="popup-overlay hide">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Редагувати заняття</h3>
+                <span class="popup-close" onclick="closePopup()">&times;</span>
+            </div>
+            <div class="popup-body">
+                <p><strong>Дата:</strong> <span id="dateInEdit"></span></p>
+                <p><strong>Час:</strong> <span id="timeInEdit"></span></p>
+                <p><strong>тривалість:</strong> <span id="durInEdit"></span> год</p>
+                <p><strong>Вчитель:</strong> <span id="teacherNameInEdit"></span></p>
+                <p><strong>Курс:</strong> <span id="courseNameInEdit"></span></p>
+                <p id="returnIdValue" hidden></p>
+                <p><strong>Змінити на дату(усі вільні дати вчителя):</strong> <span id="popupDateInEditIdsReturn"
+                                                                                    class="newDates"></span></p>
+            </div>
+
+            <div class="popup-footer">
+                <form th:action="@{/student/{id}/lessons/editLesson/notPicked(id=${student.id})}" method="post" id="editForm">
+                    <button type="submit" id="editLessonBtnInEdit" class="popup-btn edit-btn">✏️ Змінити заняття(на один
+                        раз)
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <div id="emptyPopup" class="popup-content hide">
+        <div class="popup-header">
+            <h3>Вільна колонка</h3>
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+        </div>
+        <div class="popup-body">
+            <p><strong>Дата:</strong> <span id="popupDateInEmptyPopup"></span></p>
+            <p><strong>Час:</strong> <span id="popupTimeInEmptyPopup"></span></p>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<!--<script th:inline="javascript">-->
+<!--    let popup = document.querySelector("#lessonPopup")-->
+<!--    let popupDate = document.querySelector("#popupDate")-->
+<!--    let popupTime = document.querySelector("#popupTime")-->
+<!--    let popupDeleteBtn = document.querySelector("#deleteLessonBtn")-->
+<!--    let popupDeleteCourseBtn = document.querySelector("#deleteCourseBtn")-->
+<!--    let popupAddBtn = document.querySelector("#addLessonBtn")-->
+<!--    let popupEditBtn = document.querySelector("#editLessonBtn")-->
+<!--    let popupLessonID = document.querySelector("#lessonId")-->
+<!--    let popupStudentID = document.querySelector("#studentId")-->
+<!--    let popupCourseName = document.querySelector("#courseName")-->
+<!--    let durInMain = document.querySelector("#durInMain")-->
+<!--    let cost = document.querySelector("#lessonCost")-->
+<!--    let durInEdit = document.querySelector("#durInEdit")-->
+<!--    let popupTeacherName = document.querySelector("#teacherName")-->
+<!--    let popupMain = document.querySelector("#popupMain")-->
+<!--    let popupEdit = document.querySelector("#editPopup")-->
+<!--    let popupEditDates = document.querySelector("#popupDateInEditIdsReturn")-->
+<!--    let returnIdValue = document.querySelector("#returnIdValue")-->
+<!--    let popupDateInEdit = document.querySelector("#dateInEdit")-->
+<!--    let popupTimeInEdit = document.querySelector("#timeInEdit")-->
+<!--    let popupCourseNameInEdit = document.querySelector("#courseNameInEdit")-->
+<!--    let popupTeacherNameInEdit = document.querySelector("#teacherNameInEdit")-->
+<!--    let editForm = document.querySelector("#editForm")-->
+<!--    let deleteLessonForm = document.querySelector("#deleteLessonForm")-->
+<!--    let deleteCourseForm = document.querySelector("#deleteCourseForm")-->
+<!--    let popupDateInEmptyPopup = document.querySelector("#popupDateInEmptyPopup")-->
+<!--    let popupTimeInEmptyPopup = document.querySelector("#popupTimeInEmptyPopup")-->
+<!--    let emptyPopupEl = document.querySelector("#emptyPopup")-->
+<!--    let pastLessonPopup = document.querySelector("#pastLessonPopup")-->
+<!--    let popupDateInPastPopup = document.querySelector("#popupDateInPastPopup")-->
+<!--    let popupTimeInPastPopup = document.querySelector("#popupTimeInPastPopup")-->
+<!--    let popupCourseNameInPastPopup = document.querySelector("#courseNameInPastPopup")-->
+<!--    let popupStudentNameInPastPopup = document.querySelector("#studentNameInPastPopup")-->
+<!--    let popupStatusInPastPopup = document.querySelector("#statusInPastPopup")-->
+<!--    let durInPast = document.querySelector("#durInPast")-->
+<!--    function emptyPopup(el) {-->
+<!--        popupDateInEmptyPopup.innerText = el.dataset.date;-->
+<!--        popupTimeInEmptyPopup.innerText = el.dataset.hour;-->
+<!--    }-->
+<!--    function openPastLessonPopup(el) {-->
+<!--        const date = el.dataset.date;-->
+<!--        const hour = el.dataset.hour;-->
+<!--        const stName = el.dataset.sn;-->
+<!--        const cName = el.dataset.cn;-->
+<!--        const status = el.dataset.status;-->
+<!--        const dur = el.dataset.dur;-->
+<!--        const idLes = el.dataset.id;-->
+<!--        let costLes = 0-->
+<!--        if(status=="was"){-->
+<!--            costLes = el.dataset.cost;-->
+<!--        }-->
+<!--        else{-->
+<!--            costLes = 0;-->
+<!--        }-->
+<!--        pastLessonPopup.classList.remove("hide")-->
+<!--        popup.classList.remove("hide")-->
+<!--        popupDateInPastPopup.innerText = date;-->
+<!--        popupTimeInPastPopup.innerText = hour;-->
+<!--        popupStudentNameInPastPopup.innerText = stName;-->
+<!--        popupCourseNameInPastPopup.innerText = cName;-->
+<!--        popupStatusInPastPopup.innerText = status;-->
+<!--        durInMain.innerText = dur;-->
+<!--        durInEdit.innerText = dur;-->
+<!--        durInPast.innerText = dur;-->
+<!--        cost.innerText = costLes;-->
+<!--    }-->
+<!--    function openPopup(el) {-->
+
+<!--        if (emptyPopupEl.classList.contains("hide")) {-->
+<!--            emptyPopupEl.classList.remove("hide")-->
+<!--        }-->
+<!--        if (popupEditBtn.classList.contains("hide")) {-->
+<!--            popupEditBtn.classList.remove("hide")-->
+<!--        }-->
+<!--        if (popupDeleteBtn.classList.contains("hide")) {-->
+<!--            popupDeleteBtn.classList.remove("hide")-->
+<!--        }-->
+<!--        if (popupAddBtn.classList.contains("hide")) {-->
+<!--            popupAddBtn.classList.remove("hide")-->
+<!--        }-->
+<!--        if (popupDeleteCourseBtn.classList.contains("hide")) {-->
+<!--            popupDeleteCourseBtn.classList.remove("hide")-->
+<!--        }-->
+<!--        if (el.dataset.lesson == null) {-->
+<!--            popupMain.classList.add("hide")-->
+<!--            popupEdit.classList.add("hide")-->
+<!--            popup.classList.remove("hide")-->
+<!--            emptyPopup(el)-->
+<!--            return;-->
+<!--        }-->
+<!--        emptyPopupEl.classList.add("hide")-->
+<!--        popup.classList.remove("hide")-->
+<!--        popupMain.classList.remove("hide")-->
+<!--        popupEdit.classList.add("hide")-->
+
+
+<!--        const date = el.dataset.date;-->
+<!--        const hour = el.dataset.hour;-->
+<!--        const lesson = el.dataset.lesson;-->
+<!--        const idLes = el.dataset.id;-->
+<!--        const dur = el.dataset.dur;-->
+<!--        const teacherName = el.dataset.tn;-->
+<!--        const courseName = el.dataset.cn;-->
+<!--        let teachFreeTimes = [];-->
+<!--        if (el.dataset.tfts != "{}") {-->
+<!--            teachFreeTimes = JSON.parse(el.dataset.tfts);-->
+<!--        }-->
+
+<!--        const stId = popupStudentID.innerText-->
+<!--        popupDate.innerText = date;-->
+<!--        popupTime.innerText = hour;-->
+<!--        popupLessonID.innerText = idLes;-->
+<!--        popupCourseName.innerText = courseName;-->
+<!--        popupTeacherName.innerText = teacherName;-->
+<!--        popupTimeInEdit.innerText = hour;-->
+<!--        popupDateInEdit.innerText = date;-->
+<!--        popupCourseNameInEdit.innerText = courseName;-->
+<!--        popupTeacherNameInEdit.innerText = teacherName;-->
+<!--        durInMain.innerText = dur;-->
+<!--        durInEdit.innerText = dur;-->
+
+
+<!--        if (lesson != null) {-->
+<!--            popupAddBtn.classList.add("hide")-->
+<!--        } else {-->
+<!--            popupEditBtn.classList.add("hide")-->
+<!--            popupDeleteBtn.classList.add("hide")-->
+<!--            popupDeleteCourseBtn.classList.add("hide")-->
+
+<!--        }-->
+<!--        deleteLessonForm.action = `/student/` + stId + `/lessons/deleteLesson/` + idLes;-->
+<!--        deleteCourseForm.action = `/student/` + stId + `/lessons/deleteCourse/` + idLes;-->
+
+<!--        popupEditBtn.addEventListener("click", () => {-->
+
+
+<!--            if (!popupMain.classList.contains("hide")) {-->
+<!--                popupMain.classList.add("hide")-->
+<!--            }-->
+<!--            if (popupEdit.classList.contains("hide")) {-->
+<!--                popupEdit.classList.remove("hide")-->
+<!--            }-->
+<!--            if (teachFreeTimes.length == 0) {-->
+<!--                let lable = document.createElement("lable")-->
+<!--                lable.style.whiteSpace = "nowrap"-->
+<!--                lable.innerText = "Нажаль ви не можете перенести урок адже у вчителя немає вільного часу";-->
+<!--                popupEditDates.appendChild(lable)-->
+<!--            }-->
+
+<!--            for (let element in teachFreeTimes) {-->
+<!--                inp = document.createElement("input")-->
+<!--                inp.type = "checkbox"-->
+<!--                inp.name = "newTimeIds";-->
+<!--                inp.value = teachFreeTimes[element].id + " " + element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + "." + element.split("T")[0].split("-")[0] + "-" + element.split("T")[1].split(":")[1]-->
+
+<!--                labl = document.createElement("lable")-->
+<!--                let dayVal = teachFreeTimes[element].dayOfTheWeek;-->
+<!--                if (dayVal == 1) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Понеділок" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+<!--                if (dayVal == 2) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Вівторок" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+<!--                if (dayVal == 3) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Середа" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+<!--                if (dayVal == 4) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Четвер" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+<!--                if (dayVal == 5) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Пятниця" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+<!--                if (dayVal == 6) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Субота" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+<!--                if (dayVal == 7) {-->
+<!--                    labl.innerText = element.split("T")[0].split("-")[2] + "." + element.split("T")[0].split("-")[1] + " Неділя" + " " + teachFreeTimes[element].timeOfTheDay + ":" + element.split("T")[1].split(":")[1]-->
+<!--                }-->
+
+
+<!--                popupEditDates.appendChild(inp)-->
+<!--                popupEditDates.appendChild(labl)-->
+<!--            }-->
+<!--            let nTIds = popupEditDates.getElementsByTagName("input")-->
+<!--            let nTId = 0-->
+<!--            let retDate = ""-->
+<!--            for (let i1 = 0; i1 < nTIds.length; i1++) {-->
+<!--                nTIds[i1].addEventListener('change', () => {-->
+<!--                    if (nTIds[i1].checked) {-->
+<!--                        nTId = nTIds[i1].value.split(" ")[0];-->
+<!--                        retDate = nTIds[i1].value.split(" ")[1];-->
+<!--                        editForm.action = `/student/` + stId + `/lessons/editLesson/` + idLes + "/" + nTId + "/" + retDate;-->
+<!--                    }-->
+<!--                    returnIdValue.innerText = nTId-->
+<!--                });-->
+<!--            }-->
+<!--        }, {once: true})-->
+<!--    }-->
+
+<!--    function closePopup() {-->
+<!--        if (!popupEdit.classList.contains("hide")) {-->
+<!--            popupEdit.classList.add("hide")-->
+<!--        }-->
+<!--        if (!popup.classList.contains("hide")) {-->
+<!--            popup.classList.add("hide")-->
+<!--        }-->
+<!--        if (!popupMain.classList.contains("hide")) {-->
+<!--            popupMain.classList.add("hide")-->
+<!--        }-->
+<!--        if (!pastLessonPopup.classList.contains("hide")) {-->
+<!--            pastLessonPopup.classList.add("hide")-->
+<!--        }-->
+<!--        if (!emptyPopupEl.classList.contains("hide")) {-->
+<!--            emptyPopupEl.classList.add("hide")-->
+<!--        }-->
+<!--        while (popupEditDates.firstChild) {-->
+<!--            popupEditDates.removeChild(popupEditDates.firstChild);-->
+<!--        }-->
+
+<!--    }-->
+
+<!--</script>-->
+<script src="/mainSrcipt.js"></script>
+<script>
+    initLessonPopup({
+        getIds: () => ({stId: document.querySelector("#studentId").innerText}),
+        setForms(delLesson, delCourse, wasForm, ids, idLes) {
+            delLesson.action = `/student/${ids.stId}/lessons/deleteLesson/${idLes}`;
+            delCourse.action = `/student/${ids.stId}/lessons/deleteCourse/${idLes}`;
+        },
+        setEditForm(editForm, ids, idLes, nTId, retDate) {
+            editForm.action = `/student/${ids.stId}/lessons/editLesson/${idLes}/${nTId}/${retDate}`;
+        }
+    });
+</script>
+</body>
+</html>

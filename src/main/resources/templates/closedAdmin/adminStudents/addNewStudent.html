@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Реєстрація студента</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
+
+<section class="hero">
+    <div class="container">
+        <h3>Додати учня:</h3>
+    </div>
+</section>
+<main>
+    <div class="container">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+        <form th:action="@{/admin/addStudent/}" th:object="${student}" method="post" id="form">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="name">Ім'я</label>
+                    <input id="name" type="text" th:field="*{user.name}" required minlength="2" maxlength="100"
+                           title="Лише букви, пробіли, апостроф або дефіс">
+                </div>
+
+                <div class="field">
+                    <label for="age">Вік</label>
+                    <input id="age" type="number" th:field="*{age}" required min="5" >
+                </div>
+
+                <div class="field">
+                    <label for="email">Пошта</label>
+                    <input id="email" type="email" th:field="*{user.email}" required maxlength="50">
+                </div>
+
+                <div class="field">
+                    <label for="phoneNumber">Номер телефону</label>
+                    <input id="phoneNumber" type="tel" th:field="*{phoneNumber}" required maxlength="15"
+                           title="Введіть коректний номер телефону">
+                </div>
+
+
+                <div class="field">
+                    <label for="phoneNumber">Пароль:</label>
+                    <input type="password" name="password" placeholder="Введіть новий пароль" id="pass" required>
+                </div>
+
+                <div class="field full">
+                    <label for="comment">Коментар</label>
+                    <textarea id="comment" th:field="*{comment}" required maxlength="500"
+                              placeholder="Наприклад: зручний час занять, рівень підготовки, побажання"></textarea>
+                </div>
+            </div>
+            <button onclick="managePassNew()" class="btn-small submit-btn" type="submit">Додати</button>>
+        </form>
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>

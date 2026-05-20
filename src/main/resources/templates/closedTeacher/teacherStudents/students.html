@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Учні</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <section class="hero">
+        <div class="container">
+            <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+            <h3 class="ml-20">Учні:</h3>
+        </div>
+    </section>
+
+<!-- FORM -->
+<div class="container" >
+    <div class="overflow-x-hidden card">
+        <input type="text" id="myInput" onkeyup="searchStudent()" placeholder="Пошук за ім'ям..">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ім'я</th>
+                <th>Вік</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Дії</th>
+            </tr>
+            </thead>
+
+            <tbody id="students">
+            <tr th:each="student : ${students}">
+                <td th:text="${student.id}">1</td>
+                <td th:text="${student.user.name}">Ім'я</td>
+                <td th:text="${student.age}">15</td>
+                <td th:text="${student.user.email}">email</td>
+                <td th:text="${student.phoneNumber}">+380...</td>
+
+                <td>
+                    <a th:href="@{/teacher/{idTeach}/student/{idSt}/lessons(idTeach=${teacher.id}, idSt=${student.id})}" class="btn btn-blue">📋 Уроки</a>
+                    <form method="post"   th:action="@{/teacher/{idTeach}/student/{idSt}/delete(idTeach=${teacher.id}, idSt=${student.id})}" >
+                        <input type="hidden" name="studentId" th:value="${student.id}" />
+                        <input type="hidden" name="teacherId" th:value="${teacher.id}" />
+                        <button class="btn btn-red" type="submit" onclick="return confirm('Видалити Учня? ')">🗑</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- якщо список пустий -->
+        <div th:if="${students.isEmpty()}">
+            <p>Учнів поки немає</p>
+        </div>
+
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+
+<script src="/mainSrcipt.js"></script>
+</body>
+
+</html>

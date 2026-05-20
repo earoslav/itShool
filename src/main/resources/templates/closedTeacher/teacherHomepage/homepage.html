@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Головна</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
+
+<section class="hero">
+    <div class="container">
+        <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+        <h3 class="ml-20">Мій профіль:</h3>
+    </div>
+</section>
+
+
+<div class="container">
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <p class="d-none" th:text="${teacher.id}" id="id" style="display: none"></p>
+    <form id="form" th:action="@{/teacher/{id}/homepage/OLDPASS(id=${teacher.id})}" th:object="${teacher}"
+          method="post">
+        <input type="hidden" th:field="*{id}">
+        <div class="form-grid">
+
+            <div class="field">
+                <label>Ім'я:</label>
+                <input required maxlength="50" th:field="${teacher.user.name}">
+            </div>
+
+            <div class="field">
+                <label>Вік:</label>
+                <input required min="18" type="number" th:field="${teacher.age}">
+            </div>
+
+            <div class="field">
+                <label>Email:</label>
+                <input required maxlength="50" type="email" th:field="${teacher.user.email}">
+            </div>
+
+            <div class="field">
+                <label>Телефон:</label>
+                <input required maxlength="15" type="text" th:field="${teacher.phoneNumber}">
+            </div>
+
+            <div class="field">
+                <label>Telegram:</label>
+                <input required type="text" th:field="${teacher.tgUsername}">
+            </div>
+
+            <div class="field">
+                <label>Коментар:</label>
+                <input required maxlength="500" type="text" th:field="${teacher.comment}">
+            </div>
+            <div class="field">
+                <label>Пароль(якщо бажаєте змінити):</label>
+                <input type="password" minlength="6" name="password" placeholder="Введіть новий пароль" id="pass">
+            </div>
+            <div class="field">
+                <label>Статус:</label>
+                <p th:classappend="${teacher.approved==1} ? 'status' : 'status not-approved'"
+                   th:text="${teacher.approved==1 ? 'Підтверджений' : 'Непідтверджений'}"></p>
+            </div>
+
+            <!-- Курси -->
+            <div class="block">
+                <h2>Курси</h2>
+
+                <!-- список -->
+                <ul id="coursesList">
+                    <li th:each="tc : ${teacher.teacherCourses}" style="display: flex;    margin-bottom: 8px;" >
+                        <span th:text="${tc.course.name}"></span>
+                        <button class="btn btn-red" type="submit"  onclick="return confirm('Видалити Курс?')"   style="  max-height: 30px;
+                                    width: 40px !important;
+                                    margin-left: 20px;
+                                    margin-top: 0px !important;
+                                    font-size: 17px !important;
+                            padding: 8px !important;"
+                                th:data-tId="${teacher.id}"
+                                th:data-cId="${tc.course.id}"
+                                th:onclick="'manageButtonWithoutFormInTeacher(this)'">🗑</button>
+                    </li>
+                    <li class="d-none" th:each="tc : ${teacher.teacherCourses}"
+                        th:text="${tc.course.id}">
+                    </li>
+
+                </ul>
+                <input type="text" id="myInput" onkeyup="searchCourseSelect()" placeholder="Пошук за назвою..">
+                <!-- select -->
+                <select id="courseSelect">
+                    <option value="">Додати курс</option>
+                    <option th:each="c : ${allCourses}"
+                            th:value="${c.id}"
+                            th:text="${c.name}">
+                    </option>
+                </select>
+
+                <!-- hidden inputs -->
+                <div id="coursesInputs"></div>
+            </div>
+            <!-- Вільний час -->
+            <div class="d-flex">
+                <div class="block">
+                    <div class="field">
+                        <label>Зарплата (ще не виплачена):</label>
+                        <input readonly type="text" th:field="${teacher.unpaidMoney}">
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                <h2>Вільний час</h2>
+                <p class="hint" style="margin-bottom: 10px;">
+                    Порада: можна затиснути ліву кнопку миші та тягнути по клітинках, щоб швидко вибрати кілька комірок.
+                </p>
+
+                <table class="times-table">
+                    <thead>
+                    <tr>
+                        <th>Година</th>
+                        <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="hour : ${hours}">
+                        <th th:text="${hour}"></th>
+
+                        <td th:each="day : ${days}">
+                            <input type="checkbox"
+                                   class="freeTimeCheckbox"
+                                   name="freeTimeIds"
+                                   th:each="ft : ${freeTimes}"
+                                   th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0') }"
+                                   th:value="${ft.id}"
+                                   th:checked="${teacherFreeTimes.contains(ft.id)}">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <button onclick="managePassTeacher()" class="btn-small btn btn-green" type="submit">Зберегти
+        </button>
+
+    </form>
+
+</div>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Коротко: спільний фрагмент сторінок. -->
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="alerts">
+    <!-- Error Boxes -->
+    <div class="error-box" th:if="${output == 'GENERAL' or output == 'general'}">Упс, щось пішло не так.</div>
+    <div class="error-box" th:if="${output == 'EXISTS' or output == 'exists'}">Така пошта вже зареєстрована.</div>
+    <div class="error-box" th:if="${output == 'NO_PASS' or output == 'noPass'}">Ви не ввели пароль.</div>
+    <div class="error-box" th:if="${output == 'TOO_LATE'}">Вибачте, але редагувати можна лише за 12 годин до заняття.</div>
+    <div class="error-box" th:if="${output == 'TOO_EARLY'}">Вибачте, але ще зарано щоб відзначити заняття "було".</div>
+    <div class="error-box" th:if="${output == 'LESSON_BEFORE_NOW'}">Вибачте, але додати урок можна тільки на майбутній час, виберіть пізнішу дату.</div>
+    <div class="error-box" th:if="${output == 'COURSE_NOT_FOUND'}">Вибачте, але ви не вибрали курс або курс не знайдено.</div>
+    <div class="error-box" th:if="${output == 'STUDENT_NOT_FOUND'}">Вибачте, але ви не вибрали учня або учня не знайдено.</div>
+    <div class="error-box" th:if="${output == 'LESSON_AFTER_ACCEPTED_TIME' or output == 'lessonAfterAcceptedTime'}">Вибачте, але час який ви вибрали не є легітимним в компанії.</div>
+    <div class="error-box" th:if="${output == 'DATE_INCONSISTENCY' or output == 'dateInconsistency'}">Вибачте, але час який ви вибрали не є можливим або виникла помилка.</div>
+    <div class="error-box" th:if="${output == 'TIME_NOT_EMPTY' or output == 'timeNotEmpty'}">Вибачте, але час який ви вибрали у вас вже зайнятий іншим/іншими заняттями.</div>
+    <div class="error-box" th:if="${output == 'ITEM_NOT_PICKED' or output == 'itemNotPicked' or output == 'notPicked'}">Вибачте, але ви не вибрали одне з полів.</div>
+    <div class="error-box" th:if="${output == 'LESSON_OVERLAP' or output == 'lessonOverlap'}">Вибачте, але урок перетинається з іншим вашим уроком чи уроком учня.</div>
+    <div class="error-box" th:if="${output == 'NO_COURSES'}">Вибачте, але ви не вибрали жодного курсу.</div>
+    <div class="error-box" th:if="${output == 'NO_FREE_TIMES'}">Вибачте, але ви не вибрали вільний час.</div>
+    <div class="error-box" th:if="${output == 'WRONG_PASSWORD'}">Неправильний пароль.</div>
+    <div class="error-box" th:if="${output == 'USER_NOT_FOUND'}">Користувача не знайдено.</div>
+
+    <!-- Success Boxes -->
+    <div class="success-box" th:if="${output == 'LESSON_STATUS_CHANGED'}">Урок успішно позначений "було".</div>
+    <div class="success-box" th:if="${output == 'LESSON_ADDED' or output == 'lessonAdded'}">Урок успішно додано.</div>
+    <div class="success-box" th:if="${output == 'COURSE_ADDED' or output == 'courseAdded'}">Курс успішно додано.</div>
+    <div class="success-box" th:if="${output == 'LESSON_DELETED' or output == 'lessonDeleted'}">Урок успішно видалено.</div>
+    <div class="success-box" th:if="${output == 'COURSE_DELETED' or output == 'courseDeleted'}">Курс успішно видалено.</div>
+    <div class="success-box" th:if="${output == 'LESSON_EDITED' or output == 'lessonEdited'}">Урок успішно змінено.</div>
+    <div class="success-box" th:if="${output == 'TEACHER_ADDED'}">Вчителя успішно додано.</div>
+    <div class="success-box" th:if="${output == 'STUDENT_ADDED'}">Учня успішно додано.</div>
+    <div class="success-box" th:if="${output == 'STUDENT_DELETED'}">Учня успішно видалено.</div>
+    <div class="success-box" th:if="${output == 'TEACHER_DELETED'}">Вчителя успішно видалено.</div>
+    <div class="success-box" th:if="${output == 'STUDENT_EDITED' or output == 'studentEdited'}">Учня успішно відредаговано.</div>
+    <div class="success-box" th:if="${output == 'TEACHER_EDITED' or output == 'teacherEdited'}">Вчителя успішно відредаговано.</div>
+    <div class="success-box" th:if="${output == 'MONEY_ADDED'}">Кошти успішно нараховано.</div>
+    <div class="success-box" th:if="${output == 'DELETE_ACCEPTED'}">Запит на видалення прийнято.</div>
+    <div class="success-box" th:if="${output == 'DELETE_DENYED'}">Запит на видалення відхилено.</div>
+</div>
+</body>
+</html>

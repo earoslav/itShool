@@ -1,9 +1,8 @@
 package com.example.demo.models.programe;
 
-import com.example.demo.models.thirdTables.StudentCourse;
 import com.example.demo.models.thirdTables.TeacherCourse;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +20,8 @@ import java.util.List;
 @Entity
 @Table(name = "course")
 
-// Модель Course описує сутність модуля «курси» у базі даних або службовий об’єкт проекту.
-// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
+// The Course model describes the "courses" module entity in the database or a project service object.
+// The class fields are read by services, repositories, and mappers when creating pages and saving changes.
 public class Course {
 
     @Id
@@ -41,29 +40,27 @@ public class Course {
     private String description;
     @Column(name = "program")
     private String program;
+    @JsonIgnore
+    @OneToMany(mappedBy = "course")
+
+    private List<TeacherCourse> teacherCourses;
+
 
     @OneToMany(mappedBy = "course")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private List<TeacherCourse> teacherCourses;
-    @OneToMany(mappedBy = "course")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private List<StudentCourse> studentCourses;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(mappedBy = "course")
     private List<TeacherStudentTimeOfTheWeek> tswList;
-    // Отримує через Spring залежності String, Integer, List<TeacherCourse>, List<StudentCourse>, List<TeacherStudentTimeOfTheWeek>.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси» без ручного створення об’єктів.
-    public Course(String name, Integer costPerLesson, Integer teacherShare, String description, List<TeacherCourse> teacherCourses, List<StudentCourse> studentCourses, List<TeacherStudentTimeOfTheWeek> tswList) {
+    // Receives String, Integer, List<TeacherCourse>, List<StudentCourse>, and List<TeacherStudentTimeOfTheWeek> dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "courses" module without manual object creation.
+    public Course(String name, Integer costPerLesson, Integer teacherShare, String description, List<TeacherCourse> teacherCourses,  List<TeacherStudentTimeOfTheWeek> tswList) {
         this.name = name;
         this.costPerLesson = costPerLesson;
         this.teacherShare = teacherShare;
         this.description = description;
         this.teacherCourses = teacherCourses;
-        this.studentCourses = studentCourses;
+
         this.tswList = tswList;
     }
-    // Отримує через Spring залежності String, Integer.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси» без ручного створення об’єктів.
+    // Receives String and Integer dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "courses" module without manual object creation.
     public Course(String name, Integer costPerLesson, Integer teacherShare, String description) {
         this.name = name;
         this.costPerLesson = costPerLesson;

@@ -3,6 +3,7 @@ package com.example.demo.services.program;
 import com.example.demo.dto.adminLessons.LessonAdminLessonsDTO;
 import com.example.demo.dto.adminLessons.TeacherAdminLessonsDTO;
 import com.example.demo.dto.adminLessons.TimeOfTheWeekAdminLessonsDTO;
+import com.example.demo.dto.programe.LessonDTO;
 import com.example.demo.mapper.programe.LessonMapper;
 import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.other.TimeOfTheWeek;
@@ -10,6 +11,8 @@ import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.repositories.program.LessonRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,11 +27,15 @@ import com.example.demo.services.other.TimeOfTheWeekService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-// Сервіс LessonService містить бізнес-операції для модуля «уроки».
-// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
+// LessonService contains business operations for the "lessons" module.
+// Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
+@Transactional
 public class LessonService {
     private final LessonRepository lessonRepository;
     private LessonMapper lessonMapper;
@@ -38,10 +45,10 @@ public class LessonService {
     private CourseService courseService;
     private StudentService studentService;
     private TimeOfTheWeekService theWeekService;
-    private RedisTemplate redis;
-    // Отримує через Spring залежності LessonRepository, LessonMapper, TeacherService, ObjectMapper, TimeOfTheWeekService, CourseService, StudentService.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
-    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService, @Qualifier("redisTemplate") RedisTemplate redis) {
+    private RedisTemplate<String, Object> redisTemplate;
+    // Receives dependencies through Spring: LessonRepository, LessonMapper, TeacherService, ObjectMapper, TimeOfTheWeekService, CourseService, and StudentService.
+    // These services and mappers are required by the class methods to work with the "lessons" module without manual object creation.
+    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
         this.teacherService = teacherService;
@@ -51,255 +58,155 @@ public class LessonService {
 
         this.studentService = studentService;
         this.theWeekService = theWeekService;
-        this.redis = redis;
+        this.redisTemplate = redisTemplate;
     }
-    // Повертає всі уроки з репозиторію.
-    // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
+    // Returns all lessons from the repository.
+    // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
     public List<Lesson> getAll() {
-        List<Lesson> obj;
-        if(redis.opsForValue().get("lessons") == null){
-            obj = lessonRepository.findAll();
-            redis.opsForValue().set("lessons", obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get("lessons");
-        }
-        return obj;
+        return lessonRepository.findAll();
     }
-    // Знаходить один запис модуля «уроки» за id.
-    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
+    // Finds a single record in the "lessons" module by ID.
+    // The result is cached in Redis to avoid overloading the database with frequent access to specific lesson info.
     public Lesson getById(int id) {
-        Lesson obj;
-        if(redis.opsForValue().get("lessonById"+id) == null){
-            obj = lessonRepository.findById(id);
-            redis.opsForValue().set("lessonById"+id, obj);
+        Object cachedData = redisTemplate.opsForValue().get("lessonById" + id);
+        if (cachedData == null) {
+            Lesson obj = lessonRepository.findById(id);
+            if (obj == null) throw new RuntimeException("Lesson not found with id: " + id);
+            redisTemplate.opsForValue().set("lessonById" + id, lessonMapper.mapLessonToLessonDTO(obj));
+            return obj;
         } else {
-            obj = (Lesson) redis.opsForValue().get("lessonById"+id);
-        }
-        return obj;
-    }
-    // Видаляє всі уроки конкретного студента.
-    // Метод використовують під час очищення даних студента, щоб у розкладі не лишилися заняття без власника.
-    public void deleteAllLessonsByStudent(Student student) {
-        lessonRepository.deleteAllByStudent(student);
-        redis.delete("lessons");
-        redis.delete("lessonsByStudentId"+student.getId());
-        redis.delete("lessonHashMapForStudent"+student.getId());
-        redis.delete("lessonDurationsForStudent"+student.getId());
-        redis.delete("lessonHashMapForStudentInAdmin"+student.getId());
-        redis.delete("lessonDurationsForStudentInAdmin"+student.getId());
-    }
-    // Зберігає новий запис модуля «уроки».
-    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
-    public Lesson create(Lesson lesson) {
-        Lesson created = lessonRepository.save(lesson);
-        redis.delete("lessons");
-        if(lesson.getTeacher() != null) {
-            int tId = lesson.getTeacher().getId();
-            redis.delete("lessonsByTeacherId"+tId);
-            redis.delete("lessonHashMapForTecherById"+tId);
-            redis.delete("lessonDurationsForTecherById"+tId);
-        }
-        if(lesson.getStudent() != null) {
-            int sId = lesson.getStudent().getId();
-            redis.delete("lessonsByStudentId"+sId);
-            redis.delete("lessonHashMapForStudent"+sId);
-            redis.delete("lessonDurationsForStudent"+sId);
-            redis.delete("lessonHashMapForStudentInAdmin"+sId);
-            redis.delete("lessonDurationsForStudentInAdmin"+sId);
-            if(lesson.getTeacher() != null) {
-                int tId = lesson.getTeacher().getId();
-                redis.delete("lessonHashMapForTecherAndStudent"+tId+"_"+sId);
-                redis.delete("lessonDurationsForTecherAndStudent"+tId+"_"+sId);
-                redis.delete("lessonsByTeacherAndStudent"+tId+"_"+sId);
+            LessonDTO dto = objectMapper.convertValue(cachedData, new TypeReference<LessonDTO>() {});
+            if (dto == null) {
+                Lesson obj = lessonRepository.findById(id);
+                if (obj == null) throw new RuntimeException("Lesson not found with id: " + id);
+                redisTemplate.opsForValue().set("lessonById" + id, lessonMapper.mapLessonToLessonDTO(obj));
+                return obj;
             }
+            return lessonMapper.mapLessonDTOToLesson(dto);
         }
-        return created;
     }
-    // Повертає уроки викладача, прив’язані до конкретного тижневого слота.
-    // Це потрібно під час зміни доступного часу, щоб знайти заняття, які залежать від цього слота.
+    // Deletes all lessons for a specific student.
+    // This method is used when cleaning up student data to ensure no orphaned lessons remain in the schedule.
+    public void deleteAllLessonsByStudent(Student student) {
+        lessonRepository.deleteAllBy(student);
+    }
+    // Saves a new record in the "lessons" module.
+    // This method is called after the controller has collected the entity from a form or a service has generated it automatically.
+    public Lesson create(Lesson lesson) {
+        return lessonRepository.save(lesson);
+    }
+    // Returns a teacher's lessons associated with a specific weekly slot.
+    // This is needed when changing available time to find lessons that depend on that slot.
     public List<Lesson> findAllByTimeOfTheWeekIdAndTeacherId(int timeOfWeekId, int teachId) {
-        List<Lesson> obj;
-        if(redis.opsForValue().get("lessonsByTimeOfWeekAndTeacher"+timeOfWeekId+"_"+teachId) == null){
-            obj = lessonRepository.findAllByTimeOfTheWeekAndTeacherId(timeOfWeekId, teachId);
-            redis.opsForValue().set("lessonsByTimeOfWeekAndTeacher"+timeOfWeekId+"_"+teachId, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get("lessonsByTimeOfWeekAndTeacher"+timeOfWeekId+"_"+teachId);
-        }
-        return obj;
+        return lessonRepository.findAllByTimeOfTheWeekAndTeacherId(timeOfWeekId, teachId);
     }
-    // Повертає всі уроки конкретного студента.
-    // Метод використовують календар студента і перевірка перетинів перед перенесенням або створенням заняття.
+    // Returns all lessons for a specific student.
+    // This method is used by the student calendar and for overlap checks before rescheduling or creating a lesson.
     public List<Lesson> findAllByStudentId(int id) {
-        List<Lesson> obj;
-        if(redis.opsForValue().get("lessonsByStudentId"+id) == null){
-            obj = lessonRepository.findByStudentId(id);
-            redis.opsForValue().set("lessonsByStudentId"+id, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get("lessonsByStudentId"+id);
-        }
-        return obj;
+        return lessonRepository.findByStudentId(id);
     }
 
     public List<Lesson> findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(int teachId, LocalDateTime after, LocalDateTime before){
-        List<Lesson> obj;
-        String cacheKey = "lessonsByTeacherAfterBefore"+teachId+"_"+after+"_"+before;
-        if(redis.opsForValue().get(cacheKey) == null){
-            obj = lessonRepository.findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(teachId, after, before);
-            redis.opsForValue().set(cacheKey, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get(cacheKey);
-        }
-        return obj;
+        return lessonRepository.findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(teachId, after, before);
     }
 
-    // Перевіряє, чи в базі вже є урок на точний LocalDateTime.
-    // Повертає boolean для швидкої перевірки дубля у розкладі.
+    // Checks if there is already a lesson in the database at an exact LocalDateTime.
+    // Returns a boolean for quick duplicate checks in the schedule.
 //    public boolean checkIfExistsByLessonTime(LocalDateTime time) {
 //        return lessonRepository.findByLessonTime(time) != null;
 //    }
 
-    // Оновлює існуючий запис модуля «уроки».
-    // Спочатку знаходить поточну сутність, переносить поля student, teacher, course, lessonTime, status і зберігає її назад у репозиторій.
+    // Updates an existing record in the "lessons" module.
+    // First finds the current entity, transfers student, teacher, course, lessonTime, and status fields, then saves it back to the repository.
     public Lesson update(Integer id, Lesson lesson) {
-        Lesson existing = getById(id);
+        Lesson existing = lessonRepository.findById((int)id);
+        if (existing == null) throw new RuntimeException("Lesson not found");
+
+        // Before updating, clear old student/teacher caches
+        if (existing.getStudent() != null) redisTemplate.delete("studentById" + existing.getStudent().getId());
+        if (existing.getTeacher() != null) redisTemplate.delete("teacherById" + existing.getTeacher().getId());
+
         existing.setStudent(lesson.getStudent());
         existing.setTeacher(lesson.getTeacher());
         existing.setCourse(lesson.getCourse());
         existing.setLessonTime(lesson.getLessonTime());
         existing.setStatus(lesson.getStatus());
-        existing = lessonRepository.save(existing);
-        redis.delete("lessonById"+id);
-        redis.delete("lessons");
-        if(existing.getTeacher() != null) {
-            int tId = existing.getTeacher().getId();
-            redis.delete("lessonsByTeacherId"+tId);
-            redis.delete("lessonHashMapForTecherById"+tId);
-            redis.delete("lessonDurationsForTecherById"+tId);
-        }
-        if(existing.getStudent() != null) {
-            int sId = existing.getStudent().getId();
-            redis.delete("lessonsByStudentId"+sId);
-            redis.delete("lessonHashMapForStudent"+sId);
-            redis.delete("lessonDurationsForStudent"+sId);
-            redis.delete("lessonHashMapForStudentInAdmin"+sId);
-            redis.delete("lessonDurationsForStudentInAdmin"+sId);
-            if(existing.getTeacher() != null) {
-                int tId = existing.getTeacher().getId();
-                redis.delete("lessonHashMapForTecherAndStudent"+tId+"_"+sId);
-                redis.delete("lessonDurationsForTecherAndStudent"+tId+"_"+sId);
-                redis.delete("lessonsByTeacherAndStudent"+tId+"_"+sId);
-            }
-        }
-        return existing;
+        
+        lessonRepository.save(existing);
+        
+        // IMPORTANT: Clear lesson cache so that next getById fetches full data
+        redisTemplate.delete("lessonById" + id);
+        
+        // Fetch fully initialized entity (with student, teacher, course) for MailService
+        Lesson updated = lessonRepository.findById((int)id);
+        
+        redisTemplate.opsForValue().set("lessonById" + id, lessonMapper.mapLessonToLessonDTO(updated));
+
+        // Clear new student/teacher caches
+        if (updated.getStudent() != null) redisTemplate.delete("studentById" + updated.getStudent().getId());
+        if (updated.getTeacher() != null) redisTemplate.delete("teacherById" + updated.getTeacher().getId());
+
+        return updated;
     }
 
-    // Перевіряє, чи має викладач урок у конкретний час.
-    // Метод дивиться у LessonRepository за teacherId і lessonTime та повертає true, якщо слот зайнятий.
+    // Checks if a teacher has a lesson at a specific time.
+    // This method looks in LessonRepository by teacherId and lessonTime and returns true if the slot is occupied.
 //    public boolean check(LocalDateTime time, int id) {
 //        return !lessonRepository.findAllByTeacherIdAndLessonTime(id, time).isEmpty();
 //    }
-    // Видаляє запис модуля «уроки» за id.
-    // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
+    // Deletes a record in the "lessons" module by ID.
+    // Before calling deleteById, the method reads the entity to ensure the deletion passes through the service layer and fails clearly if the ID is incorrect.
     public void deleteById(Integer id) {
         Lesson existing = getById(id);
         lessonRepository.deleteById(id);
-        redis.delete("lessonById"+id);
-        redis.delete("lessons");
-        if(existing.getTeacher() != null) {
-            int tId = existing.getTeacher().getId();
-            redis.delete("lessonsByTeacherId"+tId);
-            redis.delete("lessonHashMapForTecherById"+tId);
-            redis.delete("lessonDurationsForTecherById"+tId);
+        
+        // Invalidate caches
+        redisTemplate.delete("lessonById" + id);
+        if (existing.getStudent() != null) {
+            redisTemplate.delete("studentById" + existing.getStudent().getId());
+            if (existing.getStudent().getUser() != null) {
+                redisTemplate.delete("studentByUserId" + existing.getStudent().getUser().getId());
+            }
         }
-        if(existing.getStudent() != null) {
-            int sId = existing.getStudent().getId();
-            redis.delete("lessonsByStudentId"+sId);
-            redis.delete("lessonHashMapForStudent"+sId);
-            redis.delete("lessonDurationsForStudent"+sId);
-            redis.delete("lessonHashMapForStudentInAdmin"+sId);
-            redis.delete("lessonDurationsForStudentInAdmin"+sId);
-            if(existing.getTeacher() != null) {
-                int tId = existing.getTeacher().getId();
-                redis.delete("lessonHashMapForTecherAndStudent"+tId+"_"+sId);
-                redis.delete("lessonDurationsForTecherAndStudent"+tId+"_"+sId);
-                redis.delete("lessonsByTeacherAndStudent"+tId+"_"+sId);
+        if (existing.getTeacher() != null) {
+            redisTemplate.delete("teacherById" + existing.getTeacher().getId());
+            if (existing.getTeacher().getUser() != null) {
+                redisTemplate.delete("teacherByUserId" + existing.getTeacher().getUser().getId());
             }
         }
     }
-    // Шукає записи модуля «уроки» за умовами: викладачем.
-    // Фактичний запит виконує `lessonRepository.findAllByTeacherId`, а контролер отримує вже готовий результат.
+    // Searches for records in the "lessons" module by condition: teacher.
+    // The actual query is performed by `lessonRepository.findAllByTeacherId`, and the controller receives the final result.
     public List<Lesson> findAllByTeachId(int id) {
-        List<Lesson> obj;
-        if(redis.opsForValue().get("lessonsByTeacherId"+id) == null){
-            obj = lessonRepository.findAllByTeacherId(id);
-            redis.opsForValue().set("lessonsByTeacherId"+id, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get("lessonsByTeacherId"+id);
-        }
-        return obj;
+        return lessonRepository.findAllByTeacherId(id);
     }
-    // Шукає урок студента на конкретну дату й час.
-    // Такий пошук потрібен, коли дія з UI приходить як вибраний часовий слот.
+    // Searches for a student's lesson on a specific date and time.
+    // Such a search is needed when a UI action comes as a selected time slot.
 //    public Lesson findByStudentIdAndTime(LocalDateTime time, int id) {
 //        return lessonRepository.findByLessonTimeAndStudentId(time, id);
 //    }
-    // Повертає уроки однієї пари викладач-студент у межах одного тижневого слота.
-    // Фоновий менеджер уроків використовує це, щоб продовжувати саме потрібний ланцюжок WILL-занять.
+    // Returns lessons for a single teacher-student pair within one weekly slot.
+    // The background lesson manager uses this to continue the specific chain of WILL-lessons.
     public List<Lesson> findAllByTeachIdAndStIdAndWeekId(int tId, int sId, int wId){
-        List<Lesson> obj;
-        String cacheKey = "lessonsByTeachStWeek"+tId+"_"+sId+"_"+wId;
-        if(redis.opsForValue().get(cacheKey) == null){
-            obj = lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(tId, sId, wId);
-            redis.opsForValue().set(cacheKey, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get(cacheKey);
-        }
-        return obj;
+        return lessonRepository.findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(tId, sId, wId);
     }
     public List<Lesson> findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(int studentId, LocalDateTime after, LocalDateTime before){
-        List<Lesson> obj;
-        String cacheKey = "lessonsByStudentAfterBefore"+studentId+"_"+after+"_"+before;
-        if(redis.opsForValue().get(cacheKey) == null){
-            obj = lessonRepository.findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(studentId, after, before);
-            redis.opsForValue().set(cacheKey, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get(cacheKey);
-        }
-        return obj;
+        return lessonRepository.findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(studentId, after, before);
     }
-    // Видаляє уроки, прив’язані до вибраного слота тижня.
-    // Метод потрібен, коли адміністратор або викладач прибирає доступний час і треба очистити залежні заняття.
+    // Deletes lessons associated with a selected weekly slot.
+    // This method is needed when an admin or teacher removes available time and dependent lessons need to be cleared.
 //    public void deleteAllByTimeOfTheWeekId(int id) {
 //        lessonRepository.removeAllByTimeOfTheWeekId(id);
 //    }
-    // Видаляє майбутні уроки конкретної пари студент-викладач у заданому слоті.
-    // Так курс можна прибрати без зачіпання вже минулих занять.
+    // Deletes future lessons for a specific student-teacher pair in a given slot.
+    // This allows removing a course without affecting past lessons.
     public void deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(int stId, int teachId, int tswId, LocalDateTime now) {
         lessonRepository.removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekAndLessonTimeAfter(stId, teachId, tswId, now);
-        redis.delete("lessons");
-        redis.delete("lessonsByTeacherId"+teachId);
-        redis.delete("lessonsByStudentId"+stId);
-        redis.delete("lessonsByTeacherAndStudent"+teachId+"_"+stId);
-        redis.delete("lessonHashMapForTecherById"+teachId);
-        redis.delete("lessonDurationsForTecherById"+teachId);
-        redis.delete("lessonHashMapForStudent"+stId);
-        redis.delete("lessonDurationsForStudent"+stId);
-        redis.delete("lessonHashMapForStudentInAdmin"+stId);
-        redis.delete("lessonDurationsForStudentInAdmin"+stId);
-        redis.delete("lessonHashMapForTecherAndStudent"+teachId+"_"+stId);
-        redis.delete("lessonDurationsForTecherAndStudent"+teachId+"_"+stId);
     }
-    // Повертає всі уроки між конкретним викладачем і студентом.
-    // Ці дані використовують сторінки teacherStudentLessons/studentLessons для календаря однієї навчальної пари.
+    // Returns all lessons between a specific teacher and student.
+    // These data are used by teacherStudentLessons/studentLessons pages for the calendar of a single study pair.
     public List<Lesson> findAllByIdTandIdSt(int idT, int idSt) {
-        List<Lesson> obj;
-        if(redis.opsForValue().get("lessonsByTeacherAndStudent"+idT+"_"+idSt) == null){
-            obj = lessonRepository.findAllByTeacherIdAndStudentId(idT, idSt);
-            redis.opsForValue().set("lessonsByTeacherAndStudent"+idT+"_"+idSt, obj);
-        } else {
-            obj = (List<Lesson>) redis.opsForValue().get("lessonsByTeacherAndStudent"+idT+"_"+idSt);
-        }
-        return obj;
+        return lessonRepository.findAllByTeacherIdAndStudentId(idT, idSt);
     }
     public LocalDateTime manageOneTime(TimeOfTheWeek empTFT, LocalDateTime finalNow, String status){
         LocalDateTime time = LocalDateTime.now();
@@ -345,22 +252,11 @@ public class LessonService {
         }
         return durationTimeStr;
     }
-    // Збирає календар викладача: дні, уроки, клітинки продовження тривалих занять і доступні слоти для перенесення.
-    // Метод повертає список з weekDays, lessonHashMap і lessonDurations, щоб контролер одразу передав їх у Thymeleaf.
-    public List<Object> compileLessonsForTeacher(int teacherId) {
-        String hashKey = "lessonHashMapForTecherById" + teacherId;
-        String durKey = "lessonDurationsForTecherById" + teacherId;
-        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
-            List<Object> retValue = new ArrayList<>();
-            retValue.add(redis.opsForValue().get(hashKey));
-            retValue.add(redis.opsForValue().get(durKey));
-            return retValue;
-        }
-
+    // Assembles the teacher's calendar: days, lessons, continuation cells for long lessons, and available slots for rescheduling.
+    // The method returns a list with weekDays, lessonHashMap, and lessonDurations so that the controller can immediately pass them to Thymeleaf.
+    public List<Object> compileLessonsForTeacher(int teacherId) throws JsonProcessingException {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
-        Teacher teacher = teacherService.getById(teacherId);
-
-        List<Lesson> teacherLessons1 = teacher.getLessons();
+        List<Lesson> teacherLessons1 = findAllByTeachId(teacherId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
 
@@ -392,8 +288,13 @@ public class LessonService {
 
 
         Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
-        lessonHashMap.values().stream().forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
-        lessonDurations.values().stream().forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+        String freeTimesJson = objectMapper.writeValueAsString(sortedFreeTimes);
+        for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
+            val.getTeacher().setNotTakenTimes(freeTimesJson);
+        }
+        for (LessonAdminLessonsDTO val : lessonDurations.values()) {
+            val.getTeacher().setNotTakenTimes(freeTimesJson);
+        }
 
         ///////////
 
@@ -401,23 +302,12 @@ public class LessonService {
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
-        redis.opsForValue().set(hashKey, lessonHashMap);
-        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
 
-    // Збирає календар тільки для однієї пари викладач-студент.
-    // Він фільтрує Lesson цієї пари, додає доступні часи викладача і повертає структури для teacherStudentLessons/studentLessons.
-    public List<Object> compileLessonsForStudentAndTeacher(int idT, int idSt) {
-        String hashKey = "lessonHashMapForTecherAndStudent"+idT+"_"+idSt;
-        String durKey = "lessonDurationsForTecherAndStudent"+idT+"_"+idSt;
-        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
-            List<Object> retValue = new ArrayList<>();
-            retValue.add(redis.opsForValue().get(hashKey));
-            retValue.add(redis.opsForValue().get(durKey));
-            return retValue;
-        }
-
+    // Assembles the calendar only for one teacher-student pair.
+    // It filters lessons for this pair, adds teacher's available times, and returns structures for teacherStudentLessons/studentLessons.
+    public List<Object> compileLessonsForStudentAndTeacher(int idT, int idSt) throws JsonProcessingException {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
         List<Lesson> teacherLessons1 = findAllByIdTandIdSt(idT, idSt);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
@@ -450,32 +340,25 @@ public class LessonService {
         }
 
         Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
-        lessonHashMap.values().stream().forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
-        lessonDurations.values().stream().forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+        String freeTimesJson = objectMapper.writeValueAsString(sortedFreeTimes);
+        for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
+            val.getTeacher().setNotTakenTimes(freeTimesJson);
+        }
+        for (LessonAdminLessonsDTO val : lessonDurations.values()) {
+            val.getTeacher().setNotTakenTimes(freeTimesJson);
+        }
         ///////////
         //////////////////
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
-        redis.opsForValue().set(hashKey, lessonHashMap);
-        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
-    // Збирає календар студента з уроками всіх його викладачів.
-    // Для кожного викладача додає notTakenTimes, щоб студент бачив варіанти перенесення заняття.
-    public List<Object> compileLessonsForStudent(int stId) {
-        String hashKey = "lessonHashMapForStudent"+stId;
-        String durKey = "lessonDurationsForStudent"+stId;
-        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
-            List<Object> retValue = new ArrayList<>();
-            retValue.add(redis.opsForValue().get(hashKey));
-            retValue.add(redis.opsForValue().get(durKey));
-            return retValue;
-        }
-
+    // Assembles the student's calendar with lessons from all their teachers.
+    // For each teacher, it adds notTakenTimes so the student can see rescheduling options.
+    public List<Object> compileLessonsForStudent(int stId) throws JsonProcessingException {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
-        Student student = studentService.getById(stId);
-        List<Lesson> studentLessons = student.getLessons();
+        List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
             lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
@@ -513,32 +396,29 @@ public class LessonService {
 
 
             Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
-            lessonHashMap.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
-            lessonDurations.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+            String freeTimesJson = objectMapper.writeValueAsString(sortedFreeTimes);
+            for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
+                if (val.getTeacher().getId() == teacher.getId()) {
+                    val.getTeacher().setNotTakenTimes(freeTimesJson);
+                }
+            }
+            for (LessonAdminLessonsDTO val : lessonDurations.values()) {
+                if (val.getTeacher().getId() == teacher.getId()) {
+                    val.getTeacher().setNotTakenTimes(freeTimesJson);
+                }
+            }
         }
 
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
-        redis.opsForValue().set(hashKey, lessonHashMap);
-        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
-    // Збирає адмінську версію календаря студента.
-    // Структура така сама, як у студентському кабінеті, але дані готуються для адміністративного шаблону.
-    public List<Object> compileLessonsForStudentInAdmin(int stId) {
-        String hashKey = "lessonHashMapForStudentInAdmin"+stId;
-        String durKey = "lessonDurationsForStudentInAdmin"+stId;
-        if (redis.opsForValue().get(hashKey) != null && redis.opsForValue().get(durKey) != null) {
-            List<Object> retValue = new ArrayList<>();
-            retValue.add(redis.opsForValue().get(hashKey));
-            retValue.add(redis.opsForValue().get(durKey));
-            return retValue;
-        }
-
+    // Assembles the admin version of the student's calendar.
+    // The structure is the same as in the student cabinet, but data is prepared for the administrative template.
+    public List<Object> compileLessonsForStudentInAdmin(int stId) throws JsonProcessingException {
         HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
-        Student student = studentService.getById(stId);
-        List<Lesson> studentLessons = student.getLessons();
+        List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
             lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
@@ -556,10 +436,9 @@ public class LessonService {
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
         lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
         lessonHashMap.values().stream().forEach(les -> {
-            if (!teachers.stream().map(teach -> teach.getId()).toList().contains(les.getTeacher().getId())) {
+            if (les.getTeacher() != null && !teachers.stream().map(TeacherAdminLessonsDTO::getId).toList().contains(les.getTeacher().getId())) {
                 teachers.add(les.getTeacher());
             }
-
         });
         for (TeacherAdminLessonsDTO teacher : teachers) {
             now2 = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
@@ -575,22 +454,29 @@ public class LessonService {
             }
 
             Map<LocalDateTime, Object> sortedFreeTimes = new TreeMap<>(teacherfreeTimes);
-            lessonHashMap.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
-            lessonDurations.values().stream().filter(les -> les.getTeacher().getId() == teacher.getId()).forEach(val -> val.getTeacher().setNotTakenTimes(objectMapper.writeValueAsString(sortedFreeTimes)));
+            String freeTimesJson = objectMapper.writeValueAsString(sortedFreeTimes);
+            for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
+                if (val.getTeacher().getId() == teacher.getId()) {
+                    val.getTeacher().setNotTakenTimes(freeTimesJson);
+                }
+            }
+            for (LessonAdminLessonsDTO val : lessonDurations.values()) {
+                if (val.getTeacher().getId() == teacher.getId()) {
+                    val.getTeacher().setNotTakenTimes(freeTimesJson);
+                }
+            }
         }
 
         List<Object> retValue = new ArrayList<>();
         retValue.add(lessonHashMap);
         retValue.add(lessonDurations);
-        redis.opsForValue().set(hashKey, lessonHashMap);
-        redis.opsForValue().set(durKey, lessonDurations);
         return retValue;
     }
 
 
 
-    // Перевіряє, чи новий інтервал уроку перетинається з уроками викладача або студента.
-    // Метод рахує кінець заняття з duration, порівнює часові проміжки і пропускає урок, який зараз редагується.
+    // Checks if a new lesson interval overlaps with teacher's or student's lessons.
+    // The method calculates the lesson end using duration, compares time intervals, and skips the lesson currently being edited.
     public boolean checkIfLessonOverlap(int tId, int sId, int lId, float dur, String date) {
         /////////////
 
@@ -645,8 +531,8 @@ public class LessonService {
         return overlap.get();
     }
 
-    // Перевіряє, чи можна створити або перенести урок на вибраний день і час.
-    // Повертає конкретний Statuses: минула дата, занадто пізно, перетин, не вибраний учасник, курс або тривалість.
+    // Checks if a lesson can be created or rescheduled for the selected day and time.
+    // Returns a specific Statuses: past date, too late, overlap, participant not selected, course or duration not selected.
     public Statuses checkIfLessonValid(int tId, int sId, int lId, int cId, float dur, String date) {
         LocalDateTime newDate = LocalDateTime.now();
         if (LocalDateTime.now().getMonth().getValue() == 12 && Integer.parseInt(date.split(" ")[1].split("\\.")[1]) == 1) {
@@ -691,15 +577,15 @@ public class LessonService {
 
     }
 
-    // Перевіряє серію повторюваних уроків на кілька тижнів вперед.
-    // Для кожного повторення викликає checkIfLessonValid і повертає перший статус помилки або SUCCESS разом з останньою перевіреною датою.
+    // Checks a series of recurring lessons for several weeks ahead.
+    // For each repetition, it calls checkIfLessonValid and returns the first error status or SUCCESS along with the last checked date.
     public List<Object> checkIfLessonValidWithReputitions(int tId, int sId, int cId, float dur, String date, int repetitions) {
-    // Для кожного повторення він викликає checkIfLessonValid і повертає перший статус помилки або SUCCESS.
+    // For each repetition, it calls checkIfLessonValid and returns the first error status or SUCCESS.
         return checkIfLessonValidWithReputitions(tId, sId, cId, -1, dur, date, repetitions);
     }
 
-    // Перевіряє серію повторюваних уроків на кілька тижнів вперед.
-    // Для кожного повторення викликає checkIfLessonValid і повертає перший статус помилки або SUCCESS разом з останньою перевіреною датою.
+    // Checks a series of recurring lessons for several weeks ahead.
+    // For each repetition, it calls checkIfLessonValid and returns the first error status or SUCCESS along with the last checked date.
     public List<Object> checkIfLessonValidWithReputitions(int tId, int sId, int cId, int idLes, float dur, String date, int repetitions) {
         String checkingDate = date;
         LocalDateTime time = LocalDateTime.now();

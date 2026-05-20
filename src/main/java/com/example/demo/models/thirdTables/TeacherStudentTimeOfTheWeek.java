@@ -4,11 +4,12 @@ import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.models.programe.Course;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-// Модель TeacherStudentTimeOfTheWeek описує сутність модуля «постійний розклад викладача зі студентом» у базі даних або службовий об’єкт проекту.
-// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
+// The TeacherStudentTimeOfTheWeek model describes the "teacher-student persistent schedule" module entity in the database or a project service object.
+// The class fields are read by services, repositories, and mappers when creating pages and saving changes.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,17 +25,19 @@ public class TeacherStudentTimeOfTheWeek {
     private int id;
     @ManyToOne
     @JoinColumn(name = "teacher_id")
+
     private Teacher teacher;
     @ManyToOne
     @JoinColumn(name = "student_id")
+
     private Student student;
     @Column(name = "time_of_the_week_id")
     private int timeOfTheWeek;
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
-    // Отримує через Spring залежності Teacher, Student, TimeOfTheWeek, Course.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «постійний розклад викладача зі студентом» без ручного створення об’єктів.
+    // Receives Teacher, Student, TimeOfTheWeek, and Course dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "teacher-student persistent schedule" module without manual object creation.
     public TeacherStudentTimeOfTheWeek(Teacher teacher, Student student, int timeOfTheWeek, Course course) {
         this.teacher = teacher;
         this.student = student;

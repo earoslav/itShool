@@ -3,6 +3,9 @@ package com.example.demo.models.programe;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,8 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// Модель Lesson описує сутність модуля «уроки» у базі даних або службовий об’єкт проекту.
-// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
+// The Lesson model describes the "lessons" module entity in the database or a project service object.
+// The class fields are read by services, repositories, and mappers when creating pages and saving changes.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,10 +32,12 @@ public class Lesson {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
+
     private Student student;
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")
+
     private Teacher teacher;
 
     @ManyToOne
@@ -51,8 +56,8 @@ public class Lesson {
 
     @Column(name = "status", length = 30)
     private String status;
-    // Отримує через Spring залежності Student, Teacher, Course, LocalDateTime, float, TimeOfTheWeek, String.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
+    // Receives Student, Teacher, Course, LocalDateTime, float, TimeOfTheWeek, and String dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "lessons" module without manual object creation.
     public Lesson(Student student, Teacher teacher, Course course, LocalDateTime lessonTime, float duration, int timeOfTheWeek, String status) {
         this.student = student;
         this.teacher = teacher;

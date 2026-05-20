@@ -1,78 +1,82 @@
 package com.example.demo.services.thirdTable;
 
+import com.example.demo.dto.thirdTable.TeacherCourseDTO;
+
+import com.example.demo.mapper.thirdTable.TeacherCourseMapper;
 import com.example.demo.models.thirdTables.TeacherCourse;
 import com.example.demo.repositories.thirdTables.TeacherCourseRepository;
 import java.util.List;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-// Сервіс TeacherCourseService містить бізнес-операції для модуля «курси викладача».
-// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
+// TeacherCourseService contains business operations for the "teacher courses" module.
+// Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
 public class TeacherCourseService {
-    private final TeacherCourseRepository teacherCourseRepository;
-    private RedisTemplate redis;
-    // Отримує через Spring залежності TeacherCourseRepository.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси викладача» без ручного створення об’єктів.
-    public TeacherCourseService(TeacherCourseRepository teacherCourseRepository, @Qualifier("redisTemplate") RedisTemplate redis) {
-        this.teacherCourseRepository = teacherCourseRepository;
-        this.redis = redis;
+    private final TeacherCourseRepository tCRepository;
+    private RedisTemplate<String, Object> redisTemplate;
+    private ObjectMapper objectMapper;
+    private TeacherCourseMapper teacherCourseMapper;
+    // Receives TeacherCourseRepository dependency through Spring.
+    // These services and mappers are required by the class methods to work with the "teacher courses" module without manual object creation.
+    public TeacherCourseService(TeacherCourseRepository tCRepository, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper, TeacherCourseMapper teacherCourseMapper) {
+        this.tCRepository = tCRepository;
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.teacherCourseMapper = teacherCourseMapper;
     }
-    // Повертає всі зв’язки викладача з курсами з репозиторію.
+    // Повертає всі зв’язки викладач-курс з репозиторію.
     // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
     public List<TeacherCourse> getAll() {
-        List<TeacherCourse> obj;
-        if(redis.opsForValue().get("teacherCourses") == null){
-            obj = teacherCourseRepository.findAll();
-            redis.opsForValue().set("teacherCourses", obj);
-        } else {
-            obj = (List<TeacherCourse>) redis.opsForValue().get("teacherCourses");
-        }
-        return obj;
+        return tCRepository.findAll();
     }
-    // Знаходить один запис модуля «курси викладача» за id.
-    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
+    // Finds a single record in the "teacher courses" module by ID.
+    // Controllers call this before editing, deleting, or assembling a details page.
     public TeacherCourse getById(Integer id) {
         TeacherCourse obj;
-        if(redis.opsForValue().get("teacherCourseById"+id) == null){
-            obj = teacherCourseRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("TeacherCourse not found with id: " + id));
-            redis.opsForValue().set("teacherCourseById"+id, obj);
+        if(redisTemplate.opsForValue().get("teacherCourseById"+id) == null){
+            obj = tCRepository.findById(id).get();
+            redisTemplate.opsForValue().set("teacherCourseById"+id, teacherCourseMapper.mapTeacherCourseToTeacherCourseDTO(obj));
         } else {
-            obj = (TeacherCourse) redis.opsForValue().get("teacherCourseById"+id);
+            obj = teacherCourseMapper.mapTeacherCourseDTOToTeacherCourse(objectMapper.convertValue(redisTemplate.opsForValue().get("teacherCourseById"+id), new TypeReference<TeacherCourseDTO>() {}));
         }
         return obj;
     }
     public void deleteByCourseIdAndTeacherId(int cId, int tId){
-        teacherCourseRepository.deleteByCourse_IdAndTeacherId(cId, tId);
-        redis.delete("teacherCourses");
+        tCRepository.deleteByCourse_IdAndTeacherId(cId, tId);
+        // Clear teacher cache because their course list has changed
+        redisTemplate.delete("teacherById" + tId);
+        // Clear specific teacher-course cache if exists
+        redisTemplate.delete("teacherCourseByCourseId" + cId + "AndTeacherId" + tId);
     }
-    // Зберігає новий запис модуля «курси викладача».
-    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
+    // Зберігає новий запис у модулі «зв’язок викладача з курсом».
+    // Цей метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
     public TeacherCourse create(TeacherCourse teacherCourse) {
-        TeacherCourse created = teacherCourseRepository.save(teacherCourse);
-        redis.delete("teacherCourses");
-        return created;
+        TeacherCourse saved = tCRepository.save(teacherCourse);
+        if (saved.getTeacher() != null) {
+            redisTemplate.delete("teacherById" + saved.getTeacher().getId());
+        }
+        return saved;
     }
 
-    // Оновлює існуючий запис модуля «курси викладача».
-    // Спочатку знаходить поточну сутність, переносить поля course, teacher і зберігає її назад у репозиторій.
+    // Updates an existing record in the "teacher courses" module.
+    // First finds the current entity, transfers course and teacher fields, then saves it back to the repository.
     public TeacherCourse update(Integer id, TeacherCourse teacherCourse) {
         TeacherCourse existing = getById(id);
         existing.setCourse(teacherCourse.getCourse());
         existing.setTeacher(teacherCourse.getTeacher());
-        existing = teacherCourseRepository.save(existing);
-        redis.delete("teacherCourseById"+id);
-        redis.delete("teacherCourses");
+        existing = tCRepository.save(existing);
+        redisTemplate.opsForValue().set("teacherCourseById"+id, teacherCourseMapper.mapTeacherCourseToTeacherCourseDTO(existing));
         return existing;
     }
-    // Видаляє запис модуля «курси викладача» за id.
+    // Видаляє запис модуля «зв’язок викладача з курсом» за id.
     // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
     public void deleteById(Integer id) {
         getById(id);
-        teacherCourseRepository.deleteById(id);
-        redis.delete("teacherCourseById"+id);
-        redis.delete("teacherCourses");
+        tCRepository.deleteById(id);
+        redisTemplate.delete("teacherCourseById"+id);
     }
 }

@@ -7,23 +7,23 @@ import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.services.other.TimeOfTheWeekService;
 import org.springframework.stereotype.Service;
 
-// Mapper TimeOfTheWeekMapper перетворює об’єкти модуля «часові слоти тижня» між Entity та DTO.
-// Так контролери й HTML-шаблони отримують прості об’єкти без зайвої роботи з JPA-зв’язками.
+// TimeOfTheWeekMapper converts "weekly time slots" module objects between Entity and DTO.
+// This way, controllers and HTML templates receive simple objects without extra work with JPA relationships.
 @Service
 public class TimeOfTheWeekMapper {
     private TimeOfTheWeekService theWeekService;
-    // Створює порожній TimeOfTheWeekMapper для Spring, JPA або UniversalMapper.
-    // Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
+    // Creates an empty TimeOfTheWeekMapper for Spring, JPA, or UniversalMapper.
+    // Such a constructor is needed so the framework can create the object and then fill its fields.
     public TimeOfTheWeekMapper(TimeOfTheWeekService theWeekService) {
         this.theWeekService = theWeekService;
     }
-    // Перетворює TTheWeekDTO у TTheWeek через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts TTheWeekDTO to TTheWeek using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public TimeOfTheWeek mapTTheWeekDTOToTTheWeek(TimeOfTheWeekDTO timeOfTheWeekDTO){
         return UniversalMapper.generalMapper(timeOfTheWeekDTO, TimeOfTheWeek.class);
     }
-    // Перетворює TTheWeek у TTheWeekDTO через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts TTheWeek to TTheWeekDTO using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public TimeOfTheWeekDTO mapTTheWeekToTTheWeekDTO(TimeOfTheWeek time){
         return UniversalMapper.generalMapper(time, TimeOfTheWeekDTO.class);
     }

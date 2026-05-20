@@ -2,6 +2,7 @@ package com.example.demo.models.thirdTables;
 
 import com.example.demo.models.programe.Course;
 import com.example.demo.models.entities.Teacher;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,8 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// Модель TeacherCourse описує сутність модуля «курси викладача» у базі даних або службовий об’єкт проекту.
-// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
+// The TeacherCourse model describes the "teacher courses" module entity in the database or a project service object.
+// The class fields are read by services, repositories, and mappers when creating pages and saving changes.
 @Getter
 @Setter
 @NoArgsConstructor
@@ -36,9 +37,10 @@ public class TeacherCourse {
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")
+
     private Teacher teacher;
-    // Отримує через Spring залежності Course, Teacher.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «курси викладача» без ручного створення об’єктів.
+    // Receives Course and Teacher dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "teacher courses" module without manual object creation.
     public TeacherCourse(Course course, Teacher teacher) {
         this.course = course;
         this.teacher = teacher;

@@ -16,7 +16,6 @@ import com.example.demo.services.program.CourseService;
 import com.example.demo.services.program.LessonService;
 import com.example.demo.services.security.UserService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
-import com.example.demo.services.thirdTable.StudentCourseService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +39,7 @@ AdminStudentOtherActionsController {
 
     private TimeOfTheWeekService theWeekService;
     private CourseService courseService;
-    private StudentCourseService studentCourseService;
+
     private CommentService commentService;
     private LessonService lessonService;
     private StudentService studentService;
@@ -52,15 +51,15 @@ AdminStudentOtherActionsController {
     private PasswordEncoder passwordEncoder;
     private UserService userService;
     private AdminMapper adminMapper;
-    // Конструктор підключає до AdminStudentOtherActionsController залежності TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService та інші.
-    // Ці об’єкти далі використовуються в методах для роботи з модулем «студенти», тому клас не створює їх вручну.
-    public AdminStudentOtherActionsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, StudentMapper studentMapper, PasswordEncoder passwordEncoder, UserService userService, AdminMapper adminMapper) {
+    // Constructor connects dependencies to AdminStudentOtherActionsController: TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService, and others.
+    // These objects are used in methods for student management, so the class does not create them manually.
+    public AdminStudentOtherActionsController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, StudentMapper studentMapper, PasswordEncoder passwordEncoder, UserService userService, AdminMapper adminMapper) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
         this.emptyTimesForTeacherService = emptyTimesForTeacherService;
         this.theWeekService = theWeekService;
         this.courseService = courseService;
-        this.studentCourseService = studentCourseService;
+
         this.commentService = commentService;
         this.lessonService = lessonService;
         this.studentService = studentService;
@@ -73,16 +72,16 @@ AdminStudentOtherActionsController {
         this.userService = userService;
         this.adminMapper = adminMapper;
     }
-    // Метод відкриває адміну форму додавання студента і кладе в Model порожній StudentDTO.
-    // У Model записуються "student", "password", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/addNewStudent".
+    // Method opens the student addition form for the admin and places an empty StudentDTO in the Model.
+    // "student" and "password" are recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/addNewStudent".
     @GetMapping("/addStudent")
     public String gotoCreateStudent(Model model) {
         model.addAttribute("student",studentMapper.mapStudentToStudentDTO(new Student()));
         model.addAttribute("password", "");
         return "closedAdmin/adminStudents/addNewStudent";
     }
-    // Метод створює студента з адмінської форми, кодує пароль через PasswordEncoder і зберігає Student разом із User-акаунтом.
-    // У Model записуються "student", "output", "error", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/addNewStudent", "redirect:/admin/homepage/STUDENT_ADDED".
+    // Method creates a student from the admin form, encodes the password using PasswordEncoder, and saves the Student along with the User account.
+    // "student", "output", and "error" are recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/addNewStudent", "redirect:/admin/homepage/STUDENT_ADDED".
     @PostMapping("/addStudent/{password}")
     public String addStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model) {
         try {
@@ -111,8 +110,8 @@ AdminStudentOtherActionsController {
 
 
     }
-    // Метод показує список студентів: адміну всі записи Student, а викладачу лише тих учнів, які прив’язані до нього.
-    // У Model записуються "students", "output", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/students".
+    // Method displays the list of students: for the admin, all Student records; for a teacher, only students linked to them.
+    // "students" and "output" are recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/students".
     @GetMapping("/students/{output}")
     public String gotoStudents(@PathVariable("output") String output, Model model) {
         List<StudentDTO> students = studentService.getAll().stream().map(student -> studentMapper.mapStudentToStudentDTO(student)).collect(Collectors.toList());
@@ -120,16 +119,16 @@ AdminStudentOtherActionsController {
         model.addAttribute("output", output);
         return "closedAdmin/adminStudents/students";
     }
-    // Метод показує список студентів: адміну всі записи Student, а викладачу лише тих учнів, які прив’язані до нього.
-    // У Model записуються "students", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/students".
+    // Method displays the list of students: for the admin, all Student records; for a teacher, only students linked to them.
+    // "students" is recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/students".
     @GetMapping("/students")
     public String gotoStudents(Model model) {
         List<StudentDTO> students = studentService.getAll().stream().map(student -> studentMapper.mapStudentToStudentDTO(student)).collect(Collectors.toList());
         model.addAttribute("students", students);
         return "closedAdmin/adminStudents/students";
     }
-    // Метод відкриває форму редагування конкретного студента, знаходить Student за id і передає його DTO у шаблон.
-    // У Model записуються "password", "student", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/editStudent".
+    // Method opens the edit form for a specific student, finds the Student by id, and passes their DTO to the template.
+    // "password" and "student" are recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/editStudent".
     @GetMapping("/student/{id}/edit")
     public String gotoEditStudent(@PathVariable("id") int id, Model model) {
 
@@ -137,8 +136,8 @@ AdminStudentOtherActionsController {
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(studentService.getById(id)));
         return "closedAdmin/adminStudents/editStudent";
     }
-    // Метод відкриває форму редагування конкретного студента, знаходить Student за id і передає його DTO у шаблон.
-    // У Model записуються "output", "password", "student", після чого користувач бачить шаблон або redirect "closedAdmin/adminStudents/editStudent".
+    // Method opens the edit form for a specific student, finds the Student by id, and passes their DTO to the template.
+    // "output", "password", and "student" are recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/editStudent".
     @GetMapping("/student/{id}/edit/{output}")
     public String gotoEditStudentWithOutput(@PathVariable("id") int id,@PathVariable("output") String output, Model model) {
         model.addAttribute("output", output);
@@ -146,8 +145,8 @@ AdminStudentOtherActionsController {
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(studentService.getById(id)));
         return "closedAdmin/adminStudents/editStudent";
     }
-    // Метод оновлює дані студента, його User-поля і пароль, якщо замість OLDPASS/NOPASS прийшло нове значення.
-    // Для роботи метод викликає userService.checkIfExistsByEmail, studentService.getById, studentMapper.mapStudentDTOToStudent, studentService.update і завершується переходом "redirect:/admin/student/".
+    // Method updates student data, their User fields, and password if a new value is provided instead of OLDPASS/NOPASS.
+    // The method calls `userService.checkIfExistsByEmail`, `studentService.getById`, `studentMapper.mapStudentDTOToStudent`, and `studentService.update`, ending with a "redirect:/admin/student/" transition.
     @PostMapping("/student/{id}/edit/{password}")
     public String editStudent(
             @PathVariable("id") int id,
@@ -175,15 +174,15 @@ AdminStudentOtherActionsController {
         }
 
     }
-    // Метод видаляє студента або прибирає його зі списку конкретного викладача разом із пов’язаними уроками та курсами.
-    // Для роботи метод викликає studentService.getById, tswService.removeAllTswByStudentId, lessonService.deleteAllLessonsByStudent, studentCourseService.deleteAllCoursesByStudent, commentService.deleteAllByStudent та інші і завершується переходом "redirect:/admin/students/STUDENT_DELETED".
+    // Method deletes a student or removes them from a specific teacher's list along with related lessons and courses.
+    // The method calls `studentService.getById`, `tswService.removeAllTswByStudentId`, `lessonService.deleteAllLessonsByStudent`, `studentCourseService.deleteAllCoursesByStudent`, `commentService.deleteAllByStudent`, and others, ending with a "redirect:/admin/students/STUDENT_DELETED" transition.
     @PostMapping("/student/delete")
     @Transactional
     public String deleteStudent(@RequestParam("studentId") int id) {
         Student student = studentService.getById(id);
         tswService.removeAllTswByStudentId(student.getId());
         lessonService.deleteAllLessonsByStudent(student);
-        studentCourseService.deleteAllCoursesByStudent(student);
+
         commentService.deleteAllByStudent(student);
         studentService.deleteById(id);
         return "redirect:/admin/students/STUDENT_DELETED";

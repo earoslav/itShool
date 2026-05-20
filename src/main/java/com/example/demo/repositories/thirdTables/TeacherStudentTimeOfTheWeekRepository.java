@@ -1,6 +1,7 @@
 package com.example.demo.repositories.thirdTables;
 
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
@@ -12,22 +13,20 @@ import java.util.List;
 @Repository
 @EnableJpaRepositories
 public interface TeacherStudentTimeOfTheWeekRepository extends JpaRepository<TeacherStudentTimeOfTheWeek, Integer> {
-    // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: викладачем, time of the time of the week id.
-    // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
-    public void removeAllByTeacherIdAndTimeOfTheWeek(int tId, int wId);
-    // Шукає записи модуля «постійний розклад викладача зі студентом» за умовами: викладачем.
-    // Назва методу описує критерії, які Spring Data перетворює у запит до бази.
+    
+    @EntityGraph(attributePaths = {"student", "teacher", "timeOfTheWeek"})
     public List<TeacherStudentTimeOfTheWeek> findAllByTeacherId(int id);
-    // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: викладачем, студентом.
-    // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
+
+    @EntityGraph(attributePaths = {"student", "teacher", "timeOfTheWeek"})
+    public List<TeacherStudentTimeOfTheWeek> findAll();
+
+    public void removeAllByTeacherIdAndTimeOfTheWeek(int tId, int wId);
+
     public void removeAllByTeacherIdAndStudentId(int idT, int idSt);
-    // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом, time of the time of the week id.
-    // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
+
     public void removeAllByStudentIdAndTimeOfTheWeek(int idSt, int idTsw);
-    // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом, викладачем, time of the time of the week id.
-    // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
+
     public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeek(int stId, int teachId, int tswId);
-    // Видаляє записи модуля «постійний розклад викладача зі студентом» за умовами: студентом.
-    // Це використовується для очищення зв’язків після видалення студента, викладача, курсу або часу.
+
     public void removeAllByStudentId(int id);
 }

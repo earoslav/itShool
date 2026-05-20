@@ -5,21 +5,21 @@ import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
 import org.springframework.stereotype.Service;
 
-// Mapper TSWMapper перетворює об’єкти модуля «постійний розклад викладача зі студентом» між Entity та DTO.
-// Так контролери й HTML-шаблони отримують прості об’єкти без зайвої роботи з JPA-зв’язками.
+// TSWMapper converts "teacher-student persistent schedule" module objects between Entity and DTO.
+// This way, controllers and HTML templates receive simple objects without extra work with JPA relationships.
 @Service
 public class TSWMapper {
-    // Створює порожній TSWMapper для Spring, JPA або UniversalMapper.
-    // Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
+    // Creates an empty TSWMapper for Spring, JPA, or UniversalMapper.
+    // Such a constructor is needed so the framework can create the object and then fill its fields.
     public TSWMapper() {
     }
-    // Перетворює TSWDTO у TSW через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts TSWDTO to TSW using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public TeacherStudentTimeOfTheWeek mapTSWDTOToTSW(TeacherStudentTimeOfTheWeekDTO tswDTO){
         return UniversalMapper.generalMapper(tswDTO, TeacherStudentTimeOfTheWeek.class);
     }
-    // Перетворює TSW у TSWDTO через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts TSW to TSWDTO using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public TeacherStudentTimeOfTheWeekDTO mapTSWToTSWDTO(TeacherStudentTimeOfTheWeek tsw){
         return UniversalMapper.generalMapper(tsw, TeacherStudentTimeOfTheWeekDTO.class);
     }

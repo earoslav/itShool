@@ -5,23 +5,23 @@ import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.programe.Course;
 import org.springframework.stereotype.Service;
 
-// Mapper CourseMapper перетворює об’єкти модуля «курси» між Entity та DTO.
-// Так контролери й HTML-шаблони отримують прості об’єкти без зайвої роботи з JPA-зв’язками.
+// CourseMapper converts "courses" module objects between Entity and DTO.
+// This way, controllers and HTML templates receive simple objects without extra work with JPA relationships.
 @Service
 public class CourseMapper {
 
-    // Створює порожній CourseMapper для Spring, JPA або UniversalMapper.
-    // Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
+    // Creates an empty CourseMapper for Spring, JPA, or UniversalMapper.
+    // Such a constructor is needed so the framework can create the object and then fill its fields.
     public CourseMapper() {
 
     }
-    // Перетворює CourseDTO у Course через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts CourseDTO to Course using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public Course mapCourseDTOToCourse(CourseDTO courseDTO) {
         return UniversalMapper.generalMapper(courseDTO, Course.class);
     }
-    // Перетворює Course у CourseDTO через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts Course to CourseDTO using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public CourseDTO mapCourseToCourseDTO(Course course) {
         return UniversalMapper.generalMapper(course, CourseDTO.class);
     }

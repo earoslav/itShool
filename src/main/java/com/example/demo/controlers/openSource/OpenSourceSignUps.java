@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// Контролер OpenSourceSignUps обслуговує веб-сторінки модуля «публічні сторінки та реєстрація».
-// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
+// OpenSourceSignUps handles web pages for the "public pages and registration" module.
+// The methods below accept parameters from URLs or forms, call project services, and return the required Thymeleaf templates or redirects.
 @Controller
 @RequestMapping("/openSource")
 public class OpenSourceSignUps {
@@ -54,8 +54,8 @@ public class OpenSourceSignUps {
     private TimeOfTheWeekMapper theWeekMapper;
     private UserService userService;
     private PasswordEncoder passwordEncoder;
-    // Отримує через Spring залежності CourseService, StudentService, CourseMapper, CommentMapper, CommentService, TeacherMapper, TeacherService та інші.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «публічні сторінки та реєстрація» без ручного створення об’єктів.
+    // Receives dependencies through Spring: CourseService, StudentService, CourseMapper, CommentMapper, CommentService, TeacherMapper, TeacherService, and others.
+    // These services and mappers are required by the class methods to work with the "public pages and registration" module without manual object creation.
     public OpenSourceSignUps(CourseService courseService, StudentService studentService, CourseMapper courseMapper, CommentMapper commentMapper, CommentService commentService, TeacherMapper teacherMapper, TeacherService teacherService, TimeOfTheWeekService timeWeekService, TeacherCourseService teacherCourseService, EmptyTimesForTeacherService emptyTimesForTeacherService, AdminService adminService, MailService mailService, StudentMapper studentMapper, TimeOfTheWeekMapper theWeekMapper, UserService userService, PasswordEncoder passwordEncoder) {
         this.courseService = courseService;
         this.studentService = studentService;
@@ -74,8 +74,8 @@ public class OpenSourceSignUps {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
     }
-    // Відкриває маршрут GET /signUpAsStudent і готує дані для шаблону "openSource/openSourceSignUps/signUpAsStudent".
-    // У Model додає "student", "password"; дані бере через `studentMapper.mapStudentToStudentDTO`.
+    // Opens the GET /signUpAsStudent route and prepares data for the "openSource/openSourceSignUps/signUpAsStudent" template.
+    // Adds "student" and "password" to the Model; retrieves data via `studentMapper.mapStudentToStudentDTO`.
     @GetMapping("/signUpAsStudent")
     public String gotoSignUpAsStudent(Model model){
         Student student = new Student();
@@ -83,8 +83,8 @@ public class OpenSourceSignUps {
         model.addAttribute("password", "");
         return "openSource/openSourceSignUps/signUpAsStudent";
     }
-    // Відкриває маршрут GET /signUpAsStudent/{output} і готує дані для шаблону "openSource/openSourceSignUps/signUpAsStudent".
-    // У Model додає "output", "student", "password"; дані бере через `studentMapper.mapStudentToStudentDTO`.
+    // Opens the GET /signUpAsStudent/{output} route and prepares data for the "openSource/openSourceSignUps/signUpAsStudent" template.
+    // Adds "output", "student", and "password" to the Model; retrieves data via `studentMapper.mapStudentToStudentDTO`.
     @GetMapping("/signUpAsStudent/{output}")
     public String gotoSignUpAsStudentWithOutput(@PathVariable("output") String output, Model model){
         Student student = new Student();
@@ -93,8 +93,8 @@ public class OpenSourceSignUps {
         model.addAttribute("password", "");
         return "openSource/openSourceSignUps/signUpAsStudent";
     }
-    // Створює дані за маршрутом POST /signUpAsStudent/{password} у модулі «публічні сторінки та реєстрація».
-    // Викликає `studentService.checkIfExistsByEmail`, `userService.create`, `studentService.create`, `studentMapper.mapStudentDTOToStudent`; після завершення повертає "redirect:/openSource/signUpAsStudent/NO_PASS", "redirect:/openSource/homepage/STUDENT_ADDED", "redirect:/openSource/signUpAsStudent/EXISTS", "redirect:/openSource/signUpAsStudent/GENERAL".
+    // Creates data at the POST /signUpAsStudent/{password} route in the "public pages and registration" module.
+    // Calls `studentService.checkIfExistsByEmail`, `userService.create`, `studentService.create`, and `studentMapper.mapStudentDTOToStudent`; returns redirects upon completion.
     @PostMapping("/signUpAsStudent/{password}")
     public String signUpAsStudent(@ModelAttribute("student") StudentDTO student,@PathVariable("password") String password, Model model){
         try{
@@ -119,15 +119,15 @@ public class OpenSourceSignUps {
         return "redirect:/openSource/signUpAsStudent/GENERAL";
 
     }
-    // Відкриває маршрут GET /signUpAsTeacher і готує дані для шаблону "openSource/openSourceSignUps/signUpAsTeacher".
-    // У Model додає "teacher", "courses", "freeTimes", "password", "days", "dayNames" та інші; дані бере через `courseService.getAll`, `timeWeekService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
+    // Opens the GET /signUpAsTeacher route and prepares data for the "openSource/openSourceSignUps/signUpAsTeacher" template.
+    // Adds "teacher", "courses", "freeTimes", "password", "days", "dayNames", and others to the Model; retrieves data via `courseService.getAll`, `timeWeekService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, and `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
     @GetMapping("/signUpAsTeacher")
     public String gotoSignUpAsTeacher(Model model){
         Teacher teacher = new Teacher();
         List<Course> courses = new ArrayList<>();
         List<TimeOfTheWeek> freeTimes = new ArrayList<>();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
-        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+        List<String> dayNames = List.of("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
 
         try{
             courses = courseService.getAll();
@@ -145,15 +145,15 @@ public class OpenSourceSignUps {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "openSource/openSourceSignUps/signUpAsTeacher";
     }
-    // Відкриває маршрут GET /signUpAsTeacher/{output} і готує дані для шаблону "openSource/openSourceSignUps/signUpAsTeacher".
-    // У Model додає "output", "teacher", "courses", "freeTimes", "password", "days" та інші; дані бере через `courseService.getAll`, `timeWeekService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
+    // Opens the GET /signUpAsTeacher/{output} route and prepares data for the "openSource/openSourceSignUps/signUpAsTeacher" template.
+    // Adds "output", "teacher", "courses", "freeTimes", "password", "days", and others to the Model; retrieves data via `courseService.getAll`, `timeWeekService.getAll`, `teacherMapper.mapTeacherToTeacherDTO`, `courseMapper.mapCourseToCourseDTO`, and `theWeekMapper.mapTTheWeekToTTheWeekDTO`.
     @GetMapping("/signUpAsTeacher/{output}")
     public String gotoSignUpAsTeacherWithOutput(@PathVariable("output") String output, Model model){
         Teacher teacher = new Teacher();
         List<Course> courses = new ArrayList<>();
         List<TimeOfTheWeek> freeTimes = new ArrayList<>();
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
-        List<String> dayNames = List.of("Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота");
+        List<String> dayNames = List.of("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
 
         try{
             courses = courseService.getAll();
@@ -172,8 +172,8 @@ public class OpenSourceSignUps {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "openSource/openSourceSignUps/signUpAsTeacher";
     }
-    // Створює дані за маршрутом POST /signUpAsTeacher/{password} у модулі «публічні сторінки та реєстрація».
-    // Викликає `courseService.getAll`, `timeWeekService.getAll`, `teacherService.checkIfExistsByEmail`, `timeWeekService.getById`, `courseService.getById` та інші; після завершення повертає "redirect:/openSource/signUpAsTeacher/NO_PASS", "redirect:/openSource/homepage/TEACHER_ADDED", "redirect:/openSource/signUpAsTeacher/EXISTS".
+    // Creates data at the POST /signUpAsTeacher/{password} route in the "public pages and registration" module.
+    // Calls `courseService.getAll`, `timeWeekService.getAll`, `teacherService.checkIfExistsByEmail`, `timeWeekService.getById`, `courseService.getById`, and others; returns redirects upon completion.
     @PostMapping("/signUpAsTeacher/{password}")
     public String signUpAsTeacher(@ModelAttribute("teacher") TeacherDTO teacher,
                                   @PathVariable("password") String password,
@@ -209,7 +209,7 @@ public class OpenSourceSignUps {
 
                 Mail mail = new Mail();
                 mail.setTo(Collections.singletonList(adminService.getAdmin().getEmail()));
-                mail.setSubject("Нова заявка викладача — IT Kids School");
+                mail.setSubject("New teacher application — IT Kids School");
                 mail.setBody("");
 
 

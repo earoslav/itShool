@@ -1,66 +1,64 @@
 package com.example.demo.services.other;
 
+import com.example.demo.dto.other.CommentDTO;
+import com.example.demo.mapper.other.CommentMapper;
 import com.example.demo.models.other.Comment;
 import com.example.demo.models.entities.Student;
 import com.example.demo.repositories.other.CommentRepository;
 import java.util.List;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-// Сервіс CommentService містить бізнес-операції для модуля «коментарі студентів».
-// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
+// CommentService contains business operations for the "student comments" module.
+// Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
 public class CommentService {
     private final CommentRepository commentRepository;
-    private RedisTemplate redis;
-    // Отримує через Spring залежності commentRepository.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «коментарі студентів» без ручного створення об’єктів.
-    public CommentService(CommentRepository commentRepository, @Qualifier("redisTemplate") RedisTemplate redis) {
+    private RedisTemplate<String, Object> redisTemplate;
+    private ObjectMapper objectMapper;
+    private CommentMapper commentMapper;
+    // Receives CommentRepository dependency through Spring.
+    // These services and mappers are required by the class methods to work with the "student comments" module without manual object creation.
+    public CommentService(CommentRepository commentRepository, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper, CommentMapper commentMapper) {
         this.commentRepository = commentRepository;
-        this.redis = redis;
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.commentMapper = commentMapper;
     }
-    // Повертає всі коментарі студентів з репозиторію.
-    // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
+    // Returns all student comments from the repository.
+    // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
     public List<Comment> getAll() {
-        List<Comment> obj;
-        if(redis.opsForValue().get("comments") == null){
-            obj = commentRepository.findAll();
-            redis.opsForValue().set("comments", obj);
-        } else {
-            obj = (List<Comment>) redis.opsForValue().get("comments");
-        }
-        return obj;
+        return commentRepository.findAll();
     }
-    // Знаходить один запис модуля «коментарі студентів» за id.
-    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
+    // Finds a single record in the "student comments" module by ID.
+    // Controllers call this before editing, deleting, or assembling a details page.
     public Comment getById(Integer id) {
         Comment obj;
-        if(redis.opsForValue().get("commentById"+id) == null){
+        if(redisTemplate.opsForValue().get("commentById"+id) == null){
             obj = commentRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
-            redis.opsForValue().set("commentById"+id, obj);
+            redisTemplate.opsForValue().set("commentById"+id, commentMapper.mapCommentToCommentDTO(obj));
         } else {
-            obj = (Comment) redis.opsForValue().get("commentById"+id);
+            obj = commentMapper.mapCommentDTOToComment(objectMapper.convertValue(redisTemplate.opsForValue().get("commentById"+id), new TypeReference<CommentDTO>() {}));
         }
         return obj;
     }
-    // Зберігає новий запис модуля «коментарі студентів».
-    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
+    // Saves a new record in the "student comments" module.
+    // This method is called after the controller has collected the entity from a form or a service has generated it automatically.
     public Comment create(Comment comment) {
-        Comment created = commentRepository.save(comment);
-        redis.delete("comments");
-        return created;
+        return commentRepository.save(comment);
     }
-    // Видаляє записи модуля «коментарі студентів» за умовами: студентом.
-    // Операція делегується `commentRepository.deleteAllByStudent`, щоб очистити пов’язані дані після дії користувача.
+    // Deletes records in the "student comments" module by condition: student.
+    // The operation is delegated to `commentRepository.deleteAllByStudent` to clear associated data after a user action.
     public void deleteAllByStudent(Student student){
         commentRepository.deleteAllByStudent(student);
-        redis.delete("comments");
     }
 
-    // Оновлює існуючий запис модуля «коментарі студентів».
-    // Спочатку знаходить поточну сутність, переносить поля student, teacher, commentText, ratingOfStars і зберігає її назад у репозиторій.
+    // Updates an existing record in the "student comments" module.
+    // First finds the current entity, transfers student, teacher, commentText, and ratingOfStars fields, then saves it back to the repository.
     public Comment update(Integer id, Comment comment) {
         Comment existing = getById(id);
         existing.setStudent(comment.getStudent());
@@ -68,16 +66,14 @@ public class CommentService {
         existing.setCommentText(comment.getCommentText());
         existing.setRatingOfStars(comment.getRatingOfStars());
         existing = commentRepository.save(existing);
-        redis.delete("commentById"+id);
-        redis.delete("comments");
+        redisTemplate.opsForValue().set("commentById"+id, commentMapper.mapCommentToCommentDTO(existing));
         return existing;
     }
-    // Видаляє запис модуля «коментарі студентів» за id.
-    // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
+    // Deletes a record in the "student comments" module by ID.
+    // Before calling deleteById, the method reads the entity to ensure the deletion passes through the service layer and fails clearly if the ID is incorrect.
     public void deleteById(Integer id) {
         getById(id);
         commentRepository.deleteById(id);
-        redis.delete("commentById"+id);
-        redis.delete("comments");
+        redisTemplate.delete("commentById"+id);
     }
 }

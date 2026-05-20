@@ -33,8 +33,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// Контролер TeacherStudentsController обслуговує веб-сторінки модуля «викладачі».
-// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
+// TeacherStudentsController handles web pages for the "teachers" module.
+// The methods below accept parameters from URLs or forms, call project services, and return the required Thymeleaf templates or redirects.
 @Controller
 @RequestMapping("/teacher")
 public class TeacherStudentsController {
@@ -51,8 +51,8 @@ public class TeacherStudentsController {
     private TeacherMapper teacherMapper;
     private StudentMapper studentMapper;
     private CourseMapper courseMapper;
-    // Отримує через Spring залежності TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService та інші.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
+    // Receives dependencies through Spring: TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService, and others.
+    // These services and mappers are required by the class methods to work with the "teachers" module without manual object creation.
     public TeacherStudentsController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, TeacherMapper teacherMapper, StudentMapper studentMapper, CourseMapper courseMapper) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
@@ -68,8 +68,8 @@ public class TeacherStudentsController {
         this.studentMapper = studentMapper;
         this.courseMapper = courseMapper;
     }
-    // Відкриває маршрут GET /{idTeach}/students і готує дані для шаблону "closedTeacher/teacherStudents/students".
-    // У Model додає "students", "teacher"; дані бере через `tswService.findAllByTeachId`, `teacherService.getById`, `studentMapper.mapStudentToStudentDTO`, `teacherMapper.mapTeacherToTeacherDTO`.
+    // Opens the GET /{idTeach}/students route and prepares data for the "closedTeacher/teacherStudents/students" template.
+    // Adds "students" and "teacher" to the Model; retrieves data via `tswService.findAllByTeachId`, `teacherService.getById`, `studentMapper.mapStudentToStudentDTO`, and `teacherMapper.mapTeacherToTeacherDTO`.
     @GetMapping("/{idTeach}/students")
     public String gotoMyStudents(@PathVariable("idTeach") int id, Model model){
         HashSet<Student> students = new HashSet<>();
@@ -80,8 +80,8 @@ public class TeacherStudentsController {
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(id)));
         return "closedTeacher/teacherStudents/students";
     }
-    // Відкриває маршрут GET /{idTeach}/students/{output} і готує дані для шаблону "closedTeacher/teacherStudents/students".
-    // У Model додає "output", "students", "teacher"; дані бере через `tswService.findAllByTeachId`, `teacherService.getById`, `studentMapper.mapStudentToStudentDTO`, `teacherMapper.mapTeacherToTeacherDTO`.
+    // Opens the GET /{idTeach}/students/{output} route and prepares data for the "closedTeacher/teacherStudents/students" template.
+    // Adds "output", "students", and "teacher" to the Model; retrieves data via `tswService.findAllByTeachId`, `teacherService.getById`, `studentMapper.mapStudentToStudentDTO`, and `teacherMapper.mapTeacherToTeacherDTO`.
     @GetMapping("/{idTeach}/students/{output}")
     public String gotoMyStudentsWithOutput(@PathVariable("idTeach") int id, @PathVariable("output") String output, Model model) {
         HashSet<Student> students = new HashSet<>();
@@ -93,8 +93,8 @@ public class TeacherStudentsController {
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(id)));
         return "closedTeacher/teacherStudents/students";
     }
-    // Видаляє або від’єднує дані за маршрутом POST /{idTeach}/student/{idSt}/delete у модулі «викладачі».
-    // Викликає `lessonService.findAllByIdTandIdSt`, `lessonService.deleteById`, `tswService.removeAllByTidAndSid`, `studentService.getById`, `teacherService.getById` та інші; після завершення повертає "redirect:/teacher/".
+    // Deletes or disconnects data at the POST /{idTeach}/student/{idSt}/delete route in the "teachers" module.
+    // Calls `lessonService.findAllByIdTandIdSt`, `lessonService.deleteById`, `tswService.removeAllByTidAndSid`, `studentService.getById`, `teacherService.getById`, and others; returns redirects to "/teacher/".
     @PostMapping("/{idTeach}/student/{idSt}/delete")
     @Transactional
     public String deleteStudent(@PathVariable("idTeach") int idT, @PathVariable("idSt") int idSt, Model model) throws MessagingException {
@@ -103,7 +103,7 @@ public class TeacherStudentsController {
         tswService.removeAllByTidAndSid(idT, idSt);
         Mail mail = new Mail();
         mail.setTo(Collections.singletonList(studentService.getById(idSt).getEmail()));
-        mail.setSubject("Лист про відміну занять");
+        mail.setSubject("Lessons cancellation notification");
         mail.setBody("");
         Teacher saved = teacherService.getById(idT);
         mailService.sendEmailWithThymeleafToStudentAboutTeacherRemover(mail, teacherMapper.mapTeacherToTeacherDTO(saved));

@@ -2,9 +2,7 @@ package com.example.demo.models.entities;
 
 import com.example.demo.models.other.Comment;
 import com.example.demo.models.programe.Lesson;
-import com.example.demo.models.thirdTables.StudentCourse;
 import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,8 +15,8 @@ import java.util.List;
 @Entity
 @Table(name = "student")
 
-// Модель Student описує сутність модуля «студенти» у базі даних або службовий об’єкт проекту.
-// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
+// The Student model describes the "students" module entity in the database or a project service object.
+// The class fields are read by services, repositories, and mappers when creating pages and saving changes.
 public class Student {
 
     @Id
@@ -29,7 +27,6 @@ public class Student {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "student")
     private List<TeacherStudentTimeOfTheWeek> tswList;
 
@@ -45,55 +42,51 @@ public class Student {
     @Column(name = "comment", length = 500)
     private String comment;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToMany(mappedBy = "student")
-    private List<StudentCourse> studentCourses;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+
     @OneToMany(mappedBy = "student")
     private List<Comment> myComments;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "student")
     private List<Lesson> lessons;
 
-    // Повертає поле user об’єкта Student.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the user field of the Student object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     public User getUser() {
         return user;
     }
 
-    // Записує поле user об’єкта Student.
-    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
+    // Sets the user field of the Student object.
+    // This field comes from a form, mapper, or service before saving or displaying data.
     public void setUser(User user) {
         this.user = user;
     }
-    // Записує поле name об’єкта Student.
-    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
+    // Sets the name field of the Student object.
+    // This field comes from a form, mapper, or service before saving or displaying data.
     public void setName(String name){
         user.setName(name);
     }
-    // Записує поле email об’єкта Student.
-    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
+    // Sets the email field of the Student object.
+    // This field comes from a form, mapper, or service before saving or displaying data.
     public void setEmail(String email){
         user.setEmail(email);
     }
-    // Записує поле password об’єкта Student.
-    // Це поле приходить з форми, mapper-а або сервісу перед збереженням чи показом даних.
+    // Sets the password field of the Student object.
+    // This field comes from a form, mapper, or service before saving or displaying data.
     public void setPassword(String password){
         user.setPassword(password);
     }
-    // Повертає поле name об’єкта Student.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the name field of the Student object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     public String getName(){
         return user.getName();
     }
-    // Повертає поле password об’єкта Student.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the password field of the Student object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     public String getPassword(){
         return user.getPassword();
     }
-    // Повертає поле email об’єкта Student.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the email field of the Student object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     public String getEmail(){
         return user.getEmail();
     }

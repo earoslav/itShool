@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-// DTO TimeOfTheWeekDTO переносить дані модуля «часові слоти тижня» між контролерами, формами та шаблонами.
-// Клас не містить бізнес-логіки, а лише поля, які потрібні веб-рівню для показу або прийому даних.
+// The TimeOfTheWeekDTO DTO transfers "weekly time slots" module data between controllers, forms, and templates.
+// The class contains no business logic, only fields required by the web layer for displaying or receiving data.
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

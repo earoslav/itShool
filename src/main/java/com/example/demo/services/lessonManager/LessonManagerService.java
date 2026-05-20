@@ -20,15 +20,15 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-// Сервіс LessonManagerService містить бізнес-операції для модуля «уроки».
-// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
+// LessonManagerService contains business operations for the "lessons" module.
+// Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
 public class LessonManagerService {
     private TeacherStudentTimeOfTheWeekService tswService;
     private LessonService lessonService;
     private TimeOfTheWeekService theWeekService;
-    // Отримує сервіси постійного розкладу і уроків для фонової генерації занять.
-    // Менеджер не працює з репозиторіями напряму, а створює Lesson через LessonService.
+    // Receives persistent schedule and lesson services for background lesson generation.
+    // The manager does not work with repositories directly, but creates Lesson objects through LessonService.
     public LessonManagerService(TeacherStudentTimeOfTheWeekService tswService, LessonService lessonService, TimeOfTheWeekService theWeekService) {
         this.tswService = tswService;
         this.lessonService = lessonService;
@@ -36,8 +36,8 @@ public class LessonManagerService {
     }
 
 //    @Scheduled(cron = "0 0 7,22 * * *")
-    // Фонова задача підтримує запас майбутніх WILL-уроків за записами TeacherStudentTimeOfTheWeek.
-    // Для кожної пари викладач-студент вона або продовжує існуючий ланцюжок, або створює перші п’ять занять за курсом і слотом.
+    // Background task maintaining a reserve of future WILL-status lessons based on TeacherStudentTimeOfTheWeek records.
+    // For each teacher-student pair, it either continues an existing chain or creates the first five lessons according to the course and slot.
     @Scheduled( fixedRate = 300000)
     @Async
     public void manageGenerateLessons(){
@@ -47,7 +47,7 @@ public class LessonManagerService {
             Teacher teacher = tsw.getTeacher();
             Student student = tsw.getStudent();
             TimeOfTheWeek timeOfTheWeek = theWeekService.getById(tsw.getTimeOfTheWeek());
-            // Базовий час уроку в межах поточного тижня.
+            // Base lesson time within the current week.
             LocalDateTime time = now.minusDays(now.getDayOfWeek().getValue()).plusDays(timeOfTheWeek.getDayOfTheWeek()).withHour(timeOfTheWeek.getTimeOfTheDay()).withMinute(0).withSecond(0).withNano(0);
             List<Lesson> tswLessons = lessonService.findAllByTeachIdAndStIdAndWeekId(teacher.getId(), student.getId(), timeOfTheWeek.getId());
             tswLessons =  tswLessons.stream().filter(lesson -> lesson.getStatus().equals("WILL")).collect(Collectors.toList());
@@ -93,13 +93,13 @@ public class LessonManagerService {
         }
     }
     //    @Scheduled(cron = "0 0 1,23 * * *")?????
-    // Фонова задача переводить прострочені WILL-уроки у статус WASNT.
-    // Вона бере всі уроки, залишає ті, що мали відбутися понад 4 години тому, і оновлює їх через LessonService.
+    // Background task transitioning overdue WILL-lessons to WASNT status.
+    // It takes all lessons, filters those scheduled more than 4 hours ago, and updates them via LessonService.
     @Scheduled( fixedRate = 300000)
     @Async
     public void manageLessonStatus(){
         List<Lesson> lessons = lessonService.getAll();
-        // Прострочені заплановані уроки позначаємо як ті, що не відбулися.
+        // Mark overdue scheduled lessons as missed.
         lessons = lessons.stream().filter(lesson -> lesson.getLessonTime().isBefore(LocalDateTime.now().minusHours(4))).collect(Collectors.toList());
         lessons = lessons.stream().filter(lesson -> lesson.getStatus().equals("WILL")).collect(Collectors.toList());
         for (Lesson lesson : lessons){

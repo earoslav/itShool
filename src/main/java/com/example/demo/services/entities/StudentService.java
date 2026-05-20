@@ -1,99 +1,101 @@
 package com.example.demo.services.entities;
 
+import com.example.demo.dto.entities.StudentDTO;
+import com.example.demo.dto.entities.UserDTO;
+import com.example.demo.mapper.entity.StudentMapper;
+import com.example.demo.mapper.entity.UserMapper;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.User;
 import com.example.demo.repositories.entities.StudentRepository;
-import java.util.List;
-import java.util.Optional;
-
 import com.example.demo.repositories.entities.UserRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-// Сервіс StudentService містить бізнес-операції для модуля «студенти».
-// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
+import java.util.List;
+
+// StudentService contains business operations for the "students" module.
+// Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
     private UserRepository userRepository;
-    private RedisTemplate redis;
-    // Отримує через Spring залежності StudentRepository, UserRepository.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «студенти» без ручного створення об’єктів.
-    public StudentService(StudentRepository studentRepository, UserRepository userRepository, @Qualifier("redisTemplate") RedisTemplate redis) {
+    private RedisTemplate<String, Object> redisTemplate;
+    private ObjectMapper objectMapper;
+    private StudentMapper studentMapper;
+    private UserMapper userMapper;
+    // Receives StudentRepository and UserRepository dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "students" module without manual object creation.
+    public StudentService(StudentRepository studentRepository, UserRepository userRepository, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper, StudentMapper studentMapper, UserMapper userMapper) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
-        this.redis = redis;
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.studentMapper = studentMapper;
+        this.userMapper = userMapper;
     }
-    // Повертає всі студенти з репозиторію.
-    // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
+    // Returns all students from the repository.
+    // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
     public List<Student> getAll() {
-        List<Student> obj;
-        if(redis.opsForValue().get("students") == null){
-            obj = studentRepository.findAll();
-            redis.opsForValue().set("students", obj);
+        return studentRepository.findAll();
+    }
+    // Finds a single record in the "students" module by ID.
+    // Controllers call this before editing, deleting, or assembling a details page.
+    public Student getById(Integer id) {
+        Student obj;
+        if(redisTemplate.opsForValue().get("studentById"+id) == null){
+            obj = studentRepository.findById(id).get();
+            redisTemplate.opsForValue().set("studentById"+id, studentMapper.mapStudentToStudentDTO(obj));
         } else {
-            obj = (List<Student>) redis.opsForValue().get("students");
+            obj = studentMapper.mapStudentDTOToStudent(objectMapper.convertValue(redisTemplate.opsForValue().get("studentById"+id), new TypeReference<StudentDTO>() {}));
         }
         return obj;
     }
-    // Знаходить один запис модуля «студенти» за id.
-    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
-    public Student getById(Integer id) {
-        Optional<Student> obj;
-        if(redis.opsForValue().get("studentById"+id) == null){
-            obj = studentRepository.findById(id);
-            redis.opsForValue().set("studentById"+id, obj);
-        } else {
-            obj = (Optional<Student>) redis.opsForValue().get("studentById"+id);
-        }
-        return obj.get();
-    }
-    // Зберігає новий запис модуля «студенти».
-    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
+    // Saves a new record in the "students" module.
+    // This method is called after the controller has collected the entity from a form or a service has generated it automatically.
     public Student create(Student student) {
-        Student created = studentRepository.save(student);
-        redis.delete("students");
-        return created;
+        return studentRepository.save(student);
     }
-    // Перевіряє, чи вже існує запис модуля «студенти» за умовою: акаунтом користувача.
-    // Повертає boolean для форм створення та редагування, щоб не допустити дубль або некоректний вибір.
+    // Checks if a record in the "students" module already exists by a condition: user account.
+    // Returns a boolean for creation and editing forms to prevent duplicates or incorrect selections.
     public boolean checkIfExistsByUserId(int userId){
         Student obj;
-        if(redis.opsForValue().get("studentByUserId"+userId) == null){
+        if(redisTemplate.opsForValue().get("studentByUserId"+userId) == null){
             obj = studentRepository.findByUserId(userId);
-            redis.opsForValue().set("studentByUserId"+userId, obj);
+            if(obj != null) redisTemplate.opsForValue().set("studentByUserId"+userId, studentMapper.mapStudentToStudentDTO(obj));
         } else {
-            obj = (Student) redis.opsForValue().get("studentByUserId"+userId);
+            obj = studentMapper.mapStudentDTOToStudent(objectMapper.convertValue(redisTemplate.opsForValue().get("studentByUserId"+userId), new TypeReference<StudentDTO>() {}));
         }
         return obj!=null;
     }
-    // Перевіряє, чи вже існує запис модуля «студенти» за умовою: email.
-    // Повертає boolean для форм створення та редагування, щоб не допустити дубль або некоректний вибір.
+    // Checks if a record in the "students" module already exists by a condition: email.
+    // Returns a boolean for creation and editing forms to prevent duplicates or incorrect selections.
     public boolean checkIfExistsByEmail(String email){
         User obj;
-        if(redis.opsForValue().get("studentByEmail"+email) == null){
+        if(redisTemplate.opsForValue().get("studentByEmail"+email) == null){
             obj = userRepository.findByEmailAndRole(email, "STUDENT");
-            redis.opsForValue().set("studentByEmail"+email, obj);
+            if(obj != null) redisTemplate.opsForValue().set("studentByEmail"+email, userMapper.mapUserToUserDTO(obj));
         } else {
-            obj = (User) redis.opsForValue().get("studentByEmail"+email);
+            obj = userMapper.mapUserDTOToUser(objectMapper.convertValue(redisTemplate.opsForValue().get("studentByEmail"+email), new TypeReference<UserDTO>() {}));
         }
         return obj!=null;
     }
-    // Шукає записи модуля «студенти» за умовами: акаунтом користувача.
-    // Фактичний запит виконує `studentRepository.findByUserId`, а контролер отримує вже готовий результат.
+    // Searches for records in the "students" module by condition: user account.
+    // The actual query is performed by `studentRepository.findByUserId`, and the controller receives the final result.
     public  Student findByUserId(int id){
         Student obj;
-        if(redis.opsForValue().get("studentByUserId"+id) == null){
+        if(redisTemplate.opsForValue().get("studentByUserId"+id) == null){
             obj = studentRepository.findByUserId(id);
-            redis.opsForValue().set("studentByUserId"+id, obj);
+            if(obj != null) redisTemplate.opsForValue().set("studentByUserId"+id, studentMapper.mapStudentToStudentDTO(obj));
         } else {
-            obj = (Student) redis.opsForValue().get("studentByUserId"+id);
+            obj = studentMapper.mapStudentDTOToStudent(objectMapper.convertValue(redisTemplate.opsForValue().get("studentByUserId"+id), new TypeReference<StudentDTO>() {}));
         }
         return obj;
     }
-    // Оновлює існуючий запис модуля «студенти».
-    // Спочатку знаходить поточну сутність, переносить поля name, age, email, phoneNumber, password, comment і зберігає її назад у репозиторій.
+    // Updates student data.
+    // The method updates an existing profile with new data and resets the corresponding caches in Redis.
     public Student update(Integer id, Student student) {
         Student existing = getById(id);
         existing.setName(student.getName());
@@ -103,20 +105,18 @@ public class StudentService {
         existing.setPassword(student.getPassword());
         existing.setComment(student.getComment());
         existing = studentRepository.save(existing);
-        redis.delete("studentById"+id);
-        redis.delete("students");
-        if(existing.getUser() != null) redis.delete("studentByUserId"+existing.getUser().getId());
-        redis.delete("studentByEmail"+existing.getEmail());
+        StudentDTO studentDTO = studentMapper.mapStudentToStudentDTO(existing);
+        redisTemplate.opsForValue().set("studentById"+id, studentDTO);
+        if(existing.getUser() != null) redisTemplate.opsForValue().set("studentByUserId"+existing.getUser().getId(), studentDTO);
         return existing;
     }
-    // Видаляє запис модуля «студенти» за id.
-    // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
+    // Deletes a record in the "students" module by ID.
+    // Before calling deleteById, the method reads the entity to ensure the deletion passes through the service layer and fails clearly if the ID is incorrect.
     public void deleteById(Integer id) {
         Student existing = getById(id);
         studentRepository.deleteById(id);
-        redis.delete("studentById"+id);
-        redis.delete("students");
-        if(existing.getUser() != null) redis.delete("studentByUserId"+existing.getUser().getId());
-        redis.delete("studentByEmail"+existing.getEmail());
+        redisTemplate.delete("studentById"+id);
+        if(existing.getUser() != null) redisTemplate.delete("studentByUserId"+existing.getUser().getId());
+        redisTemplate.delete("studentByEmail"+existing.getEmail());
     }
 }

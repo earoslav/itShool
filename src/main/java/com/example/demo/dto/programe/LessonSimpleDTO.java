@@ -8,17 +8,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-// The LessonDTO DTO transfers "lessons" module data between controllers, forms, and templates.
-// The class contains no business logic, only fields required by the web layer for displaying or receiving data.
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class LessonDTO {
+public class LessonSimpleDTO {
     private int id;
-    private StudentDTO student;
-    private TeacherDTO teacher;
-    private CourseDTO course;
     private LocalDateTime lessonTime;
     private float duration;
     private String status;

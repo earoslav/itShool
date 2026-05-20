@@ -1,10 +1,10 @@
 package com.example.demo.services.entities;
 
+import com.example.demo.dto.entities.TeacherDTO;
+import com.example.demo.mapper.entity.TeacherMapper;
 import com.example.demo.models.entities.Teacher;
+import com.example.demo.models.entities.User;
 import com.example.demo.repositories.entities.TeacherRepository;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.example.demo.repositories.entities.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,70 +13,64 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-// Сервіс TeacherService містить бізнес-операції для модуля «викладачі».
-// Контролери звертаються сюди, щоб не працювати напряму з репозиторіями, mapper-ами та правилами розкладу.
+import java.util.List;
+
+// TeacherService contains business operations for the "teachers" module.
+// Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
 public class TeacherService {
     private final TeacherRepository teacherRepository;
     private UserRepository userRepository;
-    private RedisTemplate redis;
+    private RedisTemplate<String, Object> redisTemplate;
+    private ObjectMapper objectMapper;
+    private TeacherMapper teacherMapper;
 
-    // Отримує через Spring залежності TeacherRepository, UserRepository.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
-    public TeacherService(TeacherRepository teacherRepository, UserRepository userRepository, @Qualifier("redisTemplate") RedisTemplate redis) {
+
+    // Receives TeacherRepository and UserRepository dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "teachers" module without manual object creation.
+    public TeacherService(TeacherRepository teacherRepository, UserRepository userRepository, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper, TeacherMapper teacherMapper) {
         this.teacherRepository = teacherRepository;
         this.userRepository = userRepository;
-        this.redis = redis;
-
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.teacherMapper = teacherMapper;
     }
-    // Повертає всі викладачі з репозиторію.
-    // Списки, календарі та форми використовують цей метод, коли треба показати весь набір доступних записів.
+    // Returns all teachers from the repository.
+    // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
     public List<Teacher> getAll() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Teacher> obj;
-        if(redis.opsForValue().get("teachers") == null){
-            obj = teacherRepository.findAll();
-            redis.opsForValue().set("teachers", obj);
-        } else {
-            obj = objectMapper.convertValue(redis.opsForValue().get("teachers"), new TypeReference<List<Teacher>>() {});
-            System.out.println(obj);
-        }
-        return obj;
+        return teacherRepository.findAll();
     }
-    // Знаходить один запис модуля «викладачі» за id.
-    // Контролери викликають його перед редагуванням, видаленням або складанням сторінки з деталями.
+    // Finds a single record in the "teachers" module by ID.
+    // Controllers call this before editing, deleting, or assembling a details page.
     public Teacher getById(Integer id) {
         Teacher obj;
-        if(redis.opsForValue().get("teacherById"+id) == null){
-            obj = teacherRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + id));
-            redis.opsForValue().set("teacherById"+id, obj);
+        if(redisTemplate.opsForValue().get("teacherById"+id) == null){
+            obj = teacherRepository.findById(id).get();
+            redisTemplate.opsForValue().set("teacherById"+id, teacherMapper.mapTeacherToTeacherDTO(obj));
         } else {
-            obj = (Teacher) redis.opsForValue().get("teacherById"+id);
+            obj = teacherMapper.mapTeacherDTOToTeacher(objectMapper.convertValue(redisTemplate.opsForValue().get("teacherById"+id), new TypeReference<TeacherDTO>() {}));
         }
         return obj;
     }
-    // Зберігає новий запис модуля «викладачі».
-    // Метод викликається після того, як контролер зібрав сутність з форми або сервіс згенерував її автоматично.
+    // Saves a new record in the "teachers" module.
+    // This method is called after the controller has collected the entity from a form or a service has generated it automatically.
     public Teacher create(Teacher teacher) {
-        Teacher created = teacherRepository.save(teacher);
-        redis.delete("teachers");
-        return created;
+        return teacherRepository.save(teacher);
     }
-    // Шукає записи модуля «викладачі» за умовами: акаунтом користувача.
-    // Фактичний запит виконує `teacherRepository.findByUserId`, а контролер отримує вже готовий результат.
+    // Searches for records in the "teachers" module by condition: user account.
+    // The actual query is performed by `teacherRepository.findByUserId`, and the controller receives the final result.
     public Teacher findByUserId(int userId){
         Teacher obj;
-        if(redis.opsForValue().get("teacherByUserId"+userId) == null){
+        if(redisTemplate.opsForValue().get("teacherByUserId"+userId) == null){
             obj = teacherRepository.findByUserId(userId);
-            redis.opsForValue().set("teacherByUserId"+userId, obj);
+            if(obj != null) redisTemplate.opsForValue().set("teacherByUserId"+userId, teacherMapper.mapTeacherToTeacherDTO(obj));
         } else {
-            obj = (Teacher) redis.opsForValue().get("teacherByUserId"+userId);
+            obj = teacherMapper.mapTeacherDTOToTeacher(objectMapper.convertValue(redisTemplate.opsForValue().get("teacherByUserId"+userId), new TypeReference<TeacherDTO>() {}));
         }
         return obj;
     }
-    // Оновлює існуючий запис модуля «викладачі».
-    // Спочатку знаходить поточну сутність, переносить поля name, age, email, password, comment, phoneNumber, unpaidMoney і зберігає її назад у репозиторій.
+    // Updates an existing record in the "teachers" module.
+    // First finds the current entity, transfers name, age, email, password, comment, phoneNumber, and unpaidMoney fields, then saves it back to the repository.
     public Teacher update(Integer id, Teacher teacher) {
         Teacher existing = getById(id);
         existing.setName(teacher.getName());
@@ -89,44 +83,42 @@ public class TeacherService {
         existing.setTgUsername(teacher.getTgUsername());
         existing.setFreeTimeIds(teacher.getFreeTimeIds());
         existing = teacherRepository.save(existing);
-        redis.delete("teacherById"+id);
-        redis.delete("teachers");
-        if(existing.getUser() != null) redis.delete("teacherByUserId"+existing.getUser().getId());
-        redis.delete("teacherByEmail"+existing.getEmail());
+        TeacherDTO teacherDTO = teacherMapper.mapTeacherToTeacherDTO(existing);
+        redisTemplate.opsForValue().set("teacherById"+id, teacherDTO);
+        if(existing.getUser() != null) redisTemplate.opsForValue().set("teacherByUserId"+existing.getUser().getId(), teacherDTO);
         return existing;
     }
-    // Перевіряє, чи вже існує запис модуля «викладачі» за умовою: email.
-    // Повертає boolean для форм створення та редагування, щоб не допустити дубль або некоректний вибір.
+    // Checks if a record in the "teachers" module already exists by a condition: email.
+    // Returns a boolean for creation and editing forms to prevent duplicates or incorrect selections.
     public boolean checkIfExistsByEmail(String email){
         Object obj;
-        if(redis.opsForValue().get("teacherByEmail"+email) == null){
+        if(redisTemplate.opsForValue().get("teacherByEmail"+email) == null){
             obj = userRepository.findByEmailAndRole(email, "TEACHER");
-            redis.opsForValue().set("teacherByEmail"+email, obj);
+            if(obj != null) redisTemplate.opsForValue().set("teacherByEmail"+email, obj);
         } else {
-            obj = redis.opsForValue().get("teacherByEmail"+email);
+            obj = objectMapper.convertValue(redisTemplate.opsForValue().get("teacherByEmail"+email), new TypeReference<User>() {});
         }
         return obj!=null;
     }
-    // Перевіряє, чи вже існує запис модуля «викладачі» за умовою: акаунтом користувача.
-    // Повертає boolean для форм створення та редагування, щоб не допустити дубль або некоректний вибір.
+    // Checks if a record in the "teachers" module already exists by a condition: user account.
+    // Returns a boolean for creation and editing forms to prevent duplicates or incorrect selections.
     public boolean checkIfExistsByUserId(int userId){
         Teacher obj;
-        if(redis.opsForValue().get("teacherByUserId"+userId) == null){
+        if(redisTemplate.opsForValue().get("teacherByUserId"+userId) == null){
             obj = teacherRepository.findByUserId(userId);
-            redis.opsForValue().set("teacherByUserId"+userId, obj);
+            if(obj != null) redisTemplate.opsForValue().set("teacherByUserId"+userId, teacherMapper.mapTeacherToTeacherDTO(obj));
         } else {
-            obj = (Teacher) redis.opsForValue().get("teacherByUserId"+userId);
+            obj = teacherMapper.mapTeacherDTOToTeacher(objectMapper.convertValue(redisTemplate.opsForValue().get("teacherByUserId"+userId), new TypeReference<TeacherDTO>() {}));
         }
         return obj!=null;
     }
-    // Видаляє запис модуля «викладачі» за id.
-    // Перед deleteById метод читає сутність, щоб видалення проходило через сервісний шар і падало зрозуміло, якщо id некоректний.
+    // Deletes a record in the "teachers" module by ID.
+    // Before calling deleteById, the method reads the entity to ensure the deletion passes through the service layer and fails clearly if the ID is incorrect.
     public void deleteById(Integer id) {
         Teacher existing = getById(id);
         teacherRepository.deleteById(id);
-        redis.delete("teacherById"+id);
-        redis.delete("teachers");
-        if(existing.getUser() != null) redis.delete("teacherByUserId"+existing.getUser().getId());
-        redis.delete("teacherByEmail"+existing.getEmail());
+        redisTemplate.delete("teacherById"+id);
+        if(existing.getUser() != null) redisTemplate.delete("teacherByUserId"+existing.getUser().getId());
+        redisTemplate.delete("teacherByEmail"+existing.getEmail());
     }
 }

@@ -1,26 +1,24 @@
 package com.example.demo.dto.thirdTable;
 
-import com.example.demo.models.entities.Student;
-import com.example.demo.models.entities.Teacher;
-import com.example.demo.models.other.TimeOfTheWeek;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.example.demo.dto.entities.StudentDTO;
+import com.example.demo.dto.entities.TeacherDTO;
+import com.example.demo.dto.other.TimeOfTheWeekDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-// Такий клас відокремлює зовнішнє представлення інформації від JPA-сутностей.
-// У ньому залишаються тільки поля, які потрібні для відображення або обробки форми.
+// This class separates the external representation of information from JPA entities.
+// It contains only the fields required for display or form processing.
 
-// DTO TeacherStudentTimeOfTheWeekDTO переносить дані модуля «постійний розклад викладача зі студентом» між контролерами, формами та шаблонами.
-// Клас не містить бізнес-логіки, а лише поля, які потрібні веб-рівню для показу або прийому даних.
+// The TeacherStudentTimeOfTheWeekDTO DTO transfers "teacher-student persistent schedule" module data between controllers, forms, and templates.
+// The class contains no business logic, only fields required by the web layer for displaying or receiving data.
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class TeacherStudentTimeOfTheWeekDTO {
     private int id;
-    private Teacher teacher;
-    private Student student;
-    private TimeOfTheWeek timeOfTheWeek;
+    private TeacherDTO teacher;
+    private StudentDTO student;
+    private TimeOfTheWeekDTO timeOfTheWeek;
 }

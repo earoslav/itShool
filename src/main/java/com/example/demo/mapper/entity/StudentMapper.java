@@ -5,23 +5,23 @@ import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.entities.Student;
 import org.springframework.stereotype.Service;
 
-// Mapper StudentMapper перетворює об’єкти модуля «студенти» між Entity та DTO.
-// Так контролери й HTML-шаблони отримують прості об’єкти без зайвої роботи з JPA-зв’язками.
+// StudentMapper converts "students" module objects between Entity and DTO.
+// This way, controllers and HTML templates receive simple objects without extra work with JPA relationships.
 @Service
 public class StudentMapper {
 
-    // Створює порожній StudentMapper для Spring, JPA або UniversalMapper.
-    // Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
+    // Creates an empty StudentMapper for Spring, JPA, or UniversalMapper.
+    // Such a constructor is needed so the framework can create the object and then fill its fields.
     public StudentMapper() {
 
     }
-    // Перетворює StudentDTO у Student через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts StudentDTO to Student using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public Student mapStudentDTOToStudent(StudentDTO studentDTO) {
         return UniversalMapper.generalMapper(studentDTO, Student.class);
     }
-    // Перетворює Student у StudentDTO через UniversalMapper.
-    // Це дозволяє контролерам передавати у шаблон DTO або збирати Entity з даних форми без ручного копіювання полів.
+    // Converts Student to StudentDTO using UniversalMapper.
+    // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public StudentDTO mapStudentToStudentDTO(Student student) {
         return UniversalMapper.generalMapper(student, StudentDTO.class);
     }

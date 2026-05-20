@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-// Такий клас відокремлює зовнішнє представлення інформації від JPA-сутностей.
-// У ньому залишаються тільки поля, які потрібні для відображення або обробки форми.
+// This class separates the external representation of information from JPA entities.
+// It contains only the fields required for display or form processing.
 
-// DTO StudentAdminLessonsDTO переносить дані модуля «уроки» між контролерами, формами та шаблонами.
-// Клас не містить бізнес-логіки, а лише поля, які потрібні веб-рівню для показу або прийому даних.
+// The StudentAdminLessonsDTO DTO transfers "lessons" module data between controllers, forms, and templates.
+// The class contains no business logic, only fields required by the web layer for displaying or receiving data.
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

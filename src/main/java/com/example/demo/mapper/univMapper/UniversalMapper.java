@@ -1,197 +1,111 @@
-//package com.example.demo.mapper.univMapper;
-//
-//import com.example.demo.models.entities.Teacher;
-//import com.example.demo.models.entities.User;
-//import org.springframework.stereotype.Service;
-//
-//import java.lang.reflect.Field;
-//import java.time.LocalDateTime;
-//
-//@Service
-//public class UniversalMapper {
-//    public UniversalMapper() {
-//    }
-//
-//    public static  <S, T> T generalMapper(S source, Class<T> targetClass){
-//        if(source==null){
-//            return null;
-//        }
-//        try{
-//
-//            T target = targetClass.getDeclaredConstructor().newInstance();
-//
-//            Field[] sourceFields = source.getClass().getDeclaredFields();
-//            Field[] targetFields = targetClass.getDeclaredFields();
-//
-//            for(Field s : sourceFields){
-//                s.setAccessible(true);
-//                for(Field t : targetFields){
-//                    if(s.getName().equals(t.getName())){
-//                        if(s.getType().equals(t.getType())){
-//                            t.setAccessible(true);
-//                            t.set(target, s.get(source));
-//                        }else{
-//                            t.setAccessible(true);
-//                            if(s.getType().equals(LocalDateTime.class)){
-//                                t.set(target, ((LocalDateTime)s.get(source)).toString());
-//                            }
-//                            else{
-//                                t.set(target, generalMapper(s.get(source), t.getType()));
-//                            }
-//
-////                            t.set(target, generalMapper(s.getType().cast(s), t.getType()));
-//                         }
-//
-//                    }
-//                }
-//            }
-//            return target;
-//
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
-//        return null;
-//    }
-//}
 package com.example.demo.mapper.univMapper;
 
-import com.example.demo.dto.adminLessons.LessonAdminLessonsDTO;
-import com.example.demo.dto.adminLessons.TimeOfTheWeekAdminLessonsDTO;
-import com.example.demo.dto.other.TimeOfTheWeekDTO;
-import com.example.demo.dto.programe.LessonDTO;
-import com.example.demo.mapper.other.TimeOfTheWeekMapper;
-import com.example.demo.services.other.TimeOfTheWeekService;
 import org.springframework.stereotype.Service;
-
-import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-// Універсальний mapper копіює однакові за назвою поля між сутностями та DTO через reflection.
-// Його використовують дрібні mapper-и, щоб не писати ручне перенесення полів для кожної форми й таблиці.
+/**
+ * UniversalMapper copies fields with matching names between entities and DTOs using reflection.
+ * It handles nested objects and collections recursively with safety checks for system classes and Hibernate lazy loading.
+ */
 @Service
 public class UniversalMapper {
 
-//    public static <S, T> T generalMapper(S source, Class<T> targetClass) {
-//
-//        if (source == null) return null;
-//
-//        try {
-//            T target = targetClass.getDeclaredConstructor().newInstance();
-//
-//            List<Field> sourceFields = getAllFields(source.getClass());
-//            List<Field> targetFields = getAllFields(targetClass);
-//
-//            for (Field s : sourceFields) {
-//                s.setAccessible(true);
-//
-//                for (Field t : targetFields) {
-//
-//                    if (s.getName().equals(t.getName())) {
-//
-//                        t.setAccessible(true);
-//
-//                        Object value = s.get(source);
-//
-//                        if (value == null) continue;
-//
-//                        if (t.getType().isAssignableFrom(s.getType())) {
-//                            t.set(target, value);
-//                        }
-//                        else if (s.getType().equals(LocalDateTime.class)
-//                                && t.getType().equals(String.class)) {
-//
-//                            t.set(target, value.toString());
-//                        }
-//                        else if (isSimpleType(t.getType())) {
-//                            t.set(target, value);
-//                        }
-//                        else {
-//                            t.set(target, generalMapper(value, t.getType()));
-//                        }
-//                    }
-//                }
-//            }
-//
-//            return target;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-//
-//    private static List<Field> getAllFields(Class<?> clazz) {
-//
-//        List<Field> fields = new ArrayList<>();
-//
-//        while (clazz != null && clazz != Object.class) {
-//
-//            for (Field f : clazz.getDeclaredFields()) {
-//                fields.add(f);
-//            }
-//
-//            clazz = clazz.getSuperclass();
-//        }
-//
-//        return fields;
-//    }
-//    private static boolean isSimpleType(Class<?> type) {
-//        return type.isPrimitive()
-//                || type.equals(String.class)
-//                || Number.class.isAssignableFrom(type)
-//                || type.equals(Boolean.class)
-//                || type.equals(Character.class)
-//                || type.equals(java.time.LocalDate.class)
-//                || type.equals(java.time.LocalDateTime.class);
-//    }
-// Створює порожній UniversalMapper для Spring, JPA або UniversalMapper.
-// Такий конструктор потрібен, щоб фреймворк міг створити об’єкт і потім заповнити його поля.
-
     public UniversalMapper() {}
-    // Копіює однакові за назвою поля з source у targetClass через reflection.
-    // Якщо поле є LocalDateTime, воно стає рядком, а складні вкладені об’єкти мапляться рекурсивно.
-    public static  <S, T> T generalMapper(S source, Class<T> targetClass){
-        if(source==null){
-            return null;
+
+    public static <S, T> T generalMapper(S source, Class<T> targetClass) {
+        if (source == null) return null;
+
+        // If types match exactly or it's a simple type (String, Integer, etc.), return as is
+        if (source.getClass().equals(targetClass) || isSimpleType(targetClass)) {
+            return (T) source;
         }
-        try{
+
+        try {
             T target = targetClass.getDeclaredConstructor().newInstance();
+            Field[] sourceFields = getAllFields(source.getClass());
+            Field[] targetFields = getAllFields(targetClass);
 
-            Field[] sourceFields = source.getClass().getDeclaredFields();
-            Field[] targetFields = targetClass.getDeclaredFields();
-
-            // Копіюємо поля з однаковими назвами між сутністю та DTO.
-            for(Field s : sourceFields){
+            for (Field s : sourceFields) {
                 s.setAccessible(true);
-                for(Field t : targetFields){
-                    if(s.getName().equals(t.getName())){
-                        if(s.getType().equals(t.getType())){
-                            t.setAccessible(true);
-                            t.set(target, s.get(source));
-                        }else{
-                            t.setAccessible(true);
-                            if(s.getType().equals(LocalDateTime.class)){
-                                t.set(target, ((LocalDateTime)s.get(source)).toString());
-                            }
-                            else{
-                                // Вкладені об’єкти мапимо рекурсивно.
-                                t.set(target, generalMapper(s.get(source), t.getType()));
-                            }
+                for (Field t : targetFields) {
+                    if (s.getName().equals(t.getName())) {
+                        t.setAccessible(true);
+                        try {
+                            Object value = s.get(source);
+                            if (value == null) continue;
 
-
+                            // 1. Same types and not a collection - direct copy
+                            if (s.getType().equals(t.getType()) && !Collection.class.isAssignableFrom(s.getType())) {
+                                t.set(target, value);
+                            }
+                            // 2. Collections (Lists) - map elements recursively
+                            else if (Collection.class.isAssignableFrom(s.getType()) && Collection.class.isAssignableFrom(t.getType())) {
+                                if (value instanceof List) {
+                                    mapList((List<?>) value, t, target);
+                                }
+                            }
+                            // 3. Different types - handle dates or nested objects
+                            else {
+                                if (s.getType().equals(LocalDateTime.class) && t.getType().equals(String.class)) {
+                                    t.set(target, value.toString());
+                                } else if (!isSimpleType(t.getType()) && !t.getType().getName().startsWith("java.")) {
+                                    t.set(target, generalMapper(value, t.getType()));
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Silently skip fields that cause LazyInitializationException or access errors
                         }
-
                     }
                 }
             }
             return target;
-
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            return null;
         }
-        return null;
+    }
+
+    private static void mapList(List<?> sourceList, Field targetField, Object targetObj) {
+        try {
+            Type genericType = targetField.getGenericType();
+            if (genericType instanceof ParameterizedType pt) {
+                Class<?> itemClass = (Class<?>) pt.getActualTypeArguments()[0];
+                List<Object> newList = new ArrayList<>();
+                for (Object item : sourceList) {
+                    Object mappedItem = generalMapper(item, itemClass);
+                    if (mappedItem != null) {
+                        newList.add(mappedItem);
+                    }
+                }
+                targetField.set(targetObj, newList);
+            }
+        } catch (Exception e) {
+            // If mapping the list fails (e.g. lazy loading without session), field remains null/empty
+        }
+    }
+
+    private static boolean isSimpleType(Class<?> type) {
+        return type.isPrimitive()
+                || type.getName().startsWith("java.lang")
+                || type.getName().startsWith("java.time")
+                || Number.class.isAssignableFrom(type)
+                || type.equals(String.class)
+                || type.equals(Boolean.class);
+    }
+
+    private static Field[] getAllFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        while (clazz != null && !clazz.getName().startsWith("java.")) {
+            for (Field f : clazz.getDeclaredFields()) {
+                fields.add(f);
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return fields.toArray(new Field[0]);
     }
 }

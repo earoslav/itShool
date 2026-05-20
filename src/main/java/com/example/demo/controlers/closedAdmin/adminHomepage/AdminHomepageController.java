@@ -12,7 +12,6 @@ import com.example.demo.services.other.TimeOfTheWeekService;
 import com.example.demo.services.program.CourseService;
 import com.example.demo.services.program.LessonService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
-import com.example.demo.services.thirdTable.StudentCourseService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,8 +27,8 @@ import java.util.Map;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.models.programe.Lesson;
 
-// Контролер AdminHomepageController обслуговує веб-сторінки модуля «адміністратори».
-// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
+// AdminHomepageController handles web pages for the "administrators" module.
+// The methods below accept parameters from URLs or forms, call project services, and return the required Thymeleaf templates or redirects.
 @Controller
 @RequestMapping("/admin")
 public class AdminHomepageController {
@@ -39,7 +38,7 @@ public class AdminHomepageController {
 
     private TimeOfTheWeekService theWeekService;
     private CourseService courseService;
-    private StudentCourseService studentCourseService;
+
     private CommentService commentService;
     private LessonService lessonService;
     private StudentService studentService;
@@ -49,15 +48,15 @@ public class AdminHomepageController {
     private AdminService adminService;
     private AdminMapper adminMapper;
     private PasswordEncoder passwordEncoder;
-    // Отримує через Spring залежності TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService, CommentService та інші.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «адміністратори» без ручного створення об’єктів.
-    public AdminHomepageController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, StudentCourseService studentCourseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, AdminMapper adminMapper, PasswordEncoder passwordEncoder) {
+    // Receives dependencies through Spring: TeacherCourseService, TeacherService, EmptyTimesForTeacherService, TimeOfTheWeekService, CourseService, StudentCourseService, CommentService, and others.
+    // These services and mappers are required by the class methods to work with the "administrators" module without manual object creation.
+    public AdminHomepageController(TeacherCourseService teacherCourseService, TeacherService teacherService, EmptyTimesForTeacherService emptyTimesForTeacherService, TimeOfTheWeekService theWeekService, CourseService courseService, CommentService commentService, LessonService lessonService, StudentService studentService, LessonMapper lessonMapper, TeacherStudentTimeOfTheWeekService tswService, MailService mailService, AdminService adminService, AdminMapper adminMapper, PasswordEncoder passwordEncoder) {
         this.teacherCourseService = teacherCourseService;
         this.teacherService = teacherService;
         this.emptyTimesForTeacherService = emptyTimesForTeacherService;
         this.theWeekService = theWeekService;
         this.courseService = courseService;
-        this.studentCourseService = studentCourseService;
+
         this.commentService = commentService;
         this.lessonService = lessonService;
         this.studentService = studentService;
@@ -68,8 +67,8 @@ public class AdminHomepageController {
         this.adminMapper = adminMapper;
         this.passwordEncoder = passwordEncoder;
     }
-    // Відкриває маршрут GET /homepage і готує дані для шаблону "closedAdmin/adminHomepage/homepage".
-    // У Model додає "admin", "teacherEarnings"; дані бере через `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
+    // Opens the GET /homepage route and prepares data for the "closedAdmin/adminHomepage/homepage" template.
+    // Adds "admin", "teacherEarnings" to the Model; retrieves data via `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
     @GetMapping("/homepage")
     public String gotoHomepage(Model model) {
 
@@ -94,8 +93,8 @@ public class AdminHomepageController {
 
         return "closedAdmin/adminHomepage/homepage";
     }
-    // Відкриває маршрут GET /homepage/{output} і готує дані для шаблону "closedAdmin/adminHomepage/homepage".
-    // У Model додає "admin", "output", "teacherEarnings"; дані бере через `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
+    // Opens the GET /homepage/{output} route and prepares data for the "closedAdmin/adminHomepage/homepage" template.
+    // Adds "admin", "output", "teacherEarnings" to the Model; retrieves data via `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
     @GetMapping("/homepage/{output}")
     public String gotoHomepage(Model model, @PathVariable(value = "output", required = false) String output) {
 

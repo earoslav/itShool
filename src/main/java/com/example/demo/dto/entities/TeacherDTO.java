@@ -1,16 +1,18 @@
 package com.example.demo.dto.entities;
 
+import com.example.demo.dto.programe.LessonSimpleDTO;
 import com.example.demo.dto.thirdTable.EmptyTimesForTeacherDTO;
 import com.example.demo.dto.thirdTable.TeacherCourseDTO;
-import jakarta.persistence.Column;
+import com.example.demo.dto.thirdTable.TeacherCourseSimpleDTO;
+import com.example.demo.dto.thirdTable.TeacherStudentTimeOfTheWeekSimpleDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-// DTO TeacherDTO переносить дані модуля «викладачі» між контролерами, формами та шаблонами.
-// Клас не містить бізнес-логіки, а лише поля, які потрібні веб-рівню для показу або прийому даних.
+// The TeacherDTO DTO transfers "teachers" module data between controllers, forms, and templates.
+// The class contains no business logic, only fields required by the web layer for displaying or receiving data.
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -20,17 +22,18 @@ public class TeacherDTO {
     private Integer age;
     private String comment;
     private int approved;
-    private List<TeacherCourseDTO> teacherCourses;
-//    private List<EmptyTimesForTeacherDTO> emptyTimesForTeachers;
+    private List<TeacherStudentTimeOfTheWeekSimpleDTO> tswList;
+    private List<TeacherCourseSimpleDTO> teacherCourses;
+    private List<LessonSimpleDTO> lessons;
     private UserDTO user;
     public float unpaidMoney;
     private String phoneNumber;
     private String tgUsername;
     private String freeTimeIds;
-    // Отримує через Spring залежності Integer, String, int, List<TeacherCourseDTO>, List<EmptyTimesForTeacherDTO>, UserDTO, float.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
+    // Receives Integer, String, int, List<TeacherCourseDTO>, List<EmptyTimesForTeacherDTO>, UserDTO, and float dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "teachers" module without manual object creation.
 
-    public TeacherDTO(Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername) {
+    public TeacherDTO(Integer age, String comment, int approved, List<TeacherCourseSimpleDTO> teacherCourses, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername) {
         this.age = age;
         this.comment = comment;
         this.approved = approved;
@@ -41,8 +44,8 @@ public class TeacherDTO {
         this.phoneNumber = phoneNumber;
         this.tgUsername = tgUsername;
     }
-    // Отримує через Spring залежності Integer, String, int.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «викладачі» без ручного створення об’єктів.
+    // Receives Integer, String, and int dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "teachers" module without manual object creation.
     public TeacherDTO(Integer age, String comment, int approved, String phoneNumber, String tgUsername) {
 
         this.age = age;
@@ -52,7 +55,7 @@ public class TeacherDTO {
         this.tgUsername = tgUsername;
     }
 
-    public TeacherDTO( Integer age, String comment, int approved, List<TeacherCourseDTO> teacherCourses, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername, String freeTimeIds) {
+    public TeacherDTO( Integer age, String comment, int approved, List<TeacherCourseSimpleDTO> teacherCourses, UserDTO user, float unpaidMoney, String phoneNumber, String tgUsername, String freeTimeIds) {
 
         this.age = age;
         this.comment = comment;

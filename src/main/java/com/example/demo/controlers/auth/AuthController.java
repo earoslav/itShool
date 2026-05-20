@@ -6,12 +6,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-// Контролер AuthController обслуговує веб-сторінки модуля «авторизація».
-// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
+// AuthController handles web pages for the "authorization" module.
+// The methods below accept parameters from URLs or forms, call project services, and return the required Thymeleaf templates or redirects.
 @Controller
 public class AuthController {
-    // Відкриває маршрут GET /login і готує дані для шаблону "auth/login".
-    // У Model додає "output".
+    // Opens the GET /login route and prepares data for the "auth/login" template.
+    // Adds "output" to the Model.
     @GetMapping("/login")
     public String login(@RequestParam(value = "output", required = false) String error, Model model) {
         if (error != null) {

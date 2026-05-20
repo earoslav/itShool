@@ -21,6 +21,7 @@ import com.example.demo.services.program.LessonService;
 import com.example.demo.services.thirdTable.EmptyTimesForTeacherService;
 import com.example.demo.services.thirdTable.TeacherCourseService;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.mail.MessagingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +37,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-// Контролер TeacherLessonsController обслуговує веб-сторінки модуля «уроки».
-// Методи нижче приймають параметри з URL або форм, викликають сервіси проекту і повертають потрібні Thymeleaf-шаблони чи redirect-и.
+// TeacherLessonsController handles web pages for the "lessons" module.
+// The methods below accept parameters from URLs or forms, call project services, and return the required Thymeleaf templates or redirects.
 @Controller
 @RequestMapping("/teacher")
 public class TeacherLessonsController {
@@ -54,8 +55,8 @@ public class TeacherLessonsController {
     private StudentMapper studentMapper;
     private TeacherMapper teacherMapper;
     private CourseMapper courseMapper;
-    // Отримує через Spring залежності TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService та інші.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «уроки» без ручного створення об’єктів.
+    // Receives dependencies through Spring: TeacherService, LessonMapper, TimeOfTheWeekService, CourseService, EmptyTimesForTeacherService, LessonService, TeacherCourseService, and others.
+    // These services and mappers are required by the class methods to work with the "lessons" module without manual object creation.
     public TeacherLessonsController(TeacherService teacherService, LessonMapper lessonMapper, TimeOfTheWeekService theWeekService, CourseService courseService, EmptyTimesForTeacherService emptyTimesForTeacherService, LessonService lessonService, TeacherCourseService teacherCourseService, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, StudentService studentService, StudentMapper studentMapper, TeacherMapper teacherMapper, CourseMapper courseMapper) {
         this.teacherService = teacherService;
         this.lessonMapper = lessonMapper;
@@ -71,10 +72,10 @@ public class TeacherLessonsController {
         this.teacherMapper = teacherMapper;
         this.courseMapper = courseMapper;
     }
-    // Відкриває маршрут GET /{id}/lessons і готує дані для шаблону "closedTeacher/teacherLessons/lessons".
-    // У Model додає "lessonDurations", "lessons", "students", "courses", "weekDays", "teacher" та інші; дані бере через `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO` та інші.
+    // Opens the GET /{id}/lessons route and prepares data for the "closedTeacher/teacherLessons/lessons" template.
+    // Adds "lessonDurations", "lessons", "students", "courses", "weekDays", "teacher", and others to the Model; retrieves data via `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO`, and others.
     @GetMapping("/{id}/lessons")
-    public String gotoLessons(@PathVariable("id") int id, Model model) {
+    public String gotoLessons(@PathVariable("id") int id, Model model) throws JsonProcessingException {
         Teacher teacher = teacherService.getById(id);
         List<Object> values = lessonService.compileLessonsForTeacher(teacher.getId());
         List<String> weekDays = theWeekService.compileWeekDays();
@@ -93,16 +94,16 @@ public class TeacherLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedTeacher/teacherLessons/lessons";
     }
-    // Оновлює дані за маршрутом POST /{idTeach}/lessons/editLesson/notPicked у модулі «уроки».
-    // Після завершення повертає "redirect:/teacher/".
+    // Updates data at the POST /{idTeach}/lessons/editLesson/notPicked route in the "lessons" module.
+    // Returns redirects to "/teacher/" upon completion.
     @PostMapping("/{idTeach}/lessons/editLesson/notPicked")
     public String editLessoneFromTeacherWithNotPicked(@PathVariable("idTeach") int idTeach) {
         return "redirect:/teacher/" + idTeach + "/lessons/ITEM_NOT_PICKED";
     }
-    // Відкриває маршрут GET /{id}/lessons/{output} і готує дані для шаблону "closedTeacher/teacherLessons/lessons".
-    // У Model додає "lessonDurations", "output", "lessons", "students", "courses", "weekDays" та інші; дані бере через `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO` та інші.
+    // Opens the GET /{id}/lessons/{output} route and prepares data for the "closedTeacher/teacherLessons/lessons" template.
+    // Adds "lessonDurations", "output", "lessons", "students", "courses", "weekDays", and others to the Model; retrieves data via `teacherService.getById`, `lessonService.compileLessonsForTeacher`, `studentService.getAll`, `studentMapper.mapStudentToStudentDTO`, `courseMapper.mapCourseToCourseDTO`, and others.
     @GetMapping("/{id}/lessons/{output}")
-    public String gotoLessonsWithOutput(@PathVariable("id") int id, @PathVariable("output") String output, Model model) {
+    public String gotoLessonsWithOutput(@PathVariable("id") int id, @PathVariable("output") String output, Model model) throws JsonProcessingException {
         Teacher teacher = teacherService.getById(id);
 
         List<Object> values = lessonService.compileLessonsForTeacher(teacher.getId());
@@ -121,29 +122,29 @@ public class TeacherLessonsController {
         model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
         return "closedTeacher/teacherLessons/lessons";
     }
-    // Видаляє або від’єднує дані за маршрутом POST /{idTeach}/lessons/deleteLesson/{id} у модулі «уроки».
-    // Викликає `lessonService.getById`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved`, `lessonService.deleteById`, `teacherMapper.mapTeacherToTeacherDTO`; після завершення повертає "redirect:/teacher/".
+    // Deletes or disconnects data at the POST /{idTeach}/lessons/deleteLesson/{id} route in the "lessons" module.
+    // Calls `lessonService.getById`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved`, `lessonService.deleteById`, and `teacherMapper.mapTeacherToTeacherDTO`; returns redirects to "/teacher/".
     @PostMapping("/{idTeach}/lessons/deleteLesson/{id}")
     @Transactional
     public String deleteLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes) throws MessagingException {
         Mail mail = new Mail();
         mail.setTo(Collections.singletonList(lessonService.getById(idLes).getStudent().getEmail()));
-        mail.setSubject("Лист про відміну заняття");
+        mail.setSubject("Lesson cancellation notification");
         mail.setBody("");
         Teacher teacher = teacherService.getById(idTeach);
         mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lessonService.getById(idLes).getLessonTime(), lessonService.getById(idLes).getDuration());
         lessonService.deleteById(idLes);
         return "redirect:/teacher/" + idTeach + "/lessons/LESSON_DELETED";
     }
-    // Видаляє або від’єднує дані за маршрутом POST /{idTeach}/lessons/deleteCourse/{id} у модулі «уроки».
-    // Викликає `lessonService.getById`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved`, `lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow`, `tswService.removeAllByStIdAndTeachIdAndTswId` та інші; після завершення повертає "redirect:/teacher/".
+    // Deletes or disconnects data at the POST /{idTeach}/lessons/deleteCourse/{id} route in the "lessons" module.
+    // Calls `lessonService.getById`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved`, `lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow`, `tswService.removeAllByStIdAndTeachIdAndTswId`, and others; returns redirects to "/teacher/".
     @PostMapping("/{idTeach}/lessons/deleteCourse/{id}")
     @Transactional
     public String deleteCourse(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);
         Mail mail = new Mail();
         mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
-        mail.setSubject("Лист про відміну заняття");
+        mail.setSubject("Course cancellation notification");
         mail.setBody("");
         Teacher teacher = teacherService.getById(idTeach);
         mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), lesson.getDuration());
@@ -212,8 +213,8 @@ public class TeacherLessonsController {
 //        }
 //
 //    }
-    // Оновлює дані за маршрутом POST /{idTeach}/lessons/editLesson/{id}/{nTId}/{date} у модулі «уроки».
-    // Викликає `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited`, `lessonService.update` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/teacher/".
+    // Updates data at the POST /{idTeach}/lessons/editLesson/{id}/{nTId}/{date} route in the "lessons" module.
+    // Calls `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `teacherService.getById`, `mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited`, `lessonService.update`, and others; works with SUCCESS statuses; returns redirects to "/teacher/".
     @PostMapping("/{idTeach}/lessons/editLesson/{id}/{nTId}/{date}")
     public String editLesson(@PathVariable("idTeach") int idTeach, @PathVariable("id") int idLes, @PathVariable("date") String date, Model model) throws MessagingException {
         Lesson lesson = lessonService.getById(idLes);
@@ -223,7 +224,7 @@ public class TeacherLessonsController {
         if (status == Statuses.SUCCESS) {
             Mail mail = new Mail();
             mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
-            mail.setSubject("Лист про зміну часу одного заняття");
+            mail.setSubject("Lesson time change notification");
             mail.setBody("");
             Teacher teacher = teacherService.getById(idTeach);
             mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), newDate, lesson.getDuration());
@@ -235,8 +236,8 @@ public class TeacherLessonsController {
         }
     }
 
-    // Створює дані за маршрутом POST /{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}/{dur} у модулі «уроки».
-    // Викликає `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `teacherService.getById`, `courseService.getById`, `theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/teacher/".
+    // Creates data at the POST /{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}/{dur} route in the "lessons" module.
+    // Calls `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `teacherService.getById`, `courseService.getById`, `theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute`, and others; works with SUCCESS statuses; returns redirects to "/teacher/".
     @PostMapping("/{teachId}/lessons/addLesson/{cId}/{stId}/{retDate}/{dur}")
     public String addLesson(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId, @PathVariable("retDate") String date, @PathVariable("dur") float dur, Model model) throws MessagingException {
 
@@ -249,7 +250,7 @@ public class TeacherLessonsController {
             lessonService.create(lesson);
             Mail mail = new Mail();
             mail.setTo(Collections.singletonList(lesson.getStudent().getEmail()));
-            mail.setSubject("Лист про додання одного заняття");
+            mail.setSubject("Lesson added notification");
             mail.setBody("");
             Teacher teacher = teacherService.getById(idTeach);
             mailService.sendEmailWithThymeleafToStudentAboutLessonAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), dur);
@@ -356,8 +357,8 @@ public class TeacherLessonsController {
 //            return "redirect:/teacher/" + idTeach + "/lessons/LESSON_BEFORE_NOW";
 //        }
 //    }
-    // Створює дані за маршрутом POST /{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}/{dur} у модулі «уроки».
-    // Викликає `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `teacherService.getById`, `courseService.getById`, `theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute` та інші; працює зі статусами SUCCESS; після завершення повертає "redirect:/teacher/".
+    // Creates data at the POST /{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}/{dur} route in the "lessons" module.
+    // Calls `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `teacherService.getById`, `courseService.getById`, `theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute`, and others; works with SUCCESS statuses; returns redirects to "/teacher/".
     @PostMapping("/{teachId}/lessons/addCourse/{cId}/{stId}/{retDate}/{dur}")
     public String addCourse(@PathVariable("teachId") int idTeach, @PathVariable("cId") int cId, @PathVariable("stId") int stId, @PathVariable("retDate") String date, @PathVariable("dur") float dur, Model model) throws MessagingException {
         List<Object> objs = lessonService.checkIfLessonValidWithReputitions(idTeach, stId, cId, dur, date, 5);
@@ -377,7 +378,7 @@ public class TeacherLessonsController {
 
             Mail mail = new Mail();
             mail.setTo(Collections.singletonList(studentService.getById(stId).getEmail()));
-            mail.setSubject("Лист про додання курсу занять");
+            mail.setSubject("Course added notification");
             mail.setBody("");
             Teacher teacher = teacherService.getById(idTeach);
             mailService.sendEmailWithThymeleafToStudentAboutCourseAdded(mail, teacherMapper.mapTeacherToTeacherDTO(teacher), time, dur);
@@ -388,8 +389,8 @@ public class TeacherLessonsController {
         }
 
     }
-    // Створює дані за маршрутом POST /{idTeach}/addMoneyByLesson/{lesId} у модулі «уроки».
-    // Викликає `teacherService.getById`, `lessonService.getById`, `teacherService.update`, `lessonService.update`; після завершення повертає "redirect:/teacher/".
+    // Creates data at the POST /{idTeach}/addMoneyByLesson/{lesId} route in the "lessons" module.
+    // Calls `teacherService.getById`, `lessonService.getById`, `teacherService.update`, and `lessonService.update`; returns redirects to "/teacher/".
     @PostMapping("/{idTeach}/addMoneyByLesson/{lesId}")
     public String addMoney(@PathVariable("idTeach") int teachId, @PathVariable("lesId") int lesId, Model model) {
         Teacher teacher = teacherService.getById(teachId);

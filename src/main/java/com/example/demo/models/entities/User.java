@@ -15,8 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-// Модель User описує сутність модуля «акаунти користувачів» у базі даних або службовий об’єкт проекту.
-// Поля класу читають сервіси, репозиторії та mapper-и під час створення сторінок і збереження змін.
+// The User model describes the "user accounts" module entity in the database or a project service object.
+// The class fields are read by services, repositories, and mappers when creating pages and saving changes.
 @Entity
 @Getter
 @Setter
@@ -32,13 +32,12 @@ public class User implements UserDetails {
     protected String name;
     @Column(name="email")
     protected String email;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name="password")
     protected String password;
     @Column(name="role")
     protected String role;
-    // Отримує через Spring залежності String.
-    // Ці сервіси й mapper-и потрібні методам класу для роботи з модулем «акаунти користувачів» без ручного створення об’єктів.
+    // Receives String dependencies through Spring.
+    // These services and mappers are required by the class methods to work with the "user accounts" module without manual object creation.
     public User(String name, String email, String password, String role) {
         this.name = name;
         this.email = email;
@@ -46,50 +45,50 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    // Повертає поле authorities об’єкта User.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the authorities field of the User object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     @Override
-    @JsonIgnore
+
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    // Повертає поле username об’єкта User.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the username field of the User object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     @Override
-    @JsonIgnore
+
     public String getUsername() {
         return getEmail();
     }
 
-    // Повертає поле accountNonExpired об’єкта User.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the accountNonExpired field of the User object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     @Override
-    @JsonIgnore
+
     public boolean isAccountNonExpired() {
         return true;
     }
 
-    // Повертає поле accountNonLocked об’єкта User.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the accountNonLocked field of the User object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     @Override
-    @JsonIgnore
+
     public boolean isAccountNonLocked() {
         return true;
     }
 
-    // Повертає поле credentialsNonExpired об’єкта User.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the credentialsNonExpired field of the User object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     @Override
-    @JsonIgnore
+
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    // Повертає поле enabled об’єкта User.
-    // Його читають mapper-и, сервіси або Thymeleaf-шаблони під час показу сторінок і заповнення форм.
+    // Returns the enabled field of the User object.
+    // It is read by mappers, services, or Thymeleaf templates during page display and form filling.
     @Override
-    @JsonIgnore
+
     public boolean isEnabled() {
         return true;
     }

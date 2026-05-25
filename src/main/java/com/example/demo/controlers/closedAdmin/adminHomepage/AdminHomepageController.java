@@ -73,23 +73,12 @@ public class AdminHomepageController {
     public String gotoHomepage(Model model) {
 
         Admin admin = adminService.getAdmin();
-        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
-        adminService.update(admin.getId(), admin);
+//        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
+//        adminService.update(admin.getId(), admin);
         model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
 
-        List<Teacher> teachers = teacherService.getAll();
-        Map<String, Integer> teacherEarnings = new HashMap<>();
-        for (Teacher t : teachers) {
-            int total = 0;
-            List<Lesson> lessons = lessonService.findAllByTeachId(t.getId());
-            for (Lesson l : lessons) {
-                if ("WAS".equals(l.getStatus())) {
-                    total += (int) (l.getDuration() * l.getCourse().getTeacherShare());
-                }
-            }
-            teacherEarnings.put(t.getUser().getName(), total);
-        }
-        model.addAttribute("teacherEarnings", teacherEarnings);
+
+        model.addAttribute("teacherEarnings", lessonService.calculateTeachersEarnings());
 
         return "closedAdmin/adminHomepage/homepage";
     }
@@ -97,28 +86,12 @@ public class AdminHomepageController {
     // Adds "admin", "output", "teacherEarnings" to the Model; retrieves data via `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
     @GetMapping("/homepage/{output}")
     public String gotoHomepage(Model model, @PathVariable(value = "output", required = false) String output) {
-
         Admin admin = adminService.getAdmin();
-        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
-        adminService.update(admin.getId(), admin);
+//        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
+//        adminService.update(admin.getId(), admin);
         model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
-        if(!output.isEmpty()){
-            model.addAttribute("output", output);
-        }
-
-        List<Teacher> teachers = teacherService.getAll();
-        Map<String, Integer> teacherEarnings = new HashMap<>();
-        for (Teacher t : teachers) {
-            int total = 0;
-            List<Lesson> lessons = lessonService.findAllByTeachId(t.getId());
-            for (Lesson l : lessons) {
-                if ("WAS".equals(l.getStatus())) {
-                    total += (int) (l.getDuration() * l.getCourse().getTeacherShare());
-                }
-            }
-            teacherEarnings.put(t.getUser().getName(), total);
-        }
-        model.addAttribute("teacherEarnings", teacherEarnings);
+        model.addAttribute("output", output);
+        model.addAttribute("teacherEarnings", lessonService.calculateTeachersEarnings());
 
         return "closedAdmin/adminHomepage/homepage";
     }

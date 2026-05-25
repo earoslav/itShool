@@ -1,12 +1,8 @@
 package com.example.demo.services.other;
 
-import com.example.demo.dto.other.TimeOfTheWeekDTO;
-import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.repositories.other.TimeOfTheWeekRepository;
 import com.example.demo.services.other.TimesService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,42 +20,25 @@ import org.springframework.stereotype.Service;
 public class TimeOfTheWeekService {
     private final TimeOfTheWeekRepository timeOfTheWeekRepository;
     private final TimesService timesService;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
 
     // Receives dependencies through Spring.
     @Autowired
-    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService) {
         this.timeOfTheWeekRepository = timeOfTheWeekRepository;
         this.timesService = timesService;
-        this.redisTemplate = redisTemplate;
-        this.objectMapper = objectMapper;
     }
 
     // Finds a time slot by day of the week and hour.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour){
-        TimeOfTheWeek obj;
-        String cacheKey = "timeByDayHour"+day+"_"+hour;
-        if(redisTemplate.opsForValue().get(cacheKey) == null){
-            obj = getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour).findFirst().get();
-            redisTemplate.opsForValue().set(cacheKey, UniversalMapper.generalMapper(obj, TimeOfTheWeekDTO.class));
-        } else {
-            obj = UniversalMapper.generalMapper(objectMapper.convertValue(redisTemplate.opsForValue().get(cacheKey), new TypeReference<TimeOfTheWeekDTO>() {}), TimeOfTheWeek.class);
-        }
-        return obj;
+        return getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour).findFirst().get();
     }
 
     // Finds an exact time slot by day of the week, hour, and minute.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute){
-        TimeOfTheWeek obj;
-        String cacheKey = "timeByDayHourMin"+day+"_"+hour+"_"+minute;
-        if(redisTemplate.opsForValue().get(cacheKey) == null){
-            obj = getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour && t.getMinute() == minute).findFirst().get();
-            redisTemplate.opsForValue().set(cacheKey, UniversalMapper.generalMapper(obj, TimeOfTheWeekDTO.class));
-        } else {
-            obj = UniversalMapper.generalMapper(objectMapper.convertValue(redisTemplate.opsForValue().get(cacheKey), new TypeReference<TimeOfTheWeekDTO>() {}), TimeOfTheWeek.class);
-        }
-        return obj;
+        return getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour && t.getMinute() == minute).findFirst().get();
+    }
+    public List<String> compileHours(){
+        return Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30");
     }
 
     // Returns all weekly time slots from the repository.
@@ -80,15 +57,7 @@ public class TimeOfTheWeekService {
 
     // Finds a single record in the "weekly time slots" module by ID.
     public TimeOfTheWeek getById(Integer id) {
-        TimeOfTheWeek obj;
-        String cacheKey = "timeById"+id;
-        if(redisTemplate.opsForValue().get(cacheKey) == null){
-            obj = getAll().stream().filter(t -> t.getId() == id).findFirst().get();
-            redisTemplate.opsForValue().set(cacheKey, UniversalMapper.generalMapper(obj, TimeOfTheWeekDTO.class));
-        } else {
-            obj = UniversalMapper.generalMapper(objectMapper.convertValue(redisTemplate.opsForValue().get(cacheKey), new TypeReference<TimeOfTheWeekDTO>() {}), TimeOfTheWeek.class);
-        }
-        return obj;
+        return getAll().stream().filter(t -> t.getId() == id).findFirst().get();
     }
     public List<String> compileWeekDays(){
         LocalDate now = LocalDate.now();

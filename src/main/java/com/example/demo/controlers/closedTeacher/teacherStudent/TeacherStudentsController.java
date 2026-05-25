@@ -101,12 +101,8 @@ public class TeacherStudentsController {
         List<Lesson> lessons = lessonService.findAllByIdTandIdSt(idT, idSt);
         lessons.stream().filter(lesson -> lesson.getLessonTime().isAfter(LocalDateTime.now())).forEach(lesson -> lessonService.deleteById(lesson.getId()));
         tswService.removeAllByTidAndSid(idT, idSt);
-        Mail mail = new Mail();
-        mail.setTo(Collections.singletonList(studentService.getById(idSt).getEmail()));
-        mail.setSubject("Lessons cancellation notification");
-        mail.setBody("");
         Teacher saved = teacherService.getById(idT);
-        mailService.sendEmailWithThymeleafToStudentAboutTeacherRemover(mail, teacherMapper.mapTeacherToTeacherDTO(saved));
+        mailService.sendEmailWithThymeleafToStudentAboutTeacherRemover(teacherMapper.mapTeacherToTeacherDTO(saved), "Lessons cancellation notification", Collections.singletonList(studentService.getById(idSt).getEmail()));
         model.addAttribute("students", studentMapper.mapStudentToStudentDTO(studentService.getById(idSt)));
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idT)));
         return "redirect:/teacher/"+idT+"/students/STUDENT_DELETED";

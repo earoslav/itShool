@@ -77,18 +77,15 @@ public class StudentLessonsController {
         this.courseMapper = courseMapper;
     }
     // Opens the GET /{idSt}/lessons route and prepares data for the "closedStudent/studentLessons/lessons" template.
-    // Adds "lessonDurations", "lessons", "weekDays", "student", and "hours" to the Model; retrieves data via `studentService.getById`, `lessonService.compileLessonsForStudent`, and `studentMapper.mapStudentToStudentDTO`.
+    // Adds "lessons", "weekDays", "student", and "hours" to the Model; retrieves data via `studentService.getById`, `lessonService.compileLessonsForStudent`, and `studentMapper.mapStudentToStudentDTO`.
     @GetMapping("/{idSt}/lessons")
-    public String gotoLessons(Model model, @PathVariable("idSt") int id) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, JsonProcessingException {
-        Student student = studentService.getById(id);
+    public String getLessonsForStudent(@PathVariable("idSt") int idSt, Model model) throws JsonProcessingException {
+        Student student = studentService.getById(idSt);
 
-        List<Object> values = lessonService.compileLessonsForStudent(student.getId());
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = lessonService.compileLessonsForStudent(student.getId());
         List<String> weekDays = theWeekService.compileWeekDays();
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
 
-        model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("lessons", lessonHashMap);
         model.addAttribute("weekDays", weekDays);
         model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
@@ -96,18 +93,15 @@ public class StudentLessonsController {
         return "closedStudent/studentLessons/lessons";
     }
     // Opens the GET /{idSt}/lessons/{output} route and prepares data for the "closedStudent/studentLessons/lessons" template.
-    // Adds "lessonDurations", "lessons", "weekDays", "output", "student", and "hours" to the Model; retrieves data via `studentService.getById`, `lessonService.compileLessonsForStudent`, and `studentMapper.mapStudentToStudentDTO`.
+    // Adds "lessons", "weekDays", "output", "student", and "hours" to the Model; retrieves data via `studentService.getById`, `lessonService.compileLessonsForStudent`, and `studentMapper.mapStudentToStudentDTO`.
     @GetMapping("/{idSt}/lessons/{output}")
-    public String gotoLessonsWithOutput(Model model, @PathVariable("idSt") int id, @PathVariable("output") String output) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, JsonProcessingException {
-        Student student = studentService.getById(id);
+    public String getLessonsForStudent(@PathVariable("idSt") int idSt, @PathVariable("output") String output, Model model) throws JsonProcessingException {
+        Student student = studentService.getById(idSt);
 
-        List<Object> values = lessonService.compileLessonsForStudent(student.getId());
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = lessonService.compileLessonsForStudent(student.getId());
         List<String> weekDays = theWeekService.compileWeekDays();
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = (HashMap<String, LessonAdminLessonsDTO>) values.get(0);
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = (HashMap<String, LessonAdminLessonsDTO>) values.get(1);
 
 
-        model.addAttribute("lessonDurations", lessonDurations);
         model.addAttribute("lessons", lessonHashMap);
         model.addAttribute("weekDays", weekDays);
         model.addAttribute("output", output);
@@ -121,12 +115,7 @@ public class StudentLessonsController {
     @Transactional
     public String deleteLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, Model model) throws MessagingException {
         if (lessonService.getById(idLes).getLessonTime().isAfter(LocalDateTime.now().plusHours(12))) {
-            Mail mail = new Mail();
-            mail.setTo(Collections.singletonList((lessonService.getById(idLes).getTeacher().getEmail())));
-            mail.setSubject("Lesson cancellation notification");
-            mail.setBody("");
-            Student student = studentService.getById(idSt);
-            mailService.sendRequestWithThymeleafTeacherAboutRequestLessonRemoved(mail, studentMapper.mapStudentToStudentDTO(student), lessonService.getById(idLes).getTeacher().getId(), idLes, lessonService.getById(idLes).getLessonTime(), lessonService.getById(idLes).getDuration());
+            lessonService.manageRequestDeleteLessonByStudent(idSt, idLes);
 
             return "redirect:/student/" + idSt + "/lessons/LESSON_DELETED";
         } else {
@@ -146,15 +135,7 @@ public class StudentLessonsController {
     @PostMapping("/{idSt}/lessons/deleteCourse/{id}")
     @Transactional
     public String deleteCourse(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes) throws MessagingException {
-        Lesson lesson = lessonService.getById(idLes);
-        Mail mail = new Mail();
-        mail.setTo(Collections.singletonList(lesson.getTeacher().getEmail()));
-        mail.setSubject("Course cancellation notification");
-        mail.setBody("");
-        Student student = studentService.getById(idSt);
-        mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), lesson.getDuration());
-        lessonService.deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek(), LocalDateTime.now().minusMinutes(30));
-        tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek());
+        lessonService.manageDeleteCourseByStudent(idSt, idLes);
         return "redirect:/student/" + idSt + "/lessons/COURSE_DELETED";
     }
 
@@ -167,12 +148,8 @@ public class StudentLessonsController {
         Statuses status = (Statuses) objs.get(0);
         LocalDateTime newDate = (LocalDateTime) objs.get(1);
         if (status == Statuses.SUCCESS) {
-            Mail mail = new Mail();
-            mail.setTo(Collections.singletonList(lesson.getTeacher().getEmail()));
-            mail.setSubject("Lesson time change notification");
-            mail.setBody("");
             Student student = studentService.getById(idSt);
-            mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(mail, studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), newDate, lesson.getDuration());
+            mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(studentMapper.mapStudentToStudentDTO(student), lesson.getLessonTime(), newDate, lesson.getDuration(), "Lesson time changed", Collections.singletonList(lesson.getTeacher().getEmail()));
             lesson.setLessonTime(newDate);
             lessonService.update(lesson.getId(), lesson);
             return "redirect:/student/" + idSt + "/lessons/LESSON_EDITED";

@@ -20,4 +20,5 @@ public class TimeOfTheWeekAdminLessonsDTO {
     private Integer minute;
 
 
+
 }

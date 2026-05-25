@@ -29,7 +29,11 @@ public class LessonMapper {
     // Converts Lesson to LessonAdminLessonsDTO using UniversalMapper.
     // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.
     public LessonAdminLessonsDTO mapLessonToLessonAdminLessonsDTO(Lesson lesson){
-        return UniversalMapper.generalMapper(lesson, LessonAdminLessonsDTO.class);
+        LessonAdminLessonsDTO lessonDTO = UniversalMapper.generalMapper(lesson, LessonAdminLessonsDTO.class);
+        if (lesson.getStudent() != null && lesson.getStudent().getUser() != null) {
+            lessonDTO.setStudentName(lesson.getStudent().getUser().getName());
+        }
+        return lessonDTO;
     }
     // Converts LessonAdminLessonsDTO to Lesson using UniversalMapper.
     // This allows controllers to pass a DTO to the template or assemble an Entity from form data without manual field copying.

@@ -12,36 +12,44 @@ import java.util.List;
 // Назви методів нижче перетворюються Spring-ом у SQL-запити без ручного написання query.
 public interface LessonRepository extends JpaRepository<Lesson, Integer> {
 
-    @EntityGraph(attributePaths = {"student", "teacher", "course"})
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public Lesson findById(int id);
 
-    @EntityGraph(attributePaths = {"student", "teacher", "course"})
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByTeacherId(int id);
 
-    @EntityGraph(attributePaths = {"student", "teacher", "course"})
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findByStudentId(int stId);
 
     public void deleteAllBy(Student student);
 
     public Lesson findByLessonTimeAndStudentId(LocalDateTime time, int id);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByTimeOfTheWeekAndTeacherId(int timeOfTheWeekId, int teacherId);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByTeacherIdAndStudentId(int teacherId, int studentId);
 
     public void removeAllByStudentIdAndTeacherIdAndTimeOfTheWeekAndLessonTimeAfter(int stId, int teachId, int tswId, LocalDateTime now);
 
     public void removeAllByTimeOfTheWeek(int id);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByTeacherIdAndLessonTime(int id, LocalDateTime time);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public Lesson searchByLessonTimeAndTeacherId(LocalDateTime time, int id);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public Lesson findByLessonTime(LocalDateTime time);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByTeacherIdAndStudentIdAndTimeOfTheWeek(int teachId, int stId, int weekId);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(int teachId, LocalDateTime after, LocalDateTime before);
 
+    @EntityGraph(attributePaths = {"student", "student.user", "teacher", "teacher.user", "course"})
     public List<Lesson> findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(int studentId, LocalDateTime after, LocalDateTime before);
 }

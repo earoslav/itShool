@@ -443,8 +443,8 @@ function togglePassword() {
     document.querySelectorAll(".lesson-table-wrapper table").forEach(table => {
         const rows = Array.from(table.querySelectorAll("tbody tr"));
         rows.forEach(row => {
-            row.querySelectorAll(".lesson-segment-end").forEach(button => {
-                button.classList.remove("lesson-segment-end");
+            row.querySelectorAll(".lesson-segment-start, .lesson-segment-end").forEach(button => {
+                button.classList.remove("lesson-segment-start", "lesson-segment-end");
             });
             row.querySelectorAll(".lesson-segment-cell, .lesson-segment-cell-end").forEach(cell => {
                 cell.classList.remove("lesson-segment-cell", "lesson-segment-cell-end");
@@ -458,12 +458,22 @@ function togglePassword() {
                 const button = cell.querySelector(".form-btn");
                 if (!button) continue;
 
+                const previousRow = rows[rowIndex - 1];
+                const previousCell = previousRow ? previousRow.children[columnIndex] : null;
+                const previousButton = previousCell ? previousCell.querySelector(".form-btn") : null;
                 const nextRow = rows[rowIndex + 1];
                 const nextCell = nextRow ? nextRow.children[columnIndex] : null;
                 const nextButton = nextCell ? nextCell.querySelector(".form-btn") : null;
-                const lessonContinues = nextButton && nextButton.classList.contains("lesson-segment-continuation");
+                const previousLessonId = previousButton ? previousButton.dataset.id : null;
+                const currentLessonId = button.dataset.id;
+                const nextLessonId = nextButton ? nextButton.dataset.id : null;
+                const lessonStarts = previousLessonId !== currentLessonId;
+                const lessonContinues = nextLessonId === currentLessonId;
 
                 cell.classList.add("lesson-segment-cell");
+                if (lessonStarts) {
+                    button.classList.add("lesson-segment-start");
+                }
                 if (!lessonContinues) {
                     button.classList.add("lesson-segment-end");
                     cell.classList.add("lesson-segment-cell-end");
@@ -550,6 +560,18 @@ function initLessonPopup(config) {
 
     function removeClass(el, cls) { if (el && el.classList.contains(cls)) el.classList.remove(cls); }
     function addClass(el, cls) { if (el && !el.classList.contains(cls)) el.classList.add(cls); }
+    function readLessonData(el, key) {
+        const directValue = el.dataset[key];
+        if (directValue && directValue !== "undefined") return directValue;
+
+        const lessonId = el.dataset.id;
+        if (!lessonId) return "";
+
+        const attrName = "data-" + key.replace(/[A-Z]/g, char => "-" + char.toLowerCase());
+        const matchingButton = document.querySelector(`.lesson-table-wrapper .form-btn[data-id="${CSS.escape(lessonId)}"][${attrName}]`);
+        const matchingValue = matchingButton ? matchingButton.getAttribute(attrName) : "";
+        return matchingValue && matchingValue !== "undefined" ? matchingValue : "";
+    }
 
     function emptyPopup(el) {
         const date = el.dataset.date;
@@ -602,8 +624,8 @@ function initLessonPopup(config) {
     function openPastLessonPopup(el) {
         const date = el.dataset.date;
         const hour = el.dataset.hour;
-        const stName = el.dataset.sn;
-        const cName = el.dataset.cn;
+        const stName = readLessonData(el, "sn");
+        const cName = readLessonData(el, "cn");
         const status = el.dataset.status;
         const dur = el.dataset.dur;
         const idLes = el.dataset.id;
@@ -653,10 +675,10 @@ function initLessonPopup(config) {
         const hour = el.dataset.hour;
         const lesson = el.dataset.lesson;
         const idLes = el.dataset.id;
-        const teacherName = el.dataset.tn;
-        const studentName = el.dataset.sn;
+        const teacherName = readLessonData(el, "tn");
+        const studentName = readLessonData(el, "sn");
         const dur = el.dataset.dur;
-        const courseName = el.dataset.cn;
+        const courseName = readLessonData(el, "cn");
         const ids = getIds();
 
         let teachFreeTimes = [];

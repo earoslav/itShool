@@ -11,4 +11,6 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     // Повертає всі записи «курси» з таблиці.
     // Сервіс використовує цей метод для списків і довідників у формах.
     public List<Course> findAll();
+    public Course findById(int id);
+    public Course getById(int id);
 }

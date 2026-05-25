@@ -3,14 +3,20 @@ package com.example.demo.services.program;
 import com.example.demo.dto.adminLessons.LessonAdminLessonsDTO;
 import com.example.demo.dto.adminLessons.TeacherAdminLessonsDTO;
 import com.example.demo.dto.adminLessons.TimeOfTheWeekAdminLessonsDTO;
+import com.example.demo.dto.entities.StudentDTO;
 import com.example.demo.dto.programe.LessonDTO;
+import com.example.demo.mapper.entity.StudentMapper;
 import com.example.demo.mapper.programe.LessonMapper;
 import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
+import com.example.demo.dto.entities.TeacherDTO;
+import com.example.demo.mapper.entity.TeacherMapper;
+import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import com.example.demo.repositories.program.LessonRepository;
+import com.example.demo.services.email.MailService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -24,7 +30,10 @@ import com.example.demo.services.Statuses;
 import com.example.demo.services.entities.StudentService;
 import com.example.demo.services.entities.TeacherService;
 import com.example.demo.services.other.TimeOfTheWeekService;
+import jakarta.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,26 +48,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class LessonService {
     private final LessonRepository lessonRepository;
     private LessonMapper lessonMapper;
+    @Autowired
+    @Lazy
     private TeacherService teacherService;
     private ObjectMapper objectMapper;
-    private TimeOfTheWeekService tswService;
+
     private CourseService courseService;
     private StudentService studentService;
     private TimeOfTheWeekService theWeekService;
-    private RedisTemplate<String, Object> redisTemplate;
+    private StudentMapper studentMapper;
+    private TeacherMapper teacherMapper;
+    private MailService mailService;
+    private TeacherStudentTimeOfTheWeekService tswService;
+
     // Receives dependencies through Spring: LessonRepository, LessonMapper, TeacherService, ObjectMapper, TimeOfTheWeekService, CourseService, and StudentService.
     // These services and mappers are required by the class methods to work with the "lessons" module without manual object creation.
-    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, TimeOfTheWeekService tswService, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
+    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService, StudentMapper studentMapper, TeacherMapper teacherMapper, MailService mailService, TeacherStudentTimeOfTheWeekService tswService) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
         this.teacherService = teacherService;
         this.objectMapper = objectMapper;
-        this.tswService = tswService;
+
         this.courseService = courseService;
 
         this.studentService = studentService;
         this.theWeekService = theWeekService;
-        this.redisTemplate = redisTemplate;
+        this.studentMapper = studentMapper;
+        this.teacherMapper = teacherMapper;
+        this.mailService = mailService;
+        this.tswService = tswService;
     }
     // Returns all lessons from the repository.
     // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
@@ -66,24 +84,69 @@ public class LessonService {
         return lessonRepository.findAll();
     }
     // Finds a single record in the "lessons" module by ID.
-    // The result is cached in Redis to avoid overloading the database with frequent access to specific lesson info.
     public Lesson getById(int id) {
-        Object cachedData = redisTemplate.opsForValue().get("lessonById" + id);
-        if (cachedData == null) {
-            Lesson obj = lessonRepository.findById(id);
-            if (obj == null) throw new RuntimeException("Lesson not found with id: " + id);
-            redisTemplate.opsForValue().set("lessonById" + id, lessonMapper.mapLessonToLessonDTO(obj));
-            return obj;
-        } else {
-            LessonDTO dto = objectMapper.convertValue(cachedData, new TypeReference<LessonDTO>() {});
-            if (dto == null) {
-                Lesson obj = lessonRepository.findById(id);
-                if (obj == null) throw new RuntimeException("Lesson not found with id: " + id);
-                redisTemplate.opsForValue().set("lessonById" + id, lessonMapper.mapLessonToLessonDTO(obj));
-                return obj;
+        Lesson obj = lessonRepository.findById(id);
+        if (obj == null) throw new RuntimeException("Lesson not found with id: " + id);
+        return obj;
+    }
+    public void manageDeleteLessonByStudentInAdmin(int idSt, int idLes) throws MessagingException {
+        StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
+        mailService.sendEmailWithThymeleafTeacherAboutLessonRemoved(student, getById(idLes).getLessonTime(), getById(idLes).getDuration(),"Lesson cancellation notification",Collections.singletonList((getById(idLes).getTeacher().getEmail())));
+        deleteById(idLes);
+    }
+    
+    public void manageDeleteLessonByTeacher(int idTeach, int idLes) throws MessagingException {
+        TeacherDTO teacher = teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idTeach));
+        mailService.sendEmailWithThymeleafToStudentAboutLessonRemoved(teacher, getById(idLes).getLessonTime(), getById(idLes).getDuration(), "Lesson cancellation notification", Collections.singletonList(getById(idLes).getStudent().getEmail()));
+        deleteById(idLes);
+    }
+    
+    public void manageRequestDeleteLessonByStudent(int idSt, int idLes) throws MessagingException {
+        StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
+        mailService.sendRequestWithThymeleafTeacherAboutRequestLessonRemoved(student, getById(idLes).getTeacher().getId(), idLes, getById(idLes).getLessonTime(), getById(idLes).getDuration(), "Lesson cancellation notification", Collections.singletonList(getById(idLes).getTeacher().getEmail()));
+    }
+    public Map<String, Integer> calculateTeachersEarnings(){
+        List<Teacher> teachers = teacherService.getAll();
+        Map<String, Integer> teacherEarnings = new HashMap<>();
+        for (Teacher t : teachers) {
+            int total = 0;
+            List<Lesson> lessons = findAllByTeachId(t.getId());
+            for (Lesson l : lessons) {
+                if ("WAS".equals(l.getStatus())) {
+                    total += (int) (l.getDuration() * l.getCourse().getTeacherShare());
+                }
             }
-            return lessonMapper.mapLessonDTOToLesson(dto);
+            teacherEarnings.put(t.getUser().getName(), total);
         }
+        return teacherEarnings;
+    }
+    public void manageDeleteCourseByTeacher(int idTeach, int idLes) throws MessagingException {
+        Lesson lesson = getById(idLes);
+        TeacherDTO teacher = teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idTeach));
+        mailService.sendEmailWithThymeleafToStudentAboutCourseRemoved(teacher, lesson.getLessonTime(), lesson.getDuration(), "Course cancellation notification", Collections.singletonList(lesson.getStudent().getEmail()));
+        deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek(), java.time.LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(lesson.getStudent().getId(), idTeach, lesson.getTimeOfTheWeek());
+    }
+
+    public void manageDeleteCourseByStudent(int idSt, int idLes) throws MessagingException {
+        Lesson lesson = getById(idLes);
+        StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
+        mailService.sendEmailWithThymeleafTeacherAboutCourseRemoved(student, lesson.getLessonTime(), lesson.getDuration(), "Course cancellation notification", Collections.singletonList(lesson.getTeacher().getEmail()));
+        deleteAllByStIdAndTeachIdAndTswIdAndLesTimeAfterNow(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek(), java.time.LocalDateTime.now().minusMinutes(30));
+        tswService.removeAllByStIdAndTeachIdAndTswId(idSt, lesson.getTeacher().getId(), lesson.getTimeOfTheWeek());
+    }
+
+    public void manageAcceptLessonDeleteByTeacher(int idTeach, int idLes) throws MessagingException {
+        Lesson lesson = getById(idLes);
+        TeacherDTO teacher = teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idTeach));
+        mailService.sendEmailWithThymeleafToStudentAboutDeleteLessonExcepted(teacher, lesson.getLessonTime(), lesson.getDuration(), "Lesson cancellation accepted", Collections.singletonList(lesson.getStudent().getEmail()));
+        deleteById(idLes);
+    }
+
+    public void manageDenyLessonDeleteByTeacher(int idTeach, int idLes) throws MessagingException {
+        Lesson lesson = getById(idLes);
+        TeacherDTO teacher = teacherMapper.mapTeacherToTeacherDTO(teacherService.getById(idTeach));
+        mailService.sendEmailWithThymeleafToStudentAboutDeleteLessonDenyed(teacher, lesson.getLessonTime(), lesson.getDuration(), "Lesson cancellation denied", Collections.singletonList(lesson.getStudent().getEmail()));
     }
     // Deletes all lessons for a specific student.
     // This method is used when cleaning up student data to ensure no orphaned lessons remain in the schedule.
@@ -122,10 +185,6 @@ public class LessonService {
         Lesson existing = lessonRepository.findById((int)id);
         if (existing == null) throw new RuntimeException("Lesson not found");
 
-        // Before updating, clear old student/teacher caches
-        if (existing.getStudent() != null) redisTemplate.delete("studentById" + existing.getStudent().getId());
-        if (existing.getTeacher() != null) redisTemplate.delete("teacherById" + existing.getTeacher().getId());
-
         existing.setStudent(lesson.getStudent());
         existing.setTeacher(lesson.getTeacher());
         existing.setCourse(lesson.getCourse());
@@ -134,17 +193,8 @@ public class LessonService {
         
         lessonRepository.save(existing);
         
-        // IMPORTANT: Clear lesson cache so that next getById fetches full data
-        redisTemplate.delete("lessonById" + id);
-        
         // Fetch fully initialized entity (with student, teacher, course) for MailService
         Lesson updated = lessonRepository.findById((int)id);
-        
-        redisTemplate.opsForValue().set("lessonById" + id, lessonMapper.mapLessonToLessonDTO(updated));
-
-        // Clear new student/teacher caches
-        if (updated.getStudent() != null) redisTemplate.delete("studentById" + updated.getStudent().getId());
-        if (updated.getTeacher() != null) redisTemplate.delete("teacherById" + updated.getTeacher().getId());
 
         return updated;
     }
@@ -159,26 +209,19 @@ public class LessonService {
     public void deleteById(Integer id) {
         Lesson existing = getById(id);
         lessonRepository.deleteById(id);
-        
-        // Invalidate caches
-        redisTemplate.delete("lessonById" + id);
-        if (existing.getStudent() != null) {
-            redisTemplate.delete("studentById" + existing.getStudent().getId());
-            if (existing.getStudent().getUser() != null) {
-                redisTemplate.delete("studentByUserId" + existing.getStudent().getUser().getId());
-            }
-        }
-        if (existing.getTeacher() != null) {
-            redisTemplate.delete("teacherById" + existing.getTeacher().getId());
-            if (existing.getTeacher().getUser() != null) {
-                redisTemplate.delete("teacherByUserId" + existing.getTeacher().getUser().getId());
-            }
-        }
     }
     // Searches for records in the "lessons" module by condition: teacher.
     // The actual query is performed by `lessonRepository.findAllByTeacherId`, and the controller receives the final result.
     public List<Lesson> findAllByTeachId(int id) {
         return lessonRepository.findAllByTeacherId(id);
+    }
+
+    private List<TimeOfTheWeek> getTeacherFreeTimes(int teacherId) {
+        Teacher teacher = teacherService.getById(teacherId);
+        if (teacher.getFreeTimeIds() == null || teacher.getFreeTimeIds().isBlank()) {
+            return Collections.emptyList();
+        }
+        return theWeekService.getTimesOfTheWeekThroughIds(teacher.getFreeTimeIds());
     }
     // Searches for a student's lesson on a specific date and time.
     // Such a search is needed when a UI action comes as a selected time slot.
@@ -208,27 +251,28 @@ public class LessonService {
     public List<Lesson> findAllByIdTandIdSt(int idT, int idSt) {
         return lessonRepository.findAllByTeacherIdAndStudentId(idT, idSt);
     }
-    public LocalDateTime manageOneTime(TimeOfTheWeek empTFT, LocalDateTime finalNow, String status){
-        LocalDateTime time = LocalDateTime.now();
-        if (empTFT.getDayOfTheWeek() < finalNow.getDayOfWeek().getValue()) {
-            time = finalNow.minusDays(finalNow.getDayOfWeek().getValue()).plusDays(7).plusDays(empTFT.getDayOfTheWeek()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-        } else if (empTFT.getDayOfTheWeek() == finalNow.getDayOfWeek().getValue()) {
-            if (empTFT.getTimeOfTheDay() > finalNow.getHour() + 12) {
-                time = finalNow.withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-            } else {
-                time = finalNow.plusDays(7).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-            }
 
-        } else {
-            if (empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue() == 1) {
-                if (finalNow.plusHours(12).isBefore(finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()))) {
-                    time = finalNow.plusDays(1).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                } else {
-                    time = finalNow.plusDays(8).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-                }
-            } else if(status == "STUDENT" || status == "STUDENTINADMIN"){
-                time = finalNow.plusDays(empTFT.getDayOfTheWeek() - finalNow.getDayOfWeek().getValue()).withHour(empTFT.getTimeOfTheDay()).withMinute(empTFT.getMinute());
-            }
+    private boolean shouldUseNextSlot(String status) {
+        return "TEACHER".equals(status) || "TEACHERANDSTUDENT".equals(status);
+    }
+
+    public LocalDateTime manageOneTime(TimeOfTheWeek empTFT, LocalDateTime finalNow, String status){
+        LocalDateTime baseTime = finalNow == null ? LocalDateTime.now() : finalNow;
+        LocalDateTime firstAllowedTime = shouldUseNextSlot(status) ? baseTime : baseTime.plusHours(12);
+
+        int daysToAdd = empTFT.getDayOfTheWeek() - firstAllowedTime.getDayOfWeek().getValue();
+        if (daysToAdd < 0) {
+            daysToAdd += 7;
+        }
+
+        LocalDateTime time = firstAllowedTime.plusDays(daysToAdd)
+                .withHour(empTFT.getTimeOfTheDay())
+                .withMinute(empTFT.getMinute())
+                .withSecond(0)
+                .withNano(0);
+
+        if (!time.isAfter(firstAllowedTime)) {
+            time = time.plusWeeks(1);
         }
         return time;
     }
@@ -252,22 +296,26 @@ public class LessonService {
         }
         return durationTimeStr;
     }
+
+    private void addLessonSegments(HashMap<String, LessonAdminLessonsDTO> lessons, Lesson lesson) {
+        LessonAdminLessonsDTO lessonDTO = lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson);
+        lessons.put(manageTimeOfTheLesson(lesson), lessonDTO);
+
+        for (int i = 1; i < lesson.getDuration() * 2; i++) {
+            lessons.put(manageDurationOfTheLesson(lesson, i), lessonDTO);
+        }
+    }
+
     // Assembles the teacher's calendar: days, lessons, continuation cells for long lessons, and available slots for rescheduling.
-    // The method returns a list with weekDays, lessonHashMap, and lessonDurations so that the controller can immediately pass them to Thymeleaf.
-    public List<Object> compileLessonsForTeacher(int teacherId) throws JsonProcessingException {
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
+    // The method returns one map with both lesson starts and continuation cells so templates can read only "lessons".
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForTeacher(int teacherId) throws JsonProcessingException {
         List<Lesson> teacherLessons1 = findAllByTeachId(teacherId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
-
-            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-
-            for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-            }
+            addLessonSegments(lessonHashMap, lesson);
         }
         //////////////////
-        LocalDateTime now2 = LocalDateTime.now().withMinute(0).withSecond(0);
+        LocalDateTime now2 = LocalDateTime.now();
 
         final LocalDateTime[] t = {now2};
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
@@ -276,9 +324,10 @@ public class LessonService {
 /////////
         final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less};
         HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
+        List<TimeOfTheWeek> teacherFreeTimeSlots = theWeekService.getAll();
         for (int i = 0; i < 3; i++) {
             LocalDateTime finalNow = now2;
-            tswService.getAll().stream().forEach(empTFT -> {
+            teacherFreeTimeSlots.stream().forEach(empTFT -> {
                 t[0] = manageOneTime(empTFT, finalNow, "TEACHER");
                 teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
 
@@ -292,35 +341,25 @@ public class LessonService {
         for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
             val.getTeacher().setNotTakenTimes(freeTimesJson);
         }
-        for (LessonAdminLessonsDTO val : lessonDurations.values()) {
-            val.getTeacher().setNotTakenTimes(freeTimesJson);
-        }
 
         ///////////
 
         //////////////////
-        List<Object> retValue = new ArrayList<>();
-        retValue.add(lessonHashMap);
-        retValue.add(lessonDurations);
-        return retValue;
+
+        return lessonHashMap;
     }
 
     // Assembles the calendar only for one teacher-student pair.
     // It filters lessons for this pair, adds teacher's available times, and returns structures for teacherStudentLessons/studentLessons.
-    public List<Object> compileLessonsForStudentAndTeacher(int idT, int idSt) throws JsonProcessingException {
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudentAndTeacher(int idT, int idSt) throws JsonProcessingException {
+
         List<Lesson> teacherLessons1 = findAllByIdTandIdSt(idT, idSt);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
-            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-
-            for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-            }
-
+            addLessonSegments(lessonHashMap, lesson);
         }
         //////////////////
-        LocalDateTime now2 = LocalDateTime.now().withMinute(0).withSecond(0);
+        LocalDateTime now2 = LocalDateTime.now();
 
         final LocalDateTime[] t = {now2};
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
@@ -330,9 +369,10 @@ public class LessonService {
         final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{new ArrayList()};
         findAllByTeachId(idT).stream().forEach(les -> teacherLessons[0].add(lessonMapper.mapLessonToLessonAdminLessonsDTO(les)));
         HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
+        List<TimeOfTheWeek> teacherFreeTimeSlots = theWeekService.getAll();
         for (int i = 0; i < 3; i++) {
             LocalDateTime finalNow = now2;
-            tswService.getAll().stream().forEach(empTFT -> {
+            teacherFreeTimeSlots.stream().forEach(empTFT -> {
                 t[0] = manageOneTime(empTFT, finalNow, "TEACHERANDSTUDENT");
                 teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
             });
@@ -344,28 +384,20 @@ public class LessonService {
         for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
             val.getTeacher().setNotTakenTimes(freeTimesJson);
         }
-        for (LessonAdminLessonsDTO val : lessonDurations.values()) {
-            val.getTeacher().setNotTakenTimes(freeTimesJson);
-        }
+
         ///////////
         //////////////////
-        List<Object> retValue = new ArrayList<>();
-        retValue.add(lessonHashMap);
-        retValue.add(lessonDurations);
-        return retValue;
+
+
+        return lessonHashMap;
     }
     // Assembles the student's calendar with lessons from all their teachers.
     // For each teacher, it adds notTakenTimes so the student can see rescheduling options.
-    public List<Object> compileLessonsForStudent(int stId) throws JsonProcessingException {
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudent(int stId) throws JsonProcessingException {
         List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
-            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-
-            for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-            }
+            addLessonSegments(lessonHashMap, lesson);
         }
 
 //////////////////////////
@@ -383,11 +415,11 @@ public class LessonService {
 
         });
         for (TeacherAdminLessonsDTO teacher : teachers) {
-            now2 = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
+            now2 = LocalDateTime.now();
             HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
             for (int i = 0; i < 3; i++) {
                 LocalDateTime finalNow = now2;
-                theWeekService.getTimesOfTheWeekThroughIds(teacherService.getById(teacher.getId()).getFreeTimeIds()).forEach(empTFT -> {
+                getTeacherFreeTimes(teacher.getId()).forEach(empTFT -> {
                     t[0] = manageOneTime(empTFT, finalNow, "STUDENT");
                     teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
                 });
@@ -402,30 +434,19 @@ public class LessonService {
                     val.getTeacher().setNotTakenTimes(freeTimesJson);
                 }
             }
-            for (LessonAdminLessonsDTO val : lessonDurations.values()) {
-                if (val.getTeacher().getId() == teacher.getId()) {
-                    val.getTeacher().setNotTakenTimes(freeTimesJson);
-                }
-            }
+
         }
 
-        List<Object> retValue = new ArrayList<>();
-        retValue.add(lessonHashMap);
-        retValue.add(lessonDurations);
-        return retValue;
+        return lessonHashMap;
     }
     // Assembles the admin version of the student's calendar.
     // The structure is the same as in the student cabinet, but data is prepared for the administrative template.
-    public List<Object> compileLessonsForStudentInAdmin(int stId) throws JsonProcessingException {
-        HashMap<String, LessonAdminLessonsDTO> lessonDurations = new HashMap<>();
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudentInAdmin(int stId) throws JsonProcessingException {
+
         List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
-            lessonHashMap.put( manageTimeOfTheLesson(lesson), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-
-            for (int i = 1; i < lesson.getDuration() * 2; i++) {
-                lessonDurations.put(manageDurationOfTheLesson(lesson, i), lessonMapper.mapLessonToLessonAdminLessonsDTO(lesson));
-            }
+            addLessonSegments(lessonHashMap, lesson);
         }
 
 
@@ -441,12 +462,12 @@ public class LessonService {
             }
         });
         for (TeacherAdminLessonsDTO teacher : teachers) {
-            now2 = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
+            now2 = LocalDateTime.now();
             final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less.stream().filter(lesss -> lesss.getTeacher().equals(teacher)).toList()};
             HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
             for (int i = 0; i < 3; i++) {
                 LocalDateTime finalNow = now2;
-                theWeekService.getTimesOfTheWeekThroughIds(teacherService.getById(teacher.getId()).getFreeTimeIds()).stream().forEach(empTFT -> {
+                getTeacherFreeTimes(teacher.getId()).forEach(empTFT -> {
                     t[0] = manageOneTime(empTFT, finalNow, "STUDENTINADMIN");
                     teacherfreeTimes.put(t[0], UniversalMapper.generalMapper(empTFT, TimeOfTheWeekAdminLessonsDTO.class));
                 });
@@ -460,17 +481,12 @@ public class LessonService {
                     val.getTeacher().setNotTakenTimes(freeTimesJson);
                 }
             }
-            for (LessonAdminLessonsDTO val : lessonDurations.values()) {
-                if (val.getTeacher().getId() == teacher.getId()) {
-                    val.getTeacher().setNotTakenTimes(freeTimesJson);
-                }
-            }
+
         }
 
-        List<Object> retValue = new ArrayList<>();
-        retValue.add(lessonHashMap);
-        retValue.add(lessonDurations);
-        return retValue;
+
+
+        return lessonHashMap;
     }
 
 

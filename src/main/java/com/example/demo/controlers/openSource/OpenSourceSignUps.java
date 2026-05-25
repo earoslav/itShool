@@ -124,17 +124,14 @@ public class OpenSourceSignUps {
     @GetMapping("/signUpAsTeacher")
     public String gotoSignUpAsTeacher(Model model){
         Teacher teacher = new Teacher();
-        List<Course> courses = new ArrayList<>();
-        List<TimeOfTheWeek> freeTimes = new ArrayList<>();
+
         List<Integer> days = List.of(7, 1, 2, 3, 4, 5, 6); // Sunday first
         List<String> dayNames = List.of("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
 
-        try{
-            courses = courseService.getAll();
-            freeTimes = timeWeekService.getAll();
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+
+        List<Course> courses = courseService.getAll();
+        List<TimeOfTheWeek> freeTimes = timeWeekService.getAll();
+
 
         model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
         model.addAttribute("courses", courses.stream().map(el->courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
@@ -178,14 +175,7 @@ public class OpenSourceSignUps {
     public String signUpAsTeacher(@ModelAttribute("teacher") TeacherDTO teacher,
                                   @PathVariable("password") String password,
                                   @RequestParam(value = "courseIds",required = false) List<Integer> courses,
-                                  @RequestParam(value = "freeTimeIds",required = false) List<Integer> freeTimes,
-                                  Model model) throws MessagingException {
-        List<Integer> hours = new ArrayList<>();
-        for (int h = 8; h <= 21; h++) {
-            hours.add(h);
-        }
-        List<Course> coursesToReload = courseService.getAll();
-        List<TimeOfTheWeek> freeTimesToReload = timeWeekService.getAll();
+                                  @RequestParam(value = "freeTimeIds",required = false) List<Integer> freeTimes) throws MessagingException {
 
             if (!teacherService.checkIfExistsByEmail(teacher.getUser().getEmail())) {
                 if(password.equals("NO_PASS")){
@@ -207,13 +197,7 @@ public class OpenSourceSignUps {
                 List<Integer> coursesIds = new ArrayList<>();
                 selectedCourses.stream().forEach(course->coursesIds.add(course.getId()));
 
-                Mail mail = new Mail();
-                mail.setTo(Collections.singletonList(adminService.getAdmin().getEmail()));
-                mail.setSubject("New teacher application — IT Kids School");
-                mail.setBody("");
-
-
-                mailService.sendEmailWithThymeleaf(mail, teacher, password, selectedFreeTimes.stream().map(time -> theWeekMapper.mapTTheWeekToTTheWeekDTO(time)).collect(Collectors.toList()), selectedCourses.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()), compiledTimes, timesIds.toString(), coursesIds.toString());
+                mailService.sendEmailWithThymeleaf(teacher, password, selectedFreeTimes.stream().map(time -> theWeekMapper.mapTTheWeekToTTheWeekDTO(time)).collect(Collectors.toList()), selectedCourses.stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList()), compiledTimes, timesIds.toString(), coursesIds.toString(), "New teacher application — IT Kids School", Collections.singletonList(adminService.getAdmin().getEmail()));
                 return "redirect:/openSource/homepage/TEACHER_ADDED";
             }
             return "redirect:/openSource/signUpAsTeacher/EXISTS";

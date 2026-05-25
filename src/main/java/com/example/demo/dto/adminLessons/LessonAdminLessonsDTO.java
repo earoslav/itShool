@@ -18,6 +18,8 @@ public class LessonAdminLessonsDTO {
 
     private StudentAdminLessonsDTO student;
 
+    private String studentName;
+
 
     private TeacherAdminLessonsDTO teacher;
 

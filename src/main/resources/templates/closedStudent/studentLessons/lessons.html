@@ -41,97 +41,97 @@
             <td th:each="day : ${weekDays}">
 
                 <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
-                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}"
-                            th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
-                            th:data-sn="${lessonDur.student.user.name}"
-                            th:data-cn="${lessonDur.course.name}"
-                            th:data-tn="${lessonDur.teacher.user.name}"
-                            th:data-cost="${lessonDur.course.costPerLesson * lessonDur.duration}"
-                            th:data-hour="${hour}"
-                            th:data-date="${day}"
-                            th:data-status="${lessonDur.status}"
-                            th:data-dur="${lessonDur.duration}"
-                            th:data-id="${lessonDur.id}"
-                            th:onclick="'openPastLessonPopup(this)'"
-                            class="btn-red form-btn lesson-segment-continuation">
-                    </button>
-                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WAS'}"
-                            th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
-                            th:data-sn="${lessonDur.student.user.name}"
-                            th:data-cn="${lessonDur.course.name}"
-                            th:data-tn="${lessonDur.teacher.user.name}"
-                            th:data-hour="${hour}"
-                            th:data-date="${day}"
-                            th:data-cost="${lessonDur.course.costPerLesson * lessonDur.duration}"
-                            th:data-status="${lessonDur.status}"
-                            th:data-dur="${lessonDur.duration}"
-                            th:data-id="${lessonDur.id}"
-                            th:onclick="'openPastLessonPopup(this)'"
-                            class="btn-darkgreen form-btn lesson-segment-continuation">
-                    </button>
-                    <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WILL'}"
-                            th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"
-                            class="btn-green form-btn lesson-segment-continuation"
-                            th:data-date="${day}"
-                            th:data-id="${lessonDur.id}"
-                            th:data-lesson="${lessonDur}"
-                            th:data-tfts="${lessonDur.teacher.notTakenTimes}"
-                            th:data-dur="${lessonDur.duration}"
-                            th:date-stId="${student.id}"
-                            th:data-hour="${hour}"
-                            th:data-tn="${lessonDur.teacher.user.name}"
-                            th:data-cn="${lessonDur.course.name}"
-                            th:onclick="'openPopup(this)'">
-                    </button>
+<!--                     <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}" -->
+<!--                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" -->
+<!--                             th:data-sn="${lessonDur.student.user.name}" -->
+<!--                             th:data-cn="${lessonDur.course.name}" -->
+<!--                             th:data-tn="${lessonDur.teacher.user.name}" -->
+<!--                             th:data-cost="${lessonDur.course.costPerLesson * lessonDur.duration}" -->
+<!--                             th:data-hour="${hour}" -->
+<!--                             th:data-date="${day}" -->
+<!--                             th:data-status="${lessonDur.status}" -->
+<!--                             th:data-dur="${lessonDur.duration}" -->
+<!--                             th:data-id="${lessonDur.id}" -->
+<!--                             th:onclick="'openPastLessonPopup(this)'" -->
+<!--                             class="btn-red form-btn lesson-segment-continuation"> -->
+<!--                     </button> -->
+<!--                     <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WAS'}" -->
+<!--                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" -->
+<!--                             th:data-sn="${lessonDur.student.user.name}" -->
+<!--                             th:data-cn="${lessonDur.course.name}" -->
+<!--                             th:data-tn="${lessonDur.teacher.user.name}" -->
+<!--                             th:data-hour="${hour}" -->
+<!--                             th:data-date="${day}" -->
+<!--                             th:data-cost="${lessonDur.course.costPerLesson * lessonDur.duration}" -->
+<!--                             th:data-status="${lessonDur.status}" -->
+<!--                             th:data-dur="${lessonDur.duration}" -->
+<!--                             th:data-id="${lessonDur.id}" -->
+<!--                             th:onclick="'openPastLessonPopup(this)'" -->
+<!--                             class="btn-darkgreen form-btn lesson-segment-continuation"> -->
+<!--                     </button> -->
+<!--                     <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WILL'}" -->
+<!--                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" -->
+<!--                             class="btn-green form-btn lesson-segment-continuation" -->
+<!--                             th:data-date="${day}" -->
+<!--                             th:data-id="${lessonDur.id}" -->
+<!--                             th:data-lesson="${lessonDur}" -->
+<!--                             th:data-tfts="${lessonDur.teacher.notTakenTimes}" -->
+<!--                             th:data-dur="${lessonDur.duration}" -->
+<!--                             th:date-stId="${student.id}" -->
+<!--                             th:data-hour="${hour}" -->
+<!--                             th:data-tn="${lessonDur.teacher.user.name}" -->
+<!--                             th:data-cn="${lessonDur.course.name}" -->
+<!--                             th:onclick="'openPopup(this)'"> -->
+<!--                     </button> -->
 
-                    <button th:if="${lesson != null and (lesson.status=='WASNT')}"
-                            th:data-sn="${lesson.student.user.name}"
-                            th:data-cn="${lesson.course.name}"
-                            th:data-tn="${lesson.teacher.user.name}"
-                            th:data-hour="${hour}"
-                            th:data-date="${day}"
-                            th:data-status="${lesson.status}"
-                            th:data-cost="${lesson.course.costPerLesson * lesson.duration}"
-                            th:data-dur="${lesson.duration}"
-                            th:data-id="${lesson.id}"
-                            th:onclick="'openPastLessonPopup(this)'"
-                            class="btn-red form-btn lesson-segment-start">
-                        <span class="lesson-title" th:text="${lesson.course.name}"></span>
-                    </button>
-                    <button th:if="${lesson != null and (lesson.status=='WAS')}"
-                            th:data-sn="${lesson.student.user.name}"
-                            th:data-cn="${lesson.course.name}"
-                            th:data-cost="${lesson.course.costPerLesson * lesson.duration}"
-                            th:data-tn="${lesson.teacher.user.name}"
-                            th:data-hour="${hour}"
-                            th:data-date="${day}"
-                            th:data-status="${lesson.status}"
-                            th:data-dur="${lesson.duration}"
-                            th:data-id="${lesson.id}"
-                            th:onclick="'openPastLessonPopup(this)'"
-                            class="btn-darkgreen form-btn lesson-segment-start">
-                        <span class="lesson-title" th:text="${lesson.course.name}"></span>
-                    </button>
-                    <button th:if="${lesson != null and (lesson.status=='WILL')}"
-                            class="btn-green form-btn lesson-segment-start"
-                            th:data-date="${day}"
-                            th:data-id="${lesson.id}"
-                            th:data-lesson="${lesson}"
-                            th:data-tfts="${lesson.teacher.notTakenTimes}"
-                            th:data-dur="${lesson.duration}"
-                            th:date-stId="${student.id}"
-                            th:data-hour="${hour}"
-                            th:data-tn="${lesson.teacher.user.name}"
-                            th:data-cn="${lesson.course.name}"
-                            th:onclick="'openPopup(this)'">
-                        <span class="lesson-title" th:text="${lesson.course.name}"></span>
-                    </button>
-                    <button th:if="${lesson == null and !lessonDurations.keySet().contains(day.split(' ')[1]+' '+hour)}"
+                    <span th:if="${lesson != null}">
+                        <button th:if="${lesson.status=='WASNT'}"
+                                th:data-sn="${lesson.student.user.name}"
+                                th:data-cn="${lesson.course.name}"
+                                th:data-tn="${lesson.teacher.user.name}"
+                                th:data-hour="${hour}"
+                                th:data-date="${day}"
+                                th:data-cost="${lesson.course.costPerLesson * lesson.duration}"
+                                th:data-status="${lesson.status}"
+                                th:data-dur="${lesson.duration}"
+                                th:data-id="${lesson.id}"
+                                th:onclick="'openPastLessonPopup(this)'"
+                                class="btn-red form-btn lesson-segment-continuation">
+                            <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                        </button>
+                        <button th:if="${lesson.status=='WAS'}"
+                                th:data-sn="${lesson.student.user.name}"
+                                th:data-tn="${lesson.teacher.user.name}"
+                                th:data-cn="${lesson.course.name}"
+                                th:data-hour="${hour}"
+                                th:data-cost="${lesson.course.costPerLesson * lesson.duration}"
+                                th:data-date="${day}"
+                                th:data-status="${lesson.status}"
+                                th:data-dur="${lesson.duration}"
+                                th:data-id="${lesson.id}"
+                                th:onclick="'openPastLessonPopup(this)'"
+                                class="btn-darkgreen form-btn lesson-segment-continuation">
+                            <span class="lesson-title" th:text="${lesson.course.name}" ></span>
+                        </button>
+                        <button th:if="${lesson.status=='WILL'}" class="btn-green form-btn lesson-segment-continuation"
+                                th:data-date="${day}"
+                                th:data-id="${lesson.id}"
+                                th:data-lesson="${lesson}"
+                                th:data-tfts="${lesson.teacher.notTakenTimes}"
+                                th:date-stId="${student.id}"
+                                th:data-hour="${hour}"
+                                th:data-tn="${lesson.teacher.user.name}"
+                                th:data-cn="${lesson.course.name}"
+                                th:data-dur="${lesson.duration}"
+                                th:onclick="'openPopup(this)'">
+                            <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                        </button>
+                    </span>
+                    <button th:if="${lesson == null}"
                             th:data-date="${day}"
                             th:data-lesson="${null}"
                             th:data-idSt="${student.id}"
                             th:data-hour="${hour}"
-
                             th:onclick="'openPopup(this)'">
                         <span class="empty-cell-label">emptyy</span>
                     </button>
@@ -186,8 +186,8 @@
                 </button>
             </form>
             <form th:action="@{/student/{id}/lessons/deleteCourse/0(id=${student.id})}" method="post" id="deleteCourseForm">
-                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')">🗑️
-                    Видалити курс з вчителем
+                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити щотижневий урок?')">🗑️
+                    Видалити щотижневий урок
                 </button>
             </form>
             <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>

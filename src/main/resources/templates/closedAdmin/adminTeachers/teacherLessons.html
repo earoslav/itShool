@@ -21,6 +21,15 @@
     </div>
 </section>
 <div th:replace="~{fragments/alerts :: alerts}"></div>
+<form method="get" class="lesson-period-form" style="display:flex; gap:12px; align-items:center; margin:16px 0;">
+    <label for="lessonDays">Показати:</label>
+    <select id="lessonDays" name="days">
+        <option value="1" th:selected="${lessonDays == 1}">1 день</option>
+        <option value="7" th:selected="${lessonDays == 7}">Цей тиждень</option>
+        <option value="30" th:selected="${lessonDays == 30}">Місяць</option>
+    </select>
+    <button type="submit" class="btn btn-blue">Застосувати</button>
+</form>
 
 <div class="table-wrapper lesson-table-wrapper" id="tableWrapper">
     <table>

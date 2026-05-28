@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -91,23 +92,15 @@ public class AdminStudentLessonsController {
     // Opens the GET /student/{id}/lessons route and prepares data for the "closedAdmin/adminStudents/studentLessons" template.
     // Adds "lessons", "courses", "weekDays", "teachers", "student", and others to the Model; retrieves data via `teacherService.getAll`, `studentService.getById`, `lessonService.compileLessonsForStudentInAdmin`, `courseService.getAll`, `courseMapper.mapCourseToCourseDTO`, and others.
     @GetMapping("/student/{id}/lessons")
-    public String getLessonsForStudent(@PathVariable("id") int id, Model model) throws JsonProcessingException {
-        Student student = studentService.getById(id);
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = lessonService.compileLessonsForStudentInAdmin(student.getId());
-        List<String> weekDays = theWeekService.compileWeekDays();
-
-        model.addAttribute("lessons", lessonHashMap);
-        model.addAttribute("weekDays", weekDays);
-        model.addAttribute("student", student);
-        model.addAttribute("teachers", teacherService.getAll());
-        model.addAttribute("courses", courseService.getAll().stream().map(courseMapper::mapCourseToCourseDTO).collect(Collectors.toList()));
+    public String getLessonsForStudent(@PathVariable("id") int id, @RequestParam(value = "days", required = false) Integer days, Model model) throws JsonProcessingException {
+       lessonService.manageGetLessonsForStudent(id, model, days);
         return "closedAdmin/adminStudents/studentLessons";
     }
     // Opens the GET /student/{idSt}/lessons/{output} route and prepares data for the "closedAdmin/adminStudents/studentLessons" template.
     // Adds "lessonDurations", "lessons", "courses", "weekDays", "output", "teachers", and others to the Model; retrieves data via `teacherService.getAll`, `studentService.getById`, `lessonService.compileLessonsForStudentInAdmin`, `courseService.getAll`, `courseMapper.mapCourseToCourseDTO`, and others.
     @GetMapping("/student/{idSt}/lessons/{output}")
-    public String gotoStudentLessonsWithOutput(@PathVariable("idSt") int idSt, @PathVariable(value = "output", required = false) String output, Model model) throws JsonProcessingException {
-        modelService.compileModelForStudentLessonsInAdmin(model, idSt, output);
+    public String gotoStudentLessonsWithOutput(@PathVariable("idSt") int idSt, @PathVariable(value = "output", required = false) String output, @RequestParam(value = "days", required = false) Integer days, Model model) throws JsonProcessingException {
+        modelService.compileModelForStudentLessonsInAdmin(model, idSt, output, days);
         return "closedAdmin/adminStudents/studentLessons";
     }
     // Deletes or disconnects data at the POST /student/{idSt}/lessons/deleteLesson/{id} route in the "lessons" module.
@@ -138,19 +131,8 @@ public class AdminStudentLessonsController {
     // Calls `lessonService.getById`, `lessonService.checkIfLessonValidWithReputitions`, `studentService.getById`, `mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited`, `lessonService.update`, and others; works with SUCCESS statuses; returns "redirect:/admin/student/" upon completion.
     @PostMapping("/student/{idSt}/lessons/editLesson/{id}/{nTId}/{date}")
     @Transactional
-    public String editLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("nTId") int newTimeId, @PathVariable("date") String date, Model model) throws MessagingException {
-        Lesson lesson = lessonService.getById(idLes);
-        List<Object> objs = lessonService.checkIfLessonValidWithReputitions(lesson.getTeacher().getId(), lesson.getStudent().getId(), lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
-        Statuses status = (Statuses) objs.get(0);
-        LocalDateTime newDate = (LocalDateTime) objs.get(1);
-        if (status == Statuses.SUCCESS) {
-            StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
-            mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(student, lesson.getLessonTime(), newDate, lesson.getDuration(), "Lesson time changed", Collections.singletonList(lesson.getTeacher().getEmail()));
-            lesson.setLessonTime(newDate);
-            lessonService.update(lesson.getId(), lesson);
-            return "redirect:/admin/student/" + idSt + "/lessons/LESSON_EDITED";
-        } else {
-            return "redirect:/admin/student/" + idSt + "/lessons/" + status.name();
-        }
+    public String editLesson(@PathVariable("idSt") int idSt, @PathVariable("id") int idLes, @PathVariable("date") String date, Model model) throws MessagingException {
+        String returnUrl = "redirect:/admin/student/" + idSt + "/lessons/" + lessonService.manageEditLessonByStudent(idLes, idSt, date);
+        return returnUrl;
     }
 }

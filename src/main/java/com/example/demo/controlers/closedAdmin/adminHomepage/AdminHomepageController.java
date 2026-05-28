@@ -72,27 +72,14 @@ public class AdminHomepageController {
     @GetMapping("/homepage")
     public String gotoHomepage(Model model) {
 
-        Admin admin = adminService.getAdmin();
-//        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
-//        adminService.update(admin.getId(), admin);
-        model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
-
-
-        model.addAttribute("teacherEarnings", lessonService.calculateTeachersEarnings());
-
-        return "closedAdmin/adminHomepage/homepage";
+        String returnUrl = adminService.manageGoToHomepage(model, "");
+        return returnUrl;
     }
     // Opens the GET /homepage/{output} route and prepares data for the "closedAdmin/adminHomepage/homepage" template.
     // Adds "admin", "output", "teacherEarnings" to the Model; retrieves data via `adminService.getAdmin`, `adminService.update`, `teacherService.getAll`, `lessonService.findAllByTeachId`, `adminMapper.mapAdminToAdminDTO`.
     @GetMapping("/homepage/{output}")
     public String gotoHomepage(Model model, @PathVariable(value = "output", required = false) String output) {
-        Admin admin = adminService.getAdmin();
-//        admin.getUser().setPassword(passwordEncoder.encode("yargoro2010"));
-//        adminService.update(admin.getId(), admin);
-        model.addAttribute("admin", adminMapper.mapAdminToAdminDTO(admin));
-        model.addAttribute("output", output);
-        model.addAttribute("teacherEarnings", lessonService.calculateTeachersEarnings());
-
-        return "closedAdmin/adminHomepage/homepage";
+        String returnUrl = adminService.manageGoToHomepage(model, output);
+        return returnUrl;
     }
 }

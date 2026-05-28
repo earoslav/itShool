@@ -6,14 +6,17 @@ import com.example.demo.dto.adminLessons.TimeOfTheWeekAdminLessonsDTO;
 import com.example.demo.dto.entities.StudentDTO;
 import com.example.demo.dto.programe.LessonDTO;
 import com.example.demo.mapper.entity.StudentMapper;
+import com.example.demo.mapper.programe.CourseMapper;
 import com.example.demo.mapper.programe.LessonMapper;
 import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.other.TimeOfTheWeek;
+import com.example.demo.models.programe.Course;
 import com.example.demo.models.programe.Lesson;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.dto.entities.TeacherDTO;
 import com.example.demo.mapper.entity.TeacherMapper;
+import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import com.example.demo.repositories.program.LessonRepository;
 import com.example.demo.services.email.MailService;
@@ -25,11 +28,13 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import com.example.demo.services.Statuses;
 import com.example.demo.services.entities.StudentService;
 import com.example.demo.services.entities.TeacherService;
 import com.example.demo.services.other.TimeOfTheWeekService;
+import jakarta.jws.WebParam;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.ui.Model;
 
 // LessonService contains business operations for the "lessons" module.
 // Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
@@ -60,10 +66,12 @@ public class LessonService {
     private TeacherMapper teacherMapper;
     private MailService mailService;
     private TeacherStudentTimeOfTheWeekService tswService;
+    private CourseMapper courseMapper;
+
 
     // Receives dependencies through Spring: LessonRepository, LessonMapper, TeacherService, ObjectMapper, TimeOfTheWeekService, CourseService, and StudentService.
     // These services and mappers are required by the class methods to work with the "lessons" module without manual object creation.
-    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, TeacherService teacherService, ObjectMapper objectMapper, CourseService courseService, StudentService studentService, TimeOfTheWeekService theWeekService, StudentMapper studentMapper, TeacherMapper teacherMapper, MailService mailService, TeacherStudentTimeOfTheWeekService tswService) {
+    public LessonService(LessonRepository lessonRepository, LessonMapper lessonMapper, @Lazy TeacherService teacherService, ObjectMapper objectMapper, CourseService courseService, @Lazy StudentService studentService, TimeOfTheWeekService theWeekService, StudentMapper studentMapper, TeacherMapper teacherMapper, MailService mailService, TeacherStudentTimeOfTheWeekService tswService, CourseMapper courseMapper) {
         this.lessonRepository = lessonRepository;
         this.lessonMapper = lessonMapper;
         this.teacherService = teacherService;
@@ -77,6 +85,7 @@ public class LessonService {
         this.teacherMapper = teacherMapper;
         this.mailService = mailService;
         this.tswService = tswService;
+        this.courseMapper = courseMapper;
     }
     // Returns all lessons from the repository.
     // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
@@ -119,6 +128,69 @@ public class LessonService {
             teacherEarnings.put(t.getUser().getName(), total);
         }
         return teacherEarnings;
+    }
+
+    public String manageAddLessonToTeacher(int idTeach, int stId, int cId, float dur, String date) throws MessagingException {
+        List<Object> objs = checkIfLessonValidWithReputitions(idTeach, stId, cId, dur, date, 1);
+        Statuses status = (Statuses) objs.get(0);
+        LocalDateTime time = (LocalDateTime) objs.get(1);
+
+        if (status == Statuses.SUCCESS) {
+            Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
+            create(lesson);
+            Teacher teacher = teacherService.getById(idTeach);
+            mailService.sendEmailWithThymeleafToStudentAboutLessonAdded(teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), dur, "New lesson notification", Collections.singletonList(studentService.getById(stId).getEmail()));
+            return "LESSON_ADDED";
+        } else {
+            return status.name();
+        }
+    }
+    public String manageAddCourseToTeacher(int idTeach, int stId, int cId, float dur, String date) throws MessagingException {
+        List<Object> objs = checkIfLessonValidWithReputitions(idTeach, stId, cId, dur, date, 5);
+        Statuses status = (Statuses) objs.get(0);
+        LocalDateTime time = (LocalDateTime) objs.get(1);
+
+        if (status == Statuses.SUCCESS) {
+            for (int i = 1; i <= 5; i++) {
+                Lesson lesson = new Lesson(studentService.getById(stId), teacherService.getById(idTeach), courseService.getById(cId), time, dur, theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), "WILL");
+                create(lesson);
+
+                time = time.plusWeeks(1);
+            }
+            TeacherStudentTimeOfTheWeek tsw = new TeacherStudentTimeOfTheWeek(teacherService.getById(idTeach), studentService.getById(stId), theWeekService.findByDayOfTheWeekAndTimeOfTheDayAndMinute(time.getDayOfWeek().getValue(), time.getHour(), time.getMinute()).getId(), courseService.getById(cId));
+            tswService.create(tsw);
+
+            Teacher teacher = teacherService.getById(idTeach);
+            mailService.sendEmailWithThymeleafToStudentAboutCourseAdded(teacherMapper.mapTeacherToTeacherDTO(teacher), time, dur, "Course added notification", Collections.singletonList(studentService.getById(stId).getEmail()));
+            return "COURSE_ADDED";
+        } else {
+            return status.name();
+        }
+    }
+
+    public void manageChangeStatusToWas(int teachId, int lesId){
+        Teacher teacher = teacherService.getById(teachId);
+        Lesson lesson = getById(lesId);
+        float sum = lesson.getDuration() * lesson.getCourse().getTeacherShare();
+        teacher.setUnpaidMoney(teacher.getUnpaidMoney() + sum);
+        teacherService.update(teachId, teacher);
+        lesson.setStatus("WAS");
+        update(lesId, lesson);
+    }
+
+    public void manageGetLessonsForStudent(int id, Model model, Integer days) throws JsonProcessingException {
+        int lessonDays = normalizeLessonDays(days);
+        Student student = studentService.getById(id);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = compileLessonsForStudentInAdmin(student.getId(), lessonDays);
+        List<String> weekDays = theWeekService.compileWeekDays(lessonDays);
+
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("weekDays", weekDays);
+        model.addAttribute("lessonDays", lessonDays);
+        model.addAttribute("student", student);
+        model.addAttribute("teachers", teacherService.getAll());
+        model.addAttribute("courses", courseService.getAll().stream().map(courseMapper::mapCourseToCourseDTO).collect(Collectors.toList()));
+        model.addAttribute("hours", theWeekService.compileHours());
     }
     public void manageDeleteCourseByTeacher(int idTeach, int idLes) throws MessagingException {
         Lesson lesson = getById(idLes);
@@ -306,13 +378,29 @@ public class LessonService {
         }
     }
 
+    public int normalizeLessonDays(Integer days) {
+        return days != null && (days == 1 || days == 7 || days == 30) ? days : 7;
+    }
+
+    private boolean isLessonInPeriod(Lesson lesson, int days) {
+        LocalDateTime periodStart = LocalDate.now().atStartOfDay();
+        LocalDateTime periodEnd = periodStart.plusDays(normalizeLessonDays(days));
+        return !lesson.getLessonTime().isBefore(periodStart) && lesson.getLessonTime().isBefore(periodEnd);
+    }
+
     // Assembles the teacher's calendar: days, lessons, continuation cells for long lessons, and available slots for rescheduling.
     // The method returns one map with both lesson starts and continuation cells so templates can read only "lessons".
     public HashMap<String, LessonAdminLessonsDTO> compileLessonsForTeacher(int teacherId) throws JsonProcessingException {
+        return compileLessonsForTeacher(teacherId, 7);
+    }
+
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForTeacher(int teacherId, Integer days) throws JsonProcessingException {
         List<Lesson> teacherLessons1 = findAllByTeachId(teacherId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
-            addLessonSegments(lessonHashMap, lesson);
+            if (isLessonInPeriod(lesson, normalizeLessonDays(days))) {
+                addLessonSegments(lessonHashMap, lesson);
+            }
         }
         //////////////////
         LocalDateTime now2 = LocalDateTime.now();
@@ -322,7 +410,7 @@ public class LessonService {
         lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
 
 /////////
-        final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{less};
+
         HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
         List<TimeOfTheWeek> teacherFreeTimeSlots = theWeekService.getAll();
         for (int i = 0; i < 3; i++) {
@@ -348,15 +436,50 @@ public class LessonService {
 
         return lessonHashMap;
     }
+    public String manageEditLessonByTeacher(int idLes, int idTeach, String date) throws MessagingException {
+        Lesson lesson = getById(idLes);
+        List<Object> objs = checkIfLessonValidWithReputitions(idTeach, lesson.getStudent().getId(),lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
+        Statuses status = (Statuses) objs.get(0);
+        LocalDateTime newDate = (LocalDateTime) objs.get(1);
+        if (status == Statuses.SUCCESS) {
+            Teacher teacher = teacherService.getById(idTeach);
+            mailService.sendEmailWithThymeleafToStudentAboutLessonTimeEdited(teacherMapper.mapTeacherToTeacherDTO(teacher), lesson.getLessonTime(), newDate, lesson.getDuration(), "Lesson time changed", Collections.singletonList(lesson.getStudent().getEmail()));
+            lesson.setLessonTime(newDate);
+            update(lesson.getId(), lesson);
+            return "LESSON_EDITED";
+        } else {
+            return status.name();
+        }
+    }
+    public String manageEditLessonByStudent(int idLes, int idSt, String date) throws MessagingException {
+        Lesson lesson = getById(idLes);
+        List<Object> objs = checkIfLessonValidWithReputitions(lesson.getTeacher().getId(), lesson.getStudent().getId(), lesson.getCourse().getId(), idLes, lesson.getDuration(), date, 1);
+        Statuses status = (Statuses) objs.get(0);
+        LocalDateTime newDate = (LocalDateTime) objs.get(1);
+        if (status == Statuses.SUCCESS) {
+            StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
+            mailService.sendEmailWithThymeleafToTeacherAboutLessonTimeEdited(student, lesson.getLessonTime(), newDate, lesson.getDuration(), "Lesson time changed", Collections.singletonList(lesson.getTeacher().getEmail()));
+            lesson.setLessonTime(newDate);
+            update(lesson.getId(), lesson);
+            return "LESSON_EDITED";
+        } else {
+            return status.name();
+        }
+    }
 
     // Assembles the calendar only for one teacher-student pair.
     // It filters lessons for this pair, adds teacher's available times, and returns structures for teacherStudentLessons/studentLessons.
     public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudentAndTeacher(int idT, int idSt) throws JsonProcessingException {
+        return compileLessonsForStudentAndTeacher(idT, idSt, 7);
+    }
 
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudentAndTeacher(int idT, int idSt, Integer days) throws JsonProcessingException {
         List<Lesson> teacherLessons1 = findAllByIdTandIdSt(idT, idSt);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : teacherLessons1) {
-            addLessonSegments(lessonHashMap, lesson);
+            if (isLessonInPeriod(lesson, normalizeLessonDays(days))) {
+                addLessonSegments(lessonHashMap, lesson);
+            }
         }
         //////////////////
         LocalDateTime now2 = LocalDateTime.now();
@@ -394,10 +517,16 @@ public class LessonService {
     // Assembles the student's calendar with lessons from all their teachers.
     // For each teacher, it adds notTakenTimes so the student can see rescheduling options.
     public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudent(int stId) throws JsonProcessingException {
+        return compileLessonsForStudent(stId, 7);
+    }
+
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudent(int stId, Integer days) throws JsonProcessingException {
         List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
-            addLessonSegments(lessonHashMap, lesson);
+            if (isLessonInPeriod(lesson, normalizeLessonDays(days))) {
+                addLessonSegments(lessonHashMap, lesson);
+            }
         }
 
 //////////////////////////
@@ -442,11 +571,16 @@ public class LessonService {
     // Assembles the admin version of the student's calendar.
     // The structure is the same as in the student cabinet, but data is prepared for the administrative template.
     public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudentInAdmin(int stId) throws JsonProcessingException {
+        return compileLessonsForStudentInAdmin(stId, 7);
+    }
 
+    public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudentInAdmin(int stId, Integer days) throws JsonProcessingException {
         List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
         for (Lesson lesson : studentLessons) {
-            addLessonSegments(lessonHashMap, lesson);
+            if (isLessonInPeriod(lesson, normalizeLessonDays(days))) {
+                addLessonSegments(lessonHashMap, lesson);
+            }
         }
 
 
@@ -583,9 +717,9 @@ public class LessonService {
             return Statuses.ITEM_NOT_PICKED;
         }else if (studentService.getById(sId)==null) {
             return Statuses.STUDENT_NOT_FOUND;
-        } else if (teacherService.getById(sId)==null) {
+        } else if (teacherService.getById(tId)==null) {
             return Statuses.TEACHER_NOT_FOUND;
-        }else if (courseService.getById(sId)==null) {
+        }else if (courseService.getById(cId)==null) {
             return Statuses.COURSE_NOT_FOUND;
         }else {
             return Statuses.SUCCESS;
@@ -628,5 +762,93 @@ public class LessonService {
         retValues.add(status);
         retValues.add(time);
         return retValues;
+    }
+
+    public void manageGoToStudentLessons(int idSt, String output, Model model, Integer days) throws JsonProcessingException {
+        int lessonDays = normalizeLessonDays(days);
+        Student student = studentService.getById(idSt);
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = compileLessonsForStudent(student.getId(), lessonDays);
+        List<String> weekDays = theWeekService.compileWeekDays(lessonDays);
+
+        if (output != null && !output.equals("")) {
+            model.addAttribute("output", output);
+        }
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("weekDays", weekDays);
+        model.addAttribute("lessonDays", lessonDays);
+        model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
+    }
+
+    public String manageDeleteLessonByStudentCabinet(int idSt, int idLes) throws MessagingException {
+        if (getById(idLes).getLessonTime().isAfter(LocalDateTime.now().plusHours(12))) {
+            manageRequestDeleteLessonByStudent(idSt, idLes);
+            return "LESSON_DELETED";
+        } else {
+            return "TOO_LATE";
+        }
+    }
+
+    public void manageGoToTeacherLessonsPage(int idTeach, String output, Model model, Integer days) throws JsonProcessingException {
+        int lessonDays = normalizeLessonDays(days);
+        Teacher teacher = teacherService.getById(idTeach);
+
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = compileLessonsForTeacher(teacher.getId(), lessonDays);
+        List<String> weekDays = theWeekService.compileWeekDays(lessonDays);
+        List<Course> courses = new ArrayList<>();
+        teacher.getTeacherCourses().forEach(course -> courses.add(course.getCourse()));
+
+        if (output != null && !output.equals("")) {
+            model.addAttribute("output", output);
+        }
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("students", studentService.getAll().stream().map(el -> studentMapper.mapStudentToStudentDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("courses", courses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("weekDays", weekDays);
+        model.addAttribute("lessonDays", lessonDays);
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
+    }
+
+    public String manageAddMoneyByTeacher(int teachId, int lesId) {
+        Lesson lesson = getById(lesId);
+        if (LocalDateTime.now().isAfter(lesson.getLessonTime())) {
+            manageChangeStatusToWas(teachId, lesId);
+            return "LESSON_STATUS_CHANGED";
+        } else {
+            return "TOO_EARLY";
+        }
+    }
+
+    public void manageGoToTeacherStudentLessonsPage(int idTeach, int idSt, String output, Model model, Integer days) throws JsonProcessingException {
+        int lessonDays = normalizeLessonDays(days);
+        Teacher teacher = teacherService.getById(idTeach);
+        Student student = studentService.getById(idSt);
+
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = compileLessonsForStudentAndTeacher(idTeach, student.getId(), lessonDays);
+        List<String> weekDays = theWeekService.compileWeekDays(lessonDays);
+        List<Course> courses = new ArrayList<>();
+        teacher.getTeacherCourses().forEach(course -> courses.add(course.getCourse()));
+
+        if (output != null && !output.equals("")) {
+            model.addAttribute("output", output);
+        }
+        model.addAttribute("lessons", lessonHashMap);
+        model.addAttribute("courses", courses.stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList()));
+        model.addAttribute("weekDays", weekDays);
+        model.addAttribute("lessonDays", lessonDays);
+        model.addAttribute("teacher", teacherMapper.mapTeacherToTeacherDTO(teacher));
+        model.addAttribute("student", studentMapper.mapStudentToStudentDTO(student));
+        model.addAttribute("hours", Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"));
+    }
+
+    public String manageAddMoneyByTeacherStudent(int teachId, int lesId) {
+        Lesson lesson = getById(lesId);
+        if (LocalDateTime.now().isAfter(lesson.getLessonTime())) {
+            manageChangeStatusToWas(teachId, lesId);
+            return "LESSON_STATUS_CHANGED";
+        } else {
+            return "LESSON_BEFORE_NOW";
+        }
     }
 }

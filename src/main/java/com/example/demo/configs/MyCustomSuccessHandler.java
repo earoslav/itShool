@@ -3,32 +3,28 @@ package com.example.demo.configs;
 import com.example.demo.models.entities.Student;
 import com.example.demo.models.entities.Teacher;
 import com.example.demo.models.entities.User;
-import com.example.demo.services.entities.StudentService;
-import com.example.demo.services.entities.TeacherService;
+import com.example.demo.repositories.entities.StudentRepository;
+import com.example.demo.repositories.entities.TeacherRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Set;
 // Handler спрацьовує після успішного логіну і вирішує, куди перенаправити користувача.
-// Він знаходить id студента або викладача через сервіси, бо URL кабінетів у цьому проекті містять ці id.
+// Він знаходить id студента або викладача через репозиторії, бо URL кабінетів у цьому проекті містять ці id.
 @Component
 @RequiredArgsConstructor
 public class MyCustomSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final StudentService studentService;
-    private final TeacherService teacherService;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     // Передає стандартну обробку успішної авторизації батьківському AuthenticationSuccessHandler.
     // Цей overload лишає сумісність з API, але реальне перенаправлення виконує версія без FilterChain нижче.
     @Override
@@ -36,7 +32,7 @@ public class MyCustomSuccessHandler implements AuthenticationSuccessHandler {
         AuthenticationSuccessHandler.super.onAuthenticationSuccess(request, response, chain, authentication);
     }
     // Після логіну визначає роль користувача і готує правильний URL кабінету.
-    // Для ROLE_TEACHER і ROLE_STUDENT він через сервіси знаходить id профілю, а ROLE_ADMIN веде напряму на /admin/homepage.
+    // Для ROLE_TEACHER і ROLE_STUDENT він через репозиторії знаходить id профілю, а ROLE_ADMIN веде напряму на /admin/homepage.
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -46,11 +42,13 @@ public class MyCustomSuccessHandler implements AuthenticationSuccessHandler {
         int userId = user.getId();
         int stId = 0;
         int teachId = 0;
-        if(studentService.checkIfExistsByUserId(userId)){
-            stId = studentService.findByUserId(userId).getId();
+        Student student = studentRepository.findByUserId(userId);
+        if(student != null){
+            stId = student.getId();
         }
-        if(teacherService.checkIfExistsByUserId(userId)){
-            teachId = teacherService.findByUserId(userId).getId();
+        Teacher teacher = teacherRepository.findByUserId(userId);
+        if(teacher != null){
+            teachId = teacher.getId();
         }
 
         if (roles.contains("ROLE_ADMIN")) {

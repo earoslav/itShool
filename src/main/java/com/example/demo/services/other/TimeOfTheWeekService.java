@@ -60,8 +60,12 @@ public class TimeOfTheWeekService {
         return getAll().stream().filter(t -> t.getId() == id).findFirst().get();
     }
     public List<String> compileWeekDays(){
+        return compileWeekDays(7);
+    }
+
+    public List<String> compileWeekDays(Integer daysCount){
+        int validDaysCount = daysCount != null && (daysCount == 1 || daysCount == 7 || daysCount == 30) ? daysCount : 7;
         LocalDate now = LocalDate.now();
-        now = now.minusWeeks(2);
         List<String> weekDaysTemp = new ArrayList<>();
         weekDaysTemp.add("MON");
         weekDaysTemp.add("TUE");
@@ -71,11 +75,9 @@ public class TimeOfTheWeekService {
         weekDaysTemp.add("SAT");
         weekDaysTemp.add("SUN");
         List<String> weekDays = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
-                now = now.plusDays(1);
-            }
+        for (int i = 0; i < validDaysCount; i++) {
+            weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
+            now = now.plusDays(1);
         }
         return weekDays;
     }

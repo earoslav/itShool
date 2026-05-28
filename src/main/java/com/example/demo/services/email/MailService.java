@@ -352,7 +352,7 @@ public class MailService {
 
         map.put("teacher", teacher);
         map.put("approved", false);
-        map.put("addTeacherUrl", "http://localhost:8081/admin/addTeacher");
+        map.put("addTeacherUrl", "https://demo16-morning-shadow-9708.fly.dev/admin/addTeacher");
         map.put("courses", courses);
         map.put("freeTimes", freeTimes);
         map.put("password", password);

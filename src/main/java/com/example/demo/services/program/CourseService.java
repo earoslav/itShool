@@ -2,20 +2,42 @@ package com.example.demo.services.program;
 
 import com.example.demo.models.programe.Course;
 import com.example.demo.repositories.program.CourseRepository;
+import com.example.demo.dto.programe.CourseDTO;
+import com.example.demo.dto.other.CommentDTO;
+import com.example.demo.dto.entities.TeacherDTO;
+import com.example.demo.mapper.programe.CourseMapper;
+import com.example.demo.mapper.other.CommentMapper;
+import com.example.demo.mapper.entity.TeacherMapper;
+import com.example.demo.services.other.CommentService;
+import com.example.demo.services.entities.TeacherService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
 // CourseService contains business operations for the "courses" module.
 // Controllers call this service to avoid direct interaction with repositories, mappers, and scheduling rules.
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
+    private final CourseMapper courseMapper;
+    private final CommentMapper commentMapper;
+    private final CommentService commentService;
+    private final TeacherMapper teacherMapper;
+    private final TeacherService teacherService;
+
     // Receives CourseRepository dependency through Spring.
     // These services and mappers are required by the class methods to work with the "courses" module without manual object creation.
-    public CourseService(CourseRepository courseRepository) {
+    public CourseService(CourseRepository courseRepository, CourseMapper courseMapper, CommentMapper commentMapper, CommentService commentService, TeacherMapper teacherMapper, @Lazy TeacherService teacherService) {
         this.courseRepository = courseRepository;
+        this.courseMapper = courseMapper;
+        this.commentMapper = commentMapper;
+        this.commentService = commentService;
+        this.teacherMapper = teacherMapper;
+        this.teacherService = teacherService;
     }
     // Returns all courses from the repository.
     // Lists, calendars, and forms use this method when the entire set of available records needs to be shown.
@@ -58,5 +80,47 @@ public class CourseService {
     public void deleteById(Integer id) {
         getById(id);
         courseRepository.deleteById(id);
+    }
+
+    public void manageGoToPublicHomepage(Model model) {
+        List<CourseDTO> courses = new ArrayList<>();
+        List<CommentDTO> comments = new ArrayList<>();
+        List<TeacherDTO> teachers = new ArrayList<>();
+        try {
+            courses = getAll().stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList());
+            comments = commentService.getAll().stream().map(comment -> commentMapper.mapCommentToCommentDTO(comment)).collect(Collectors.toList());
+            teachers = teacherService.getAll().stream().map(teacher -> teacherMapper.mapTeacherToTeacherDTO(teacher)).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        model.addAttribute("courses", courses);
+        model.addAttribute("comments", comments);
+        model.addAttribute("teachers", teachers);
+    }
+    public void manageGoToPublicHomepageWithOutput(Model model, String output) {
+        List<CourseDTO> courses = new ArrayList<>();
+        List<CommentDTO> comments = new ArrayList<>();
+        List<TeacherDTO> teachers = new ArrayList<>();
+        try {
+            courses = getAll().stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList());
+            comments = commentService.getAll().stream().map(comment -> commentMapper.mapCommentToCommentDTO(comment)).collect(Collectors.toList());
+            teachers = teacherService.getAll().stream().map(teacher -> teacherMapper.mapTeacherToTeacherDTO(teacher)).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        model.addAttribute("courses", courses);
+        model.addAttribute("comments", comments);
+        model.addAttribute("teachers", teachers);
+        model.addAttribute("output", output);
+    }
+
+    public void manageGoToPublicCourses(Model model) {
+        List<CourseDTO> courses = new ArrayList<>();
+        try {
+            courses = getAll().stream().map(course -> courseMapper.mapCourseToCourseDTO(course)).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        model.addAttribute("courses", courses);
     }
 }

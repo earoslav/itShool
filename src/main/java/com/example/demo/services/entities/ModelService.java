@@ -44,11 +44,12 @@ public class ModelService {
         this.courseMapper = courseMapper;
         this.teacherMapper = teacherMapper;
     }
-    public void compileModelForStudentLessonsInAdmin(Model model, int idSt, String output) throws JsonProcessingException {
+    public void compileModelForStudentLessonsInAdmin(Model model, int idSt, String output, Integer days) throws JsonProcessingException {
+        int lessonDays = lessonService.normalizeLessonDays(days);
         List<TeacherDTO> teachers = teacherService.getAll().stream().map(el -> teacherMapper.mapTeacherToTeacherDTO(el)).collect(Collectors.toList());
         StudentDTO student = studentMapper.mapStudentToStudentDTO(studentService.getById(idSt));
-        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = lessonService.compileLessonsForStudentInAdmin(idSt);
-        List<String> weekDays = theWeekService.compileWeekDays();
+        HashMap<String, LessonAdminLessonsDTO> lessonHashMap = lessonService.compileLessonsForStudentInAdmin(idSt, lessonDays);
+        List<String> weekDays = theWeekService.compileWeekDays(lessonDays);
         List<String> hours = theWeekService.compileHours();
         List<CourseDTO> courses = courseService.getAll().stream().map(el -> courseMapper.mapCourseToCourseDTO(el)).collect(Collectors.toList());
 
@@ -56,6 +57,7 @@ public class ModelService {
         model.addAttribute("lessons", lessonHashMap);
         model.addAttribute("courses", courses);
         model.addAttribute("weekDays", weekDays);
+        model.addAttribute("lessonDays", lessonDays);
         model.addAttribute("teachers", teachers);
         model.addAttribute("student", student);
         model.addAttribute("hours", hours);

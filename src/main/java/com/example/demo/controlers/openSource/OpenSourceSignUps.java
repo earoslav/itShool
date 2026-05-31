@@ -40,8 +40,8 @@ public class OpenSourceSignUps {
     }
 
     // Creates data at the POST /signUpAsStudent/{password} route in the "public pages and registration" module.
-    @PostMapping("/signUpAsStudent/{password}")
-    public String signUpAsStudent(@ModelAttribute("student") StudentDTO student, @PathVariable("password") String password, Model model){
+    @PostMapping("/signUpAsStudent")
+    public String signUpAsStudent(@ModelAttribute("student") StudentDTO student, @RequestParam("password") String password, Model model){
         return studentService.manageSignUpAsStudent(student, password);
     }
 
@@ -60,9 +60,9 @@ public class OpenSourceSignUps {
     }
 
     // Creates data at the POST /signUpAsTeacher/{password} route in the "public pages and registration" module.
-    @PostMapping("/signUpAsTeacher/{password}")
+    @PostMapping("/signUpAsTeacher")
     public String signUpAsTeacher(@ModelAttribute("teacher") TeacherDTO teacher,
-                                  @PathVariable("password") String password,
+                                  @RequestParam("password") String password,
                                   @RequestParam(value = "courseIds", required = false) List<Integer> courses,
                                   @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimes) throws MessagingException {
         String result = teacherService.manageSignUpAsTeacher(teacher, password, courses, freeTimes);

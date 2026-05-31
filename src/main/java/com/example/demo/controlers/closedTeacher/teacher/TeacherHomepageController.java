@@ -36,10 +36,10 @@ public class TeacherHomepageController {
     }
 
     // Updates data at the POST /{id}/homepage/{password} route in the "teachers" module.
-    @PostMapping("/{id}/homepage/{password}")
+    @PostMapping("/{id}/homepage")
     public String updateTeacher(@PathVariable("id") int id,
                                 @ModelAttribute("teacher") TeacherDTO teacher,
-                                @PathVariable("password") String password,
+                                @RequestParam("password") String password,
                                 @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimeIds,
                                 @RequestParam(value = "newCourseIds", required = false) List<Integer> newCourseIds) throws MessagingException {
         String result = teacherService.manageUpdateTeacher(id, teacher, password, freeTimeIds, newCourseIds);

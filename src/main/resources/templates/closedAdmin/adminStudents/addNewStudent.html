@@ -20,7 +20,7 @@
     <div class="container">
         <div th:replace="~{fragments/alerts :: alerts}"></div>
 
-        <form th:action="@{/admin/addStudent/}" th:object="${student}" method="post" id="form">
+        <form th:action="@{/admin/addStudent}" th:object="${student}" method="post" id="form">
             <div class="form-grid">
                 <div class="field">
                     <label for="name">Ім'я</label>

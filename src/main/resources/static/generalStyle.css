@@ -6087,6 +6087,7 @@ section.hero h2 {
 .lesson-segment-cell {
     border-top-color: transparent !important;
     border-bottom-color: transparent !important;
+    border: 1px solid #38d371 !important;
 }
 
 .lesson-segment-cell-end {
@@ -7805,7 +7806,17 @@ footer {
     transform: translateY(-2px) !important;
     box-shadow: 0 12px 32px rgba(245, 158, 11, 0.45) !important;
 }
+.lesson-table-wrapper .lesson-segment-end .lesson-title{
+    color: rgba(255, 0, 0, 0);
 
+
+}
+.lesson-table-wrapper .lesson-segment-continuation .lesson-title{
+    color: rgba(255, 0, 0, 0);
+}
+.lesson-table-wrapper .lesson-segment-start .lesson-title{
+    color: #064e3b !important;
+}
 .buttons {
     display: inline-block;
     margin-right: 15px;
@@ -8196,7 +8207,7 @@ input:focus {
     font-weight: 600;
     color: #0f172a;
     font-size: 15px;
-    margin-bottom: 8px;
+
 }
 
 .lesson-number {
@@ -8299,6 +8310,7 @@ input:focus {
 .lesson-table-wrapper td>div>button {
     position: relative;
     z-index: 1 !important;
+    border-radius: 0px !important;
 }
 
 .list-limit-form {
@@ -8329,4 +8341,60 @@ input:focus {
     flex: 0 0 auto;
     margin: 0 !important;
     padding: 8px 18px !important;
+}
+
+/* Page loading overlay */
+@keyframes pageLoadingSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.page-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.page-loading-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.page-loading-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 210px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.22);
+}
+
+.page-loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 4px solid #dbeafe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    animation: pageLoadingSpin 0.8s linear infinite;
+}
+
+.page-loading-text {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
 }

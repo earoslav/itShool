@@ -22,7 +22,7 @@
 <div class="container">
     <div th:replace="~{fragments/alerts :: alerts}"></div>
     <p class="d-none" th:text="${teacher.id}" id="id" style="display: none"></p>
-    <form id="form" th:action="@{/teacher/{id}/homepage/OLDPASS(id=${teacher.id})}" th:object="${teacher}"
+    <form id="form" th:action="@{/teacher/{id}/homepage(id=${teacher.id})}" th:object="${teacher}"
           method="post">
         <input type="hidden" th:field="*{id}">
         <div class="form-grid">

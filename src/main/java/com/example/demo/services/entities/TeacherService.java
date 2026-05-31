@@ -188,7 +188,8 @@ public class TeacherService {
     public String manageAddTeacher(TeacherDTO teacher,
                                   String password,
                                   List<Integer> coursesIds,
-                                  List<Integer> freeTimesIds) {
+                                  List<Integer> freeTimesIds, Model model) {
+        model.addAttribute("teacher", teacher);
         if (userService.checkIfExistsByEmail(teacher.getUser().getEmail())) {
             return "EXISTS";
         }
@@ -197,6 +198,7 @@ public class TeacherService {
         }
         if (freeTimesIds == null || freeTimesIds.isEmpty()) {
             return "NO_FREE_TIMES";
+
         }
         Teacher teacher1 = teacherMapper.mapTeacherDTOToTeacher(teacher);
         if (password.equals("NO_PASS")) {
@@ -361,7 +363,7 @@ public class TeacherService {
             }
             teacher.setFreeTimeIds(ids);
         }
-        if (password.equals("OLDPASS")) {
+        if (password.equals("OLD_PASS")) {
             password = getById(teacher.getId()).getPassword();
             Teacher retTeach = teacherMapper.mapTeacherDTOToTeacher(teacher);
             retTeach.setPassword(password);

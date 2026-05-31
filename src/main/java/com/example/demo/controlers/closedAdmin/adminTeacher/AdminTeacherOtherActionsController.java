@@ -56,14 +56,19 @@ public class AdminTeacherOtherActionsController {
     }
 
     // Creates data at the POST /addTeacher/{password} route in the "teachers" module.
-    @PostMapping("/addTeacher/{password}")
+    @PostMapping("/addTeacher")
     public String addTeacher(
             @ModelAttribute("teacher") TeacherDTO teacher,
-            @PathVariable("password") String password,
+            @RequestParam("password") String password,
             @RequestParam(value = "courseIds", required = false) List<Integer> coursesIds,
-            @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimesIds) {
+            @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimesIds, Model model) {
+        String res = teacherService.manageAddTeacher(teacher, password, coursesIds, freeTimesIds, model);
+        if(res.equals("TEACHER_ADDED")){
+            return "redirect:/admin/homepage/TEACHER_ADDED";
+        }else{
+            return "redirect:/admin/addTeacher/" + res;
+        }
 
-        return "redirect:/admin/homepage/" + teacherService.manageAddTeacher(teacher, password, coursesIds, freeTimesIds);
     }
 
     // Opens the GET /teachers route and prepares data for the "closedAdmin/adminTeachers/teachers" template.
@@ -89,10 +94,10 @@ public class AdminTeacherOtherActionsController {
     }
 
     // Updates data at the POST /teacher/{id}/edit/{password} route in the "teachers" module.
-    @PostMapping("/teacher/{id}/edit/{password}")
+    @PostMapping("/teacher/{id}/edit")
     public String updateTeacher(@PathVariable("id") int id,
                                 @ModelAttribute("teacher") TeacherDTO teacher,
-                                @PathVariable("password") String password,
+                                @RequestParam("password") String password,
                                 @RequestParam(value = "freeTimeIds", required = false) List<Integer> freeTimeIds,
                                 @RequestParam(value = "newCourseIds", required = false) List<Integer> newCourseIds,
                                 Model model) {

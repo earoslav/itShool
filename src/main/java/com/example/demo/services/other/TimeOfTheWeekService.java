@@ -123,11 +123,10 @@ public class TimeOfTheWeekService {
             return freeTimes;
         }
     }
-    // Compresses consecutive hours of the same day into compact ranges.
-    // For example, the set 8, 9, 10 is converted into a single range for convenient display in emails and profiles.
+    // Compresses consecutive 30-minute slots of the same day into compact ranges for emails and profiles.
     public List<String> compressRanges(List<String> input) {
         List<Integer> numbers = input.stream()
-                .map(Integer::parseInt)
+                .map(this::minutesFromTime)
                 .sorted()
                 .toList();
 
@@ -139,13 +138,13 @@ public class TimeOfTheWeekService {
         for (int i = 1; i < numbers.size(); i++) {
             int curr = numbers.get(i);
 
-            if (curr == prev + 1) {
+            if (curr == prev + 30) {
                 prev = curr;
             } else {
                 if (start == prev) {
-                    result.add(String.valueOf(start));
+                    result.add(formatTime(start));
                 } else {
-                    result.add(start + "-" + prev);
+                    result.add(formatTime(start) + "-" + formatTime(prev + 30));
                 }
                 start = curr;
                 prev = curr;
@@ -154,36 +153,62 @@ public class TimeOfTheWeekService {
 
         // Add the last range
         if (start == prev) {
-            result.add(String.valueOf(start));
+            result.add(formatTime(start));
         } else {
-            result.add(start + "-" + prev);
+            result.add(formatTime(start) + "-" + formatTime(prev + 30));
         }
 
         return result;
     }
+
+    private String formatSlot(TimeOfTheWeek time) {
+        int hour = time.getTimeOfTheDay() != null ? time.getTimeOfTheDay() : 0;
+        int minute = time.getMinute() != null ? time.getMinute() : 0;
+        return String.format("%02d:%02d", hour, minute);
+    }
+
+    private int minutesFromTime(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+    }
+
+    private String formatTime(int minutes) {
+        return String.format("%02d:%02d", minutes / 60, minutes % 60);
+    }
+
+    private String getUkrainianDayName(int day) {
+        return switch (day) {
+            case 1 -> "Понеділок";
+            case 2 -> "Вівторок";
+            case 3 -> "Середа";
+            case 4 -> "Четвер";
+            case 5 -> "П'ятниця";
+            case 6 -> "Субота";
+            case 7 -> "Неділя";
+            default -> "";
+        };
+    }
+
     // Groups selected time slots by weekday names.
-    // After grouping, hours are compressed using compressRanges so that the template displays the schedule in neat blocks.
+    // After grouping, slots are compressed so that the template displays the schedule in neat blocks.
     public HashMap<String, List<String>> compileTimes(List<TimeOfTheWeek> selectedFreeTimes){
-        HashMap<String, List<String>> compiledTimes = new HashMap<>();
+        HashMap<String, List<String>> compiledTimes = new java.util.LinkedHashMap<>();
 
         for(int i = 1; i<=7; i++){
             int finalI = i;
             List<String> strTimes = new ArrayList<>();
             List<String> finalInput = strTimes;
-            List<Integer> times = selectedFreeTimes.stream().filter(time->time.getDayOfTheWeek()== finalI).map(time->time.getTimeOfTheDay()).collect(Collectors.toList());
-            times.stream().forEach(time -> finalInput.add(String.valueOf(time)));
-            if(times.size()!=0) {
+            List<TimeOfTheWeek> times = selectedFreeTimes.stream()
+                    .filter(time -> time.getDayOfTheWeek() == finalI)
+                    .sorted(java.util.Comparator
+                            .comparing(TimeOfTheWeek::getTimeOfTheDay)
+                            .thenComparing(TimeOfTheWeek::getMinute))
+                    .collect(Collectors.toList());
+            times.stream().forEach(time -> finalInput.add(formatSlot(time)));
+            if(!times.isEmpty()) {
                 strTimes = compressRanges(finalInput);
             }
-            switch(i){
-                case 1: compiledTimes.put("Monday", strTimes);
-                case 2: compiledTimes.put("Tuesday", strTimes);
-                case 3: compiledTimes.put("Wednesday", strTimes);
-                case 4: compiledTimes.put("Thursday", strTimes);
-                case 5: compiledTimes.put("Friday", strTimes);
-                case 6: compiledTimes.put("Saturday", strTimes);
-                case 7: compiledTimes.put("Sunday", strTimes);
-            }
+            compiledTimes.put(getUkrainianDayName(i), strTimes);
         }
         return compiledTimes;
 

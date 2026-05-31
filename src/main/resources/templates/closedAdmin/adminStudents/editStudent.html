@@ -23,7 +23,7 @@
             <div th:replace="~{fragments/alerts :: alerts}"></div>
 
 
-            <form th:action="@{/admin/student/{id}/edit/(id=${student.id})}" th:object="${student}" method="post" id="form">
+            <form th:action="@{/admin/student/{id}/edit(id=${student.id})}" th:object="${student}" method="post" id="form">
 
                 <p class="d-none" id="id" th:text="${student.id}"></p>
                 <div class="form-grid">

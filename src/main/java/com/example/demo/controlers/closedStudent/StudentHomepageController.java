@@ -33,8 +33,8 @@ public class StudentHomepageController {
     }
 
     // Updates data at the POST /{idSt}/homepage/{password} route in the "students" module.
-    @PostMapping("/{idSt}/homepage/{password}")
-    public String updateStudent(@ModelAttribute("student") StudentDTO student, @PathVariable("password") String password, @PathVariable("idSt") int id, Model model) {
+    @PostMapping("/{idSt}/homepage")
+    public String updateStudent(@ModelAttribute("student") StudentDTO student, @RequestParam("password") String password, @PathVariable("idSt") int id, Model model) {
         return studentService.manageUpdateStudentHomepage(student, password, id);
     }
 }

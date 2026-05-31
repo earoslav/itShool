@@ -85,8 +85,8 @@ AdminStudentOtherActionsController {
 
     // Method creates a student from the admin form, encodes the password using PasswordEncoder, and saves the Student along with the User account.
     // "student", "output", and "error" are recorded in the Model, after which the user sees the template or redirect "closedAdmin/adminStudents/addNewStudent", "redirect:/admin/homepage/STUDENT_ADDED".
-    @PostMapping("/addStudent/{password}")
-    public String addStudent(@ModelAttribute("student") StudentDTO student, @PathVariable("password") String password, Model model) {
+    @PostMapping("/addStudent")
+    public String addStudent(@ModelAttribute("student") StudentDTO student, @RequestParam("password") String password, Model model) {
         return studentService.manageAddStudent(student, password, model);
     }
 
@@ -124,11 +124,11 @@ AdminStudentOtherActionsController {
 
     // Method updates student data, their User fields, and password if a new value is provided instead of OLDPASS/NOPASS.
     // The method calls `userService.checkIfExistsByEmail`, `studentService.getById`, `studentMapper.mapStudentDTOToStudent`, and `studentService.update`, ending with a "redirect:/admin/student/" transition.
-    @PostMapping("/student/{id}/edit/{password}")
+    @PostMapping("/student/{id}/edit")
     public String editStudent(
             @PathVariable("id") int id,
             @ModelAttribute("student") StudentDTO student,
-            @PathVariable("password") String password,
+            @RequestParam("password") String password,
             Model model) {
 
         String returnUrl = studentService.manageEditStudent(student, password, id);

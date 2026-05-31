@@ -103,7 +103,7 @@ public class StudentService {
         }
 
         Student student1 = studentMapper.mapStudentDTOToStudent(student);
-        if (password.equals("OLDPASS")) {
+        if (password.equals("OLD_PASS")) {
             password = getById(student.getId()).getPassword();
             student1.setPassword(password);
             update(id, student1);
@@ -144,13 +144,13 @@ public class StudentService {
     }
     public String manageAddStudent(StudentDTO student, String password, Model model){
         if (checkIfExistsByEmail(student.getUser().getEmail())) {
-            if (password.equals("NO_PASS")) {
-                model.addAttribute("student");
-                model.addAttribute("output", "NO_PASS");
-                return "closedAdmin/adminStudents/addNewStudent";
-            }
             model.addAttribute("output", "EXISTS");
             model.addAttribute("student", student);
+            return "closedAdmin/adminStudents/addNewStudent";
+        }
+        if (password.equals("NO_PASS")) {
+            model.addAttribute("student");
+            model.addAttribute("output", "NO_PASS");
             return "closedAdmin/adminStudents/addNewStudent";
         }
         User user = new User(student.getUser().getName(), student.getUser().getEmail(), passwordEncoder.encode(password), "STUDENT");
@@ -174,7 +174,7 @@ public class StudentService {
         if (userService.checkIfExistsByEmail(student.getUser().getEmail()) && !getById(id).getEmail().equals(student.getUser().getEmail())) {
             return "redirect:/student/" + id + "/homepage/exists";
         } else {
-            if (password.equals("OLDPASS")) {
+            if (password.equals("OLD_PASS")) {
                 password = getById(id).getPassword();
                 Student retStudent = studentMapper.mapStudentDTOToStudent(student);
                 retStudent.setPassword(password);

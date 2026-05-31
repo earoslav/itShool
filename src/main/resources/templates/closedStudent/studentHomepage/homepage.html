@@ -22,7 +22,7 @@
     <div th:replace="~{fragments/alerts :: alerts}"></div>
     <p class="d-none" id="idSt" th:text="${student.id}" style="display: none"></p>
     <div class="card">
-        <form  id="form" th:action="@{/student/{idSt}/homepage/(idSt=${student.id})}" th:object="${student}" method="post" onsubmit="return handleSubmit(event)">
+        <form  id="form" th:action="@{/student/{idSt}/homepage(idSt=${student.id})}" th:object="${student}" method="post" onsubmit="return handleSubmit(event)">
 
             <p class="d-none" id="id" th:text="${student.id}" style="display: none"></p>
             <div class="form-grid">

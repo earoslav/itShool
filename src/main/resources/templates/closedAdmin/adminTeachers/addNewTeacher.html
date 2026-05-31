@@ -23,7 +23,7 @@
     <div th:replace="~{fragments/alerts :: alerts}"></div>
 
 
-    <form id="form" action="/admin/addTeacher/" th:object="${teacher}" method="post">
+    <form id="form" action="/admin/addTeacher" th:object="${teacher}" method="post">
         <div class="form-grid">
             <div class="field">
                 <label for="name">ПІБ / ім'я</label>
@@ -57,7 +57,7 @@
 
             <div class="field">
                 <label>Пароль</label>
-                <input type="password" required name="password" th:value="${password}" placeholder="Введіть новий пароль" id="pass">
+                <input type="password" required name="password" th:value="${password}" placeholder="Введіть пароль" id="pass">
             </div>
 
             <div class="mt-16 field full">

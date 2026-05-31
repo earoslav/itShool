@@ -44,11 +44,15 @@
         </tr>
         </thead>
         <tbody>
+        <!-- todo start-time | duration - create a variable for table which describe a time slot value(time_slot = 30min 45min)
+            create a formula for count of boxes(slots)
+             duration/time_slot = count of slots
+             from start time generate count of slots
+        -->
         <tr th:each="hour : ${hours}">
             <td th:text="${hour}"></td>
 
             <td th:each="day : ${weekDays}">
-
                 <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
 <!--                     <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}" -->
 <!--                             th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" -->

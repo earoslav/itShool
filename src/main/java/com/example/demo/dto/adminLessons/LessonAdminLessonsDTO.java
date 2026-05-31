@@ -27,6 +27,7 @@ public class LessonAdminLessonsDTO {
     private CourseAdminLessonsDTO course;
 
 
+    // todo needed?
     private LocalDateTime lessonTime;
 
     private float duration;

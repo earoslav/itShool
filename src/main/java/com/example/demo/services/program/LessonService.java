@@ -20,7 +20,6 @@ import com.example.demo.models.thirdTables.TeacherStudentTimeOfTheWeek;
 import com.example.demo.services.thirdTable.TeacherStudentTimeOfTheWeekService;
 import com.example.demo.repositories.program.LessonRepository;
 import com.example.demo.services.email.MailService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
@@ -34,17 +33,11 @@ import com.example.demo.services.Statuses;
 import com.example.demo.services.entities.StudentService;
 import com.example.demo.services.entities.TeacherService;
 import com.example.demo.services.other.TimeOfTheWeekService;
-import jakarta.jws.WebParam;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ui.Model;
 
 // LessonService contains business operations for the "lessons" module.
@@ -54,7 +47,6 @@ import org.springframework.ui.Model;
 public class LessonService {
     private final LessonRepository lessonRepository;
     private LessonMapper lessonMapper;
-    @Autowired
     @Lazy
     private TeacherService teacherService;
     private ObjectMapper objectMapper;
@@ -348,6 +340,8 @@ public class LessonService {
         }
         return time;
     }
+
+    // convert data from format (LOCALDATA TIME) to "HH::MM"
     public String manageTimeOfTheLesson(Lesson lesson){
         String timeOfTheLesson = "";
         if (lesson.getLessonTime().getMinute() == 0) {
@@ -402,14 +396,11 @@ public class LessonService {
                 addLessonSegments(lessonHashMap, lesson);
             }
         }
-        //////////////////
         LocalDateTime now2 = LocalDateTime.now();
 
         final LocalDateTime[] t = {now2};
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
-        lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
-
-/////////
+        lessonHashMap.values().forEach(less::add);
 
         HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
         List<TimeOfTheWeek> teacherFreeTimeSlots = theWeekService.getAll();
@@ -429,10 +420,6 @@ public class LessonService {
         for (LessonAdminLessonsDTO val : lessonHashMap.values()) {
             val.getTeacher().setNotTakenTimes(freeTimesJson);
         }
-
-        ///////////
-
-        //////////////////
 
         return lessonHashMap;
     }
@@ -481,14 +468,11 @@ public class LessonService {
                 addLessonSegments(lessonHashMap, lesson);
             }
         }
-        //////////////////
         LocalDateTime now2 = LocalDateTime.now();
 
         final LocalDateTime[] t = {now2};
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
-        lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
-
-/////////
+        lessonHashMap.values().forEach(less::add);
         final List<LessonAdminLessonsDTO>[] teacherLessons = new List[]{new ArrayList()};
         findAllByTeachId(idT).stream().forEach(les -> teacherLessons[0].add(lessonMapper.mapLessonToLessonAdminLessonsDTO(les)));
         HashMap<LocalDateTime, TimeOfTheWeekAdminLessonsDTO> teacherfreeTimes = new HashMap<>();
@@ -508,14 +492,11 @@ public class LessonService {
             val.getTeacher().setNotTakenTimes(freeTimesJson);
         }
 
-        ///////////
-        //////////////////
-
-
         return lessonHashMap;
     }
     // Assembles the student's calendar with lessons from all their teachers.
     // For each teacher, it adds notTakenTimes so the student can see rescheduling options.
+
     public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudent(int stId) throws JsonProcessingException {
         return compileLessonsForStudent(stId, 7);
     }
@@ -523,20 +504,19 @@ public class LessonService {
     public HashMap<String, LessonAdminLessonsDTO> compileLessonsForStudent(int stId, Integer days) throws JsonProcessingException {
         List<Lesson> studentLessons = findAllByStudentId(stId);
         HashMap<String, LessonAdminLessonsDTO> lessonHashMap = new HashMap<>();
+
         for (Lesson lesson : studentLessons) {
             if (isLessonInPeriod(lesson, normalizeLessonDays(days))) {
                 addLessonSegments(lessonHashMap, lesson);
             }
         }
 
-//////////////////////////
-
         LocalDateTime now2 = LocalDateTime.now();
 
         final LocalDateTime[] t = {now2};
         Set<TeacherAdminLessonsDTO> teachers = new HashSet<>();
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
-        lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
+        lessonHashMap.values().forEach(less::add);
         lessonHashMap.values().stream().forEach(les -> {
             if (!teachers.stream().map(teach -> teach.getId()).toList().contains(les.getTeacher().getId())) {
                 teachers.add(les.getTeacher());
@@ -589,7 +569,7 @@ public class LessonService {
         final LocalDateTime[] t = {now2};
         Set<TeacherAdminLessonsDTO> teachers = new HashSet<>();
         List<LessonAdminLessonsDTO> less = new ArrayList<>();
-        lessonHashMap.values().stream().forEach(val -> less.add(val)); ////////////////////
+        lessonHashMap.values().forEach(less::add);
         lessonHashMap.values().stream().forEach(les -> {
             if (les.getTeacher() != null && !teachers.stream().map(TeacherAdminLessonsDTO::getId).toList().contains(les.getTeacher().getId())) {
                 teachers.add(les.getTeacher());
@@ -628,8 +608,6 @@ public class LessonService {
     // Checks if a new lesson interval overlaps with teacher's or student's lessons.
     // The method calculates the lesson end using duration, compares time intervals, and skips the lesson currently being edited.
     public boolean checkIfLessonOverlap(int tId, int sId, int lId, float dur, String date) {
-        /////////////
-
         LocalDateTime newDate = LocalDateTime.now();
         if (LocalDateTime.now().getMonth().getValue() == 12 && Integer.parseInt(date.split(" ")[1].split("\\.")[1]) == 1) {
             newDate = LocalDateTime.now().withYear(LocalDateTime.now().getYear() + 1).withMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[1])).withDayOfMonth(Integer.parseInt(date.split(" ")[1].split("\\.")[0])).withHour(Integer.parseInt(date.split(" ")[2].split(":")[0])).withMinute(Integer.parseInt(date.split(" ")[2].split(":")[1])).withSecond(0).withNano(0);
@@ -644,8 +622,6 @@ public class LessonService {
         } else {
             lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
         }
-
-        /////////////////
 
         AtomicBoolean overlap = new AtomicBoolean(false);
         List<Lesson> teacherLessons = findAllByTeacherIdAndLessonTimeAfterAndLessonTimeBefore(tId, newDate.minusHours(4), newDate.plusHours(4));
@@ -664,7 +640,6 @@ public class LessonService {
             }
         });
 
-////////////////////////////////////
         List<Lesson> studentLessons = findAllByStudentIdAndLessonTimeAfterAndLessonTimeBefore(sId, newDate.minusHours(4), newDate.plusHours(4));
         studentLessons.stream().filter(les -> les.getId() != lId).forEach(l -> {
             LocalDateTime lFinish = l.getLessonTime();
@@ -696,7 +671,6 @@ public class LessonService {
         } else {
             lessonFinish = lessonFinish.plusHours((long) dur).plusMinutes(30);
         }
-        //////////////
         if (newDate.isBefore(LocalDateTime.now())) {
             return Statuses.LESSON_BEFORE_NOW;
         } else if (lessonFinish.isAfter(newDate.withHour(22).withMinute(1))) {
@@ -851,4 +825,6 @@ public class LessonService {
             return "LESSON_BEFORE_NOW";
         }
     }
+
 }
+

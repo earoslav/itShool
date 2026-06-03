@@ -1,0 +1,299 @@
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>IT Kids School | Розклад занять</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: teacherHeader}"></header>
+
+<section class="hero">
+    <div class="container" style="height: 0px;">
+        <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+        <h3 class="lesson-page-title">Уроки:</h3>
+    </div>
+</section>
+    <div class="week-navigation">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
+        <form method="get" class="lesson-period-form" style="display:flex; gap:12px; align-items:center; margin:16px 0;">
+            <label for="lessonDays">Показати:</label>
+            <select id="lessonDays" name="days">
+                <option value="1" th:selected="${lessonDays == 1}">1 день</option>
+                <option value="7" th:selected="${lessonDays == 7}">Цей тиждень</option>
+                <option value="30" th:selected="${lessonDays == 30}">Місяць</option>
+            </select>
+            <button type="submit" class="btn btn-blue">Застосувати</button>
+        </form>
+    </div>
+
+    <div class="table-wrapper lesson-table-wrapper" id="tableWrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Час</th>
+                <th th:each="day : ${weekDays}"
+                    th:text="${day}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="hour : ${hours}">
+                <td th:text="${hour}"></td>
+
+                <td
+                    th:each="day : ${weekDays}">
+                    <div th:with="lesson=${lessons[day.split(' ')[1]+' '+hour]}">
+<!--                         <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WASNT'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}" class="btn-red form-btn lesson-segment-continuation" -->
+<!--                                 th:data-sn="${lessonDur.student.user.name}" -->
+<!--                                 th:data-cn="${lessonDur.course.name}" -->
+<!--                                 th:data-hour="${lessonDur.lessonTime.toString().split('T')[1].split(':')[0]}" -->
+<!--                                 th:data-dur="${lessonDur.duration}" -->
+<!--                                 th:data-date="${day}" -->
+<!--                                 th:data-status="${lessonDur.status}" -->
+<!--                                 th:onclick="'openPastLessonPopup(this)'"> -->
+<!--                         </button> -->
+<!--                         <button th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WAS'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"  class="btn-darkgreen form-btn lesson-segment-continuation" -->
+<!--                                 th:data-sn="${lessonDur.student.user.name}" -->
+<!--                                 th:data-cn="${lessonDur.course.name}" -->
+<!--                                 th:data-hour="${lessonDur.lessonTime.toString().split('T')[1].split(':')[0]}" -->
+<!--                                 th:data-dur="${lessonDur.duration}" -->
+<!--                                 th:data-date="${day}" -->
+<!--                                 th:data-status="${lessonDur.status}" -->
+<!--                                 th:onclick="'openPastLessonPopup(this)'"> -->
+<!--                         </button> -->
+<!--                         <button  th:if="${lessonDurations[day.split(' ')[1]+' '+hour]!=null and lessonDurations[day.split(' ')[1]+' '+hour].status=='WILL'}"  th:with="lessonDur=${lessonDurations[day.split(' ')[1]+' '+hour]}"   class="btn-green form-btn lesson-segment-continuation" -->
+<!--                                 th:data-date="${day}" -->
+<!--                                 th:data-id="${lessonDur.id}" -->
+
+<!--                                 th:data-lesson="${lessonDur}" -->
+<!--                                 th:data-tfts="${lessonDur.teacher.notTakenTimes}" -->
+<!--                                 th:date-stId="${lessonDur.student.id}" -->
+<!--                                  th:data-dur="${lessonDur.duration}" -->
+<!--                                 th:data-hour="${lessonDur.lessonTime.toString().split('T')[1].split(':')[0]}" -->
+<!--                                 th:data-tn="${teacher.user.name}" -->
+<!--                                 th:data-sn="${lessonDur.student.user.name}" -->
+<!--                                 th:data-cn="${lessonDur.course.name}" -->
+<!--                                 th:data-tId="${teacher.id}" -->
+<!--                                 th:onclick="'openPopup(this)'"> -->
+<!--                         </button> -->
+
+                    <span th:if="${lesson != null}">
+                        <button th:if="${lesson.status=='WASNT' or lesson.status=='WONT'}"
+                                class="btn-red form-btn lesson-segment-continuation"
+                                th:data-sn="${lesson.student.user.name}"
+                                th:data-cn="${lesson.course.name}"
+                                th:data-hour="${hour}"
+                                th:data-dur="${lesson.duration}"
+                                th:data-date="${day}"
+                                th:data-status="${lesson.status}"
+                                th:data-id="${lesson.id}"
+                                th:onclick="'openPastLessonPopup(this)'"
+                                >
+                            <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                        </button>
+                        <button th:if="${lesson.status=='WAS'}"
+                                class="btn-darkgreen form-btn lesson-segment-continuation"
+                                th:data-sn="${lesson.student.user.name}"
+                                th:data-cn="${lesson.course.name}"
+                                th:data-hour="${hour}"
+                                th:data-date="${day}"
+                                th:data-dur="${lesson.duration}"
+                                th:data-status="${lesson.status}"
+                                th:data-id="${lesson.id}"
+                                th:onclick="'openPastLessonPopup(this)'"
+                                >
+                            <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                        </button>
+                        <button th:if="${lesson.status=='WILL'}"
+                                class="btn-green form-btn lesson-segment-continuation"
+                                th:data-date="${day}"
+                                th:data-id="${lesson.id}"
+                                th:data-lesson="${lesson}"
+                                th:data-tfts="${lesson.teacher.notTakenTimes}"
+                                th:date-stId="${lesson.student.id}"
+                                th:data-hour="${hour}"
+                                th:data-dur="${lesson.duration}"
+                                th:data-tn="${teacher.user.name}"
+                                th:data-sn="${lesson.student.user.name}"
+                                th:data-cn="${lesson.course.name}"
+                                th:data-tId="${teacher.id}"
+                                th:onclick="'openPopup(this)'"
+                                >
+                            <span class="lesson-title" th:text="${lesson.course.name}"></span>
+                        </button>
+                    </span>
+                    <button th:if="${lesson == null}"
+                            th:data-date="${day}"
+                            th:data-lesson="${lesson}"
+                            th:data-teachId="${teacher.id}"
+                            th:data-hour="${hour}"
+                            th:data-course="${courses}"
+                            th:data-students="${students}"
+                            th:onclick="'openPopup(this)'">
+                        <span class="empty-cell-label">emptyy</span>
+                    </button>
+                    </div>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="lessonPopup" class="popup-overlay hide">
+        <div class="popup-overlay hide" id="pastLessonPopup">
+            <div id="pastLessonPopupMain" class="popup-content">
+                <div class="popup-header">
+                    <h3>розглянути заняттям</h3>
+                    <span class="popup-close" onclick="closePopup()">&times;</span>
+                </div>
+                <div class="popup-body">
+                    <p><strong>Дата:</strong> <span id="popupDateInPastPopup"></span></p>
+                    <p><strong>Час:</strong> <span id="popupTimeInPastPopup"></span></p>
+                    <p><strong>Тривалість:</strong> <span id="durInPast"></span> год</p>
+                    <p><strong>Учень:</strong> <span id="studentNameInPastPopup"></span></p>
+                    <p><strong>Курс:</strong> <span id="courseNameInPastPopup"></span></p>
+                    <p><strong>статус:</strong> <span id="statusInPastPopup"></span></p>
+                </div>
+            </div>
+        </div>
+        <div id="popupMain" class="popup-content">
+            <div class="popup-header">
+                <h3>Керування заняттям</h3>
+                <span class="popup-close" onclick="closePopup()">&times;</span>
+            </div>
+            <div class="popup-body">
+                <p hidden><strong></strong> teacherId<span id="teacherId" th:text="${teacher.id}"></span></p>
+                <p hidden><strong></strong> LessonId<span id="lessonId"></span></p>
+                <p><strong>Дата:</strong> <span id="popupDate"></span></p>
+                <p><strong>Час:</strong> <span id="popupTime"></span></p>
+                <p><strong>Тривалість:</strong> <span id="durInMain"></span> год</p>
+                <p><strong>Учень:</strong> <span id="studentName"></span></p>
+                <p><strong>Курс:</strong> <span id="courseName"></span></p>
+                <div id="popupLessonInfo">
+                    <!-- Тут буде інформація про заняття, якщо воно є -->
+                </div>
+            </div>
+            <div class="popup-footer">
+
+                <button id="editLessonBtn" class="popup-btn edit-btn">✏️ Змінити</button>
+                <form class="popupForm" th:action="@{/teacher/{id}/lessons/deleteLesson/0(id=${teacher.id})}" method="post" id="deleteLessonForm">
+                    <button id="deleteLessonBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')" >🗑️ Видалити одиничне заняття</button>
+                </form>
+                <form class="popupForm" th:action="@{/teacher/{id}/lessons/deleteCourse/0(id=${teacher.id})}" method="post" id="deleteCourseForm">
+                    <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити щотижневий урок?')" >🗑️ Видалити щотижневий урок</button>
+                </form>
+                <form class="popupForm" th:action="@{/teacher/{id}/addMoneyByLesson/0(id=${teacher.id})}" method="post" id="setWasForm">
+                    <button type="submit" id="setWasBtn" class="popup-btn mark-was-btn">Позначити "було"</button>
+                </form>
+                <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>
+            </div>
+        </div>
+        <div id="editPopup" class="popup-overlay hide">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h3>Редагувати заняття</h3>
+                    <span class="popup-close" onclick="closePopup()">&times;</span>
+                </div>
+                <div class="popup-body">
+                    <p><strong>Дата:</strong> <span id="dateInEdit"></span></p>
+                    <p><strong>Час:</strong> <span id="timeInEdit"></span></p>
+                    <p><strong>Тривалість:</strong> <span id="durInEdit"></span> год</p>
+                    <p><strong>Учень:</strong> <span id="studentNameInEdit"></span></p>
+                    <p><strong>Курс:</strong> <span id="courseNameInEdit"></span></p>
+                    <p id="returnIdValue" hidden></p>
+                    <p ><strong>Змінити на дату(усі вільні дати вчителя):</strong> <span id="popupDateInEditIdsReturn" class="newDates"></span></p>
+                </div>
+
+                <div class="popup-footer">
+                    <form class="popupForm" th:action="@{/teacher/{id}/lessons/editLesson/notPicked(id=${teacher.id})}" method="post" id="editForm">
+                        <button type="submit" id="editLessonBtnInEdit" class="popup-btn edit-btn" >✏️ Змінити заняття(на один раз)</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <div id="emptyPopup" class="popup-content-for-empty hide">
+
+            <div class="popup-header">
+                <h3>Вільна колонка</h3>
+                <span class="popup-close" onclick="closePopup()">&times;</span>
+            </div>
+            <div class="popup-body">
+                <p><strong>Дата:</strong> <span id="popupDateInEmptyPopup"></span></p>
+                <p><strong>Час:</strong> <span id="popupTimeInEmptyPopup"></span></p>
+                <p ><strong>Курс:</strong> <span id=""></span></p>
+                <input type="text" id="myInputCourses" class="myInput" onkeyup="searchCourse()" placeholder="Пошук за назвою..">
+                <div  class="coursesAndNames">
+                    <div class="selector-row">
+                        <div class="selector-id-column" id="courseIds"  >
+                            <input th:each="course : ${courses}" type="checkbox" th:value="${course.id}">
+                        </div>
+
+                        <span class="selector-gap">emp</span>
+                        <div class="selector-name-column" id="courseNames" >
+                            <label th:each="course : ${courses}" th:text="${course.name}"></label>
+                        </div>
+                    </div>
+
+                </div>
+                <p ><strong>Учень:</strong> <span id="coursesInEmptyPopup" ></span></p>
+                <input type="text" id="myInputStudents" class="myInput" onkeyup="searchStudents()" placeholder="Пошук за назвою..">
+                <div  class="coursesAndNames">
+                    <div class="selector-row">
+                        <div class="selector-id-column" id="studentIds" >
+                            <input th:each="student : ${students}" type="checkbox" th:value="${student.id}">
+                        </div>
+                        <span class="selector-gap">emp</span>
+                        <div class="selector-name-column" id="studentNames" >
+                            <label th:each="student : ${students}" th:text="${student.user.name+' '+student.user.email}"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field duration-field" id="duration"  >
+                <label> Довжина уроку(в годинах)</label>
+                <input id="dur" type="number" step="0.5" min="0.5" max="3" placeholder="0.00" required>
+            </div>
+
+            <div class="popup-action-row">
+                <form class="popupForm" th:action="@{/teacher/{teachId}/lessons/addLesson/0/0/0/0(teachId=${teacher.id})}" method="post" id="addLessonForm">
+                    <button type="submit" id="addLessonBtnInEmptyPopup" class="popup-btn edit-btn" >Додати одне заняття</button>
+                </form>
+                <form class="popupForm" th:action="@{/teacher/{teachId}/lessons/addCourse/0/0/0/0(teachId=${teacher.id})}" method="post" id="addCourseForm">
+                    <button type="submit" id="addCourseBtnInEmptyPopup" class="popup-btn edit-btn" >Додати курc з учнем</button>
+                </form>
+            </div>
+
+
+        </div>
+    </div>
+    </div>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+</div>
+
+<script src="/mainSrcipt.js"></script>
+<script>
+    initLessonPopup({
+        getIds: () => ({ teachId: document.querySelector("#teacherId").innerText }),
+        setForms(delLesson, delCourse, wasForm, ids, idLes) {
+            delLesson.action = `/teacher/${ids.teachId}/lessons/deleteLesson/${idLes}`;
+            delCourse.action = `/teacher/${ids.teachId}/lessons/deleteCourse/${idLes}`;
+            if (wasForm) wasForm.action = `/teacher/${ids.teachId}/addMoneyByLesson/${idLes}`;
+        },
+        setEditForm(editForm, ids, idLes, nTId, retDate) {
+            editForm.action = `/teacher/${ids.teachId}/lessons/editLesson/${idLes}/${nTId}/${retDate}`;
+        },
+        setEmptyForms(lessonForm, courseForm, ids, cId, stId, retDate, dur) {
+            lessonForm.action = `/teacher/${ids.teachId}/lessons/addLesson/${cId}/${stId}/${retDate}/${dur}`;
+            courseForm.action = `/teacher/${ids.teachId}/lessons/addCourse/${cId}/${stId}/${retDate}/${dur}`;
+        }
+    });
+</script>
+</body>
+</html>

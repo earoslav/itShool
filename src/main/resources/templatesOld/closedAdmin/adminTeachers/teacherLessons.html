@@ -151,7 +151,7 @@
                 <p><strong>Курс:</strong> <span id="courseNameInPastPopup"></span></p>
                 <p><strong>статус:</strong> <span id="statusInPastPopup"></span></p>
                 <form th:action="@{/admin/teacher/{id}/addMoneyByLesson/0(id=${teacher.id})}" method="post" id="setWasFormInPastPopup" class="">
-                    <button type="submit" id="setWasBtnInPastPopup" class="popup-btn mark-was-btn">Познчити "було"
+                    <button type="submit" id="setWasBtnInPastPopup" class="popup-btn mark-was-btn">Позначити "було"
                     </button>
                 </form>
             </div>
@@ -184,12 +184,12 @@
                 </button>
             </form>
             <form class="popupForm" th:action="@{/admin/teacher/{id}/lessons/deleteCourse/0(id=${teacher.id})}" method="post" id="deleteCourseForm">
-                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')">🗑️
-                    Видалити курс з учнем
+                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити щотижневий урок?')">🗑️
+                    Видалити щотижневий урок
                 </button>
             </form>
             <form class="popupForm" th:action="@{/admin/teacher/{id}/addMoneyByLesson/0(id=${teacher.id})}" method="post" id="setWasForm">
-                <button type="submit" id="setWasBtn" class="popup-btn mark-was-btn">Познчити "було"</button>
+                <button type="submit" id="setWasBtn" class="popup-btn mark-was-btn">Позначити "було"</button>
             </form>
             <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>
         </div>
@@ -306,7 +306,7 @@
             courseForm.action = `/admin/teacher/${ids.teachId}/lessons/addCourse/${cId}/${stId}/${retDate}/${dur}`;
         },
         setWasFormInPastPopup(form, ids, idLes, status) {
-            if (status === "wasnt") {
+            if (status && status.toUpperCase() === "WASNT") {
                 form.classList.remove("hide");
                 form.action = `/admin/teacher/${ids.teachId}/addMoneyByLesson/${idLes}`;
             } else {

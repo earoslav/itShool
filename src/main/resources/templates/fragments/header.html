@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!-- Коротко: спільний фрагмент сторінок. -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<!-- Публічний хедер (для гостей) -->
+<header th:fragment="publicHeader">
+    <div class="container nav">
+        <a href="/openSource/homepage" style="text-decoration: none;">
+            <div class="logo"><img src="/images/logo.png" alt="IT Kids School" class="logo-img"> IT Kids School</div>
+        </a>
+        <nav class="menu">
+            <a href="/openSource/homepage">Головна</a>
+            <a href="/openSource/courses">Курси</a>
+            <a href="/openSource/homepage#teachers">Викладачі</a>
+            <a href="/openSource/homepage#schedule">Розклад</a>
+            <a href="/openSource/homepage#contacts">Контакти</a>
+            <a href="/login">Увійти як учень/вчитель</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Хедер для Адміна -->
+<header th:fragment="adminHeader">
+    <div class="container nav">
+        <a href="/openSource/homepage" style="text-decoration: none;">
+            <div class="logo"><img src="/images/logo.png" alt="IT Kids School" class="logo-img"> IT Kids School</div>
+        </a>
+        <nav class="menu">
+            <a href="/admin/homepage">Головна</a>
+            <a href="/admin/students">Учні</a>
+            <a href="/admin/teachers">Викладачі</a>
+            <a href="/logout">Вийти</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Хедер для Учня -->
+<header th:fragment="studentHeader">
+    <div class="container nav">
+        <a href="/openSource/homepage" style="text-decoration: none;">
+            <div class="logo"><img src="/images/logo.png" alt="IT Kids School" class="logo-img"> IT Kids School</div>
+        </a>
+        <nav class="menu">
+            <a th:href="@{/student/{idSt}/homepage(idSt = ${student.id})}">Головна</a>
+            <a th:href="@{/student/{idSt}/lessons(idSt = ${student.id})}">Уроки</a>
+            <a href="/logout">Вийти</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Хедер для Вчителя -->
+<header th:fragment="teacherHeader">
+    <div class="container nav">
+        <a href="/openSource/homepage" style="text-decoration: none;">
+            <div class="logo"><img src="/images/logo.png" alt="IT Kids School" class="logo-img"> IT Kids School</div>
+        </a>
+        <nav class="menu">
+            <a th:href="@{/teacher/{idTeach}/homepage(idTeach = ${teacher.id})}">Головна</a>
+            <a th:href="@{/teacher/{idTeach}/students(idTeach = ${teacher.id})}">Учні</a>
+            <a th:href="@{/teacher/{idTeach}/lessons(idTeach = ${teacher.id})}">Уроки</a>
+            <a th:href="@{/teacher/{idTeach}/courses(idTeach = ${teacher.id})}">Курси</a>
+            <a href="/logout">Вийти</a>
+        </nav>
+    </div>
+</header>
+
+</body>
+</html>

@@ -3,13 +3,9 @@ package com.example.demo.configs;
 import com.example.demo.services.security.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,12 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final MyCustomSuccessHandler successHandler;
-    // Отримує MyCustomSuccessHandler, який використовується після успішної авторизації.
-    // Через constructor injection конфігурація безпеки працює з тим самим handler-ом, що зареєстрований у Spring.
-    public SecurityConfig(MyCustomSuccessHandler successHandler){
-        this.successHandler = successHandler;
-    }
     // Створює UserService як джерело користувачів для Spring Security.
     // Під час логіну саме цей сервіс шукає User за email з форми входу.
     @Bean
@@ -53,7 +43,7 @@ public class SecurityConfig {
     // Описує доступ до URL: openSource, CSS, JS та images відкриті, а admin/teacher/student закриті ролями.
     // Також задає кастомну сторінку /login, failureUrl з output=notValid, successHandler і вихід на /openSource/homepage.
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, MyCustomSuccessHandler successHandler) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/openSource/**").permitAll()
                         .requestMatchers("/generalStyle.css").permitAll()

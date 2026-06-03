@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Логін Сторінка</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: publicHeader}"></header>
+
+<section class="hero" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+    <div class="container">
+        <h2 style="font-size: 18px !important;">Увійти</h2>
+    </div>
+</section>
+<div class="error-box" th:if="${output == 'notValid'}" style="text-align: center;">Некоректні дані</div>
+<div class="mt-30 container" style="display: flex; flex-direction: column; align-items: center;">
+
+    <form action="/login" method="post" style="width: 100%; max-width: 400px;">
+        <label for="username">Пошта:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" name="password" required>
+        <button class="btn-green" type="submit" style="width: 100%; margin-top: 15px;">Увійти</button>
+    </form>
+
+    <div class="account-prompt" style="text-align: center; margin-top: 40px; padding-bottom: 40px; width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <p style="color: #6b7280; font-size: 15px; margin-bottom: 20px;">Ще не маєте акаунту?</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 500px;">
+            <a href="/openSource/signUpAsStudent"
+               style="display: inline-block; padding: 12px 24px; border-radius: 12px;
+                      background: linear-gradient(135deg, #2563eb, #1e3a8a); color: white;
+                      font-weight: 600; font-size: 14px; text-decoration: none;
+                      box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: transform 0.2s, box-shadow 0.2s;
+                      flex: 1; min-width: 200px; text-align: center;"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(37,99,235,0.4)'"
+               onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 14px rgba(37,99,235,0.3)'">
+                🎓 Зареєструватись як учень
+            </a>
+            <a href="/openSource/signUpAsTeacher"
+               style="display: inline-block; padding: 12px 24px; border-radius: 12px;
+                      background: linear-gradient(135deg, #059669, #047857); color: white;
+                      font-weight: 600; font-size: 14px; text-decoration: none;
+                      box-shadow: 0 4px 14px rgba(5,150,105,0.3); transition: transform 0.2s, box-shadow 0.2s;
+                      flex: 1; min-width: 200px; text-align: center;"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(5,150,105,0.4)'"
+               onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 14px rgba(5,150,105,0.3)'">
+                👨‍🏫 Зареєструватись як вчитель
+            </a>
+        </div>
+    </div>
+</div>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+</body>
+</html>

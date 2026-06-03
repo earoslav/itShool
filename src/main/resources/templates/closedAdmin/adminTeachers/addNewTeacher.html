@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Додати вчителя</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
+
+<section class="hero">
+    <div class="container">
+        <h2>Додати вчителя:</h2>
+    </div>
+</section>
+
+<!-- FORM -->
+<div class="container">
+
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+
+    <form id="form" action="/admin/addTeacher" th:object="${teacher}" method="post">
+        <div class="form-grid">
+            <div class="field">
+                <label for="name">ПІБ / ім'я</label>
+                <input id="name" type="text" th:field="*{user.name}" required minlength="2" maxlength="100"
+
+                       title="Лише букви, пробіли, апостроф або дефіс">
+            </div>
+
+            <div class="field">
+                <label for="age">Вік</label>
+                <input id="age" type="number" th:field="*{age}" required min="18" max="99">
+            </div>
+
+            <div class="field">
+                <label for="email">Пошта</label>
+                <input id="email" type="email" th:field="*{user.email}" required maxlength="50">
+            </div>
+
+            <div class="field">
+                <label for="phoneNumber">Номер телефону</label>
+                <input id="phoneNumber" type="tel" th:field="*{phoneNumber}" required maxlength="15"
+                       title="Введіть коректний номер телефону">
+            </div>
+
+            <div class="field">
+                <label for="tgUsername">Telegram (@Tg use або нік)</label>
+                <input id="tgUsername" type="text" th:field="*{tgUsername}" maxlength="30" required
+                       placeholder="@username">
+            </div>
+
+
+            <div class="field">
+                <label>Пароль</label>
+                <input type="password" required name="password" th:value="${password}" placeholder="Введіть пароль" id="pass">
+            </div>
+
+            <div class="mt-16 field full">
+
+                <label>Курси</label>
+                <input type="text" id="myInput" onkeyup="searchCourseInDivs()" placeholder="Пошук за назвою..">
+                <div id="courses" class="courses-list" th:if="${courses != null and !courses.isEmpty()}">
+                    <div class="course-check" th:each="course : ${courses}">
+                            <span th:if="${courseIds!=null}">
+                                <span th:if="${courseIds.contains(course.id)}" class="span-course">
+                                    <input type="checkbox" checked name="courseIds" th:value="${course.id}"/>
+                                    <span class="span-course-name" th:text="${course.name}">Курс</span>
+                                </span>
+                                <span th:if="${!courseIds.contains(course.id)}" class="span-course">
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}"/>
+                                    <span class="span-course-name" th:text="${course.name}">Курс</span>
+                                </span>
+                            </span>
+                        <span th:if="${courseIds==null}">
+                                <span class="span-course">
+                                    <input type="checkbox" name="courseIds" th:value="${course.id}"/>
+                                    <span th:text="${course.name}" class="span-course-name">Курс</span>
+                                </span>
+
+                            </span>
+
+
+                    </div>
+                </div>
+                <div class="hint" th:if="${courses == null or courses.isEmpty()}">Поки що курси не додані.</div>
+            </div>
+
+
+            <div class="mt-16 field full">
+                <label>Вільний час</label>
+                <table class="times-table">
+                    <thead>
+                    <tr>
+                        <th>Година</th>
+                        <th th:each="dayName : ${dayNames}" th:text="${dayName}">День</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="hour : ${hours}">
+                        <th th:text="${hour}">8:00</th>
+                        <td th:each="day : ${days}">
+
+                                    <span th:if="${freeTimeIds!=null}">
+                                        <input type="checkbox"
+                                               class="freeTimeCheckbox"
+                                               name="freeTimeIds"
+                                               th:each="ft : ${freeTimes}"
+                                               th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0')}"
+                                               th:value="${ft.id}"
+                                               th:checked="${freeTimeIds.contains(ft.id)}">
+                                    </span>
+                            <span th:if="${freeTimeIds==null}">
+                                        <input type="checkbox"
+                                               class="freeTimeCheckbox"
+                                               name="freeTimeIds"
+                                               th:each="ft : ${freeTimes}"
+                                               th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0')}"
+                                               th:value="${ft.id}">
+                                    </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="m-30 hint">
+                    Оберіть зручні слоти (день зверху, година зліва). <br>
+                    Порада: можна затиснути ліву кнопку миші та тягнути по клітинках, щоб швидко вибрати кілька комірок.
+                </div>
+            </div>
+            <div class="field full">
+                <label for="comment">Про себе / досвід</label>
+                <textarea id="comment" th:field="*{comment}" required maxlength="1000"
+                          placeholder="Напрями викладання, досвід, зручний час тощо"></textarea>
+            </div>
+        </div>
+
+
+        <button onclick="managePassNew()" class="submit-btn" type="submit">Додати</button>
+    </form>
+</div>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<!--<script>-->
+<!--    function managePass() {-->
+<!--        let pass = document.querySelector("#pass")-->
+<!--        let form = document.querySelector("#form")-->
+<!--        if (pass.value === "") {-->
+<!--            form.action = form.action + "NOPASS"-->
+<!--        } else {-->
+<!--            form.action = form.action + "" + pass.value-->
+<!--        }-->
+
+<!--    }-->
+
+<!--    function searchCourse() {-->
+<!--        // Declare variables-->
+<!--        var input, filter, a, i, txtValue;-->
+<!--        input = document.getElementById('myInput');-->
+<!--        courses = document.getElementById('courses').getElementsByTagName("div");-->
+<!--        filter = input.value.toUpperCase();-->
+<!--        // Loop through all list items, and hide those who don't match the search query-->
+<!--        for (i = 0; i < courses.length; i++) {-->
+<!--            a = courses[i].getElementsByTagName("span")[0].getElementsByTagName("span")[0].getElementsByTagName("span")[0];-->
+<!--            txtValue = a.textContent || a.innerText;-->
+<!--            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
+<!--                courses[i].style.display = "";-->
+<!--            } else {-->
+<!--                courses[i].style.display = "none";-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
+
+<!--    let isMouseDown = false;-->
+
+<!--    // Відстежуємо, чи натиснута кнопка миші в цілому на документі-->
+<!--    document.body.onmousedown = () => (isMouseDown = true);-->
+<!--    document.body.onmouseup = () => (isMouseDown = false);-->
+
+<!--    // Додаємо обробники для кожного чекбоксу-->
+<!--    document.querySelectorAll('.freeTimeCheckbox').forEach(checkbox => {-->
+<!--        checkbox.addEventListener('mouseover', () => {-->
+<!--            if (isMouseDown) {-->
+<!--                checkbox.checked = !checkbox.checked;-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>
+
+
+
+
+

@@ -1,12 +1,8 @@
 package com.example.demo.services.other;
 
-import com.example.demo.dto.other.TimeOfTheWeekDTO;
-import com.example.demo.mapper.univMapper.UniversalMapper;
 import com.example.demo.models.other.TimeOfTheWeek;
 import com.example.demo.repositories.other.TimeOfTheWeekRepository;
 import com.example.demo.services.other.TimesService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,42 +20,25 @@ import org.springframework.stereotype.Service;
 public class TimeOfTheWeekService {
     private final TimeOfTheWeekRepository timeOfTheWeekRepository;
     private final TimesService timesService;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
 
     // Receives dependencies through Spring.
     @Autowired
-    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService, @Qualifier("schoolRedisTemplate") RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+    public TimeOfTheWeekService(TimeOfTheWeekRepository timeOfTheWeekRepository, TimesService timesService) {
         this.timeOfTheWeekRepository = timeOfTheWeekRepository;
         this.timesService = timesService;
-        this.redisTemplate = redisTemplate;
-        this.objectMapper = objectMapper;
     }
 
     // Finds a time slot by day of the week and hour.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDay(int day, int hour){
-        TimeOfTheWeek obj;
-        String cacheKey = "timeByDayHour"+day+"_"+hour;
-        if(redisTemplate.opsForValue().get(cacheKey) == null){
-            obj = getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour).findFirst().get();
-            redisTemplate.opsForValue().set(cacheKey, UniversalMapper.generalMapper(obj, TimeOfTheWeekDTO.class));
-        } else {
-            obj = UniversalMapper.generalMapper(objectMapper.convertValue(redisTemplate.opsForValue().get(cacheKey), new TypeReference<TimeOfTheWeekDTO>() {}), TimeOfTheWeek.class);
-        }
-        return obj;
+        return getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour).findFirst().get();
     }
 
     // Finds an exact time slot by day of the week, hour, and minute.
     public TimeOfTheWeek findByDayOfTheWeekAndTimeOfTheDayAndMinute(int day, int hour, int minute){
-        TimeOfTheWeek obj;
-        String cacheKey = "timeByDayHourMin"+day+"_"+hour+"_"+minute;
-        if(redisTemplate.opsForValue().get(cacheKey) == null){
-            obj = getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour && t.getMinute() == minute).findFirst().get();
-            redisTemplate.opsForValue().set(cacheKey, UniversalMapper.generalMapper(obj, TimeOfTheWeekDTO.class));
-        } else {
-            obj = UniversalMapper.generalMapper(objectMapper.convertValue(redisTemplate.opsForValue().get(cacheKey), new TypeReference<TimeOfTheWeekDTO>() {}), TimeOfTheWeek.class);
-        }
-        return obj;
+        return getAll().stream().filter(t -> t.getDayOfTheWeek() == day && t.getTimeOfTheDay() == hour && t.getMinute() == minute).findFirst().get();
+    }
+    public List<String> compileHours(){
+        return Arrays.asList("8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30");
     }
 
     // Returns all weekly time slots from the repository.
@@ -80,19 +57,15 @@ public class TimeOfTheWeekService {
 
     // Finds a single record in the "weekly time slots" module by ID.
     public TimeOfTheWeek getById(Integer id) {
-        TimeOfTheWeek obj;
-        String cacheKey = "timeById"+id;
-        if(redisTemplate.opsForValue().get(cacheKey) == null){
-            obj = getAll().stream().filter(t -> t.getId() == id).findFirst().get();
-            redisTemplate.opsForValue().set(cacheKey, UniversalMapper.generalMapper(obj, TimeOfTheWeekDTO.class));
-        } else {
-            obj = UniversalMapper.generalMapper(objectMapper.convertValue(redisTemplate.opsForValue().get(cacheKey), new TypeReference<TimeOfTheWeekDTO>() {}), TimeOfTheWeek.class);
-        }
-        return obj;
+        return getAll().stream().filter(t -> t.getId() == id).findFirst().get();
     }
     public List<String> compileWeekDays(){
+        return compileWeekDays(7);
+    }
+
+    public List<String> compileWeekDays(Integer daysCount){
+        int validDaysCount = daysCount != null && (daysCount == 1 || daysCount == 7 || daysCount == 30) ? daysCount : 7;
         LocalDate now = LocalDate.now();
-        now = now.minusWeeks(2);
         List<String> weekDaysTemp = new ArrayList<>();
         weekDaysTemp.add("MON");
         weekDaysTemp.add("TUE");
@@ -102,11 +75,9 @@ public class TimeOfTheWeekService {
         weekDaysTemp.add("SAT");
         weekDaysTemp.add("SUN");
         List<String> weekDays = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (String weekDay : weekDaysTemp) {
-                weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
-                now = now.plusDays(1);
-            }
+        for (int i = 0; i < validDaysCount; i++) {
+            weekDays.add(weekDaysTemp.get(now.getDayOfWeek().getValue() - 1) + " " + String.format("%02d", now.getDayOfMonth()) + "." + String.format("%02d", now.getMonthValue()));
+            now = now.plusDays(1);
         }
         return weekDays;
     }
@@ -152,11 +123,10 @@ public class TimeOfTheWeekService {
             return freeTimes;
         }
     }
-    // Compresses consecutive hours of the same day into compact ranges.
-    // For example, the set 8, 9, 10 is converted into a single range for convenient display in emails and profiles.
+    // Compresses consecutive 30-minute slots of the same day into compact ranges for emails and profiles.
     public List<String> compressRanges(List<String> input) {
         List<Integer> numbers = input.stream()
-                .map(Integer::parseInt)
+                .map(this::minutesFromTime)
                 .sorted()
                 .toList();
 
@@ -168,13 +138,13 @@ public class TimeOfTheWeekService {
         for (int i = 1; i < numbers.size(); i++) {
             int curr = numbers.get(i);
 
-            if (curr == prev + 1) {
+            if (curr == prev + 30) {
                 prev = curr;
             } else {
                 if (start == prev) {
-                    result.add(String.valueOf(start));
+                    result.add(formatTime(start));
                 } else {
-                    result.add(start + "-" + prev);
+                    result.add(formatTime(start) + "-" + formatTime(prev + 30));
                 }
                 start = curr;
                 prev = curr;
@@ -183,36 +153,62 @@ public class TimeOfTheWeekService {
 
         // Add the last range
         if (start == prev) {
-            result.add(String.valueOf(start));
+            result.add(formatTime(start));
         } else {
-            result.add(start + "-" + prev);
+            result.add(formatTime(start) + "-" + formatTime(prev + 30));
         }
 
         return result;
     }
+
+    private String formatSlot(TimeOfTheWeek time) {
+        int hour = time.getTimeOfTheDay() != null ? time.getTimeOfTheDay() : 0;
+        int minute = time.getMinute() != null ? time.getMinute() : 0;
+        return String.format("%02d:%02d", hour, minute);
+    }
+
+    private int minutesFromTime(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+    }
+
+    private String formatTime(int minutes) {
+        return String.format("%02d:%02d", minutes / 60, minutes % 60);
+    }
+
+    private String getUkrainianDayName(int day) {
+        return switch (day) {
+            case 1 -> "Понеділок";
+            case 2 -> "Вівторок";
+            case 3 -> "Середа";
+            case 4 -> "Четвер";
+            case 5 -> "П'ятниця";
+            case 6 -> "Субота";
+            case 7 -> "Неділя";
+            default -> "";
+        };
+    }
+
     // Groups selected time slots by weekday names.
-    // After grouping, hours are compressed using compressRanges so that the template displays the schedule in neat blocks.
+    // After grouping, slots are compressed so that the template displays the schedule in neat blocks.
     public HashMap<String, List<String>> compileTimes(List<TimeOfTheWeek> selectedFreeTimes){
-        HashMap<String, List<String>> compiledTimes = new HashMap<>();
+        HashMap<String, List<String>> compiledTimes = new java.util.LinkedHashMap<>();
 
         for(int i = 1; i<=7; i++){
             int finalI = i;
             List<String> strTimes = new ArrayList<>();
             List<String> finalInput = strTimes;
-            List<Integer> times = selectedFreeTimes.stream().filter(time->time.getDayOfTheWeek()== finalI).map(time->time.getTimeOfTheDay()).collect(Collectors.toList());
-            times.stream().forEach(time -> finalInput.add(String.valueOf(time)));
-            if(times.size()!=0) {
+            List<TimeOfTheWeek> times = selectedFreeTimes.stream()
+                    .filter(time -> time.getDayOfTheWeek() == finalI)
+                    .sorted(java.util.Comparator
+                            .comparing(TimeOfTheWeek::getTimeOfTheDay)
+                            .thenComparing(TimeOfTheWeek::getMinute))
+                    .collect(Collectors.toList());
+            times.stream().forEach(time -> finalInput.add(formatSlot(time)));
+            if(!times.isEmpty()) {
                 strTimes = compressRanges(finalInput);
             }
-            switch(i){
-                case 1: compiledTimes.put("Monday", strTimes);
-                case 2: compiledTimes.put("Tuesday", strTimes);
-                case 3: compiledTimes.put("Wednesday", strTimes);
-                case 4: compiledTimes.put("Thursday", strTimes);
-                case 5: compiledTimes.put("Friday", strTimes);
-                case 6: compiledTimes.put("Saturday", strTimes);
-                case 7: compiledTimes.put("Sunday", strTimes);
-            }
+            compiledTimes.put(getUkrainianDayName(i), strTimes);
         }
         return compiledTimes;
 

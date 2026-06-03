@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Редагування викладача</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
+
+<section class="hero" style="    min-height: 120px;">
+    <div class="container">
+        <p th:text="'Вчитель: '+${teacher.user.name}"></p>
+        <h3 >Редагувати вчителя:</h3>
+    </div>
+</section>
+<div class="container">
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+    <form th:action="@{/admin/teacher/{id}/edit(id=${teacher.id})}" th:object="${teacher}" id="form" method="post" >
+
+        <p class="d-none" id="id" th:text="${teacher.id}"></p>
+        <div class="form-grid">
+            <!-- Основна інформація -->
+            <div class="field">
+                <label for="name">ПІБ / ім'я</label>
+                <input id="name" type="text" th:field="*{user.name}" required minlength="2" maxlength="100"
+
+                       title="Лише букви, пробіли, апостроф або дефіс">
+            </div>
+
+            <div class="field">
+                <label for="age">Вік</label>
+                <input id="age" type="number" th:field="*{age}" required min="18" max="99">
+            </div>
+
+            <div class="field">
+                <label for="email">Пошта</label>
+                <input id="email" type="email" th:field="*{user.email}" required maxlength="50">
+            </div>
+
+            <div class="field">
+                <label for="phoneNumber">Номер телефону</label>
+                <input id="phoneNumber" type="tel" th:field="*{phoneNumber}" required maxlength="15"
+                       title="Введіть коректний номер телефону">
+            </div>
+
+            <div class="field">
+                <label for="tgUsername">Telegram (@Tg use або нік)</label>
+                <input id="tgUsername" type="text" th:field="*{tgUsername}" maxlength="30" required
+                       placeholder="@username">
+            </div>
+
+
+            <div class="field">
+                <lable>Пароль(якщо бажаєте змінити):</lable>
+                <input type="password"  name="password" placeholder="Введіть новий пароль" id="pass">
+            </div>
+
+            <div class="form-group">
+                <label>Коментар</label>
+                <textarea th:field="*{comment}" maxlength="500" required
+                          placeholder="Наприклад: зручний час занять, рівень підготовки, побажання"></textarea>
+            </div>
+
+            <!-- Курси -->
+            <div class="block">
+                <h2>Курси</h2>
+
+                <!-- список -->
+                <ul id="coursesList">
+                    <li th:each="tc : ${teacher.teacherCourses}" style="display: flex;    margin-bottom: 8px;" >
+                        <span th:text="${tc.course.name}"></span>
+
+                            <button class="btn btn-red" type="submit"  onclick="return confirm('Видалити Курс?')"   style="  max-height: 30px;
+                                    width: 40px !important;
+                                    margin-left: 20px;
+                                    margin-top: 0px !important;
+                                    font-size: 17px !important;
+                            padding: 8px !important;"
+                            th:data-tId="${teacher.id}"
+                            th:data-cId="${tc.course.id}"
+                            th:onclick="'manageButtonWithoutFormInAdmin(this)'">🗑</button>
+
+                    </li>
+                    <li class="d-none" th:each="tc : ${teacher.teacherCourses}"
+                        th:text="${tc.course.id}">
+                    </li>
+                </ul>
+                <input type="text" id="myInput" onkeyup="searchCourseSelect()" placeholder="Пошук за назвою..">
+                <!-- select -->
+                <select id="courseSelect">
+                    <option value="">Додати курс</option>
+                    <option th:each="c : ${allCourses}"
+                            th:value="${c.id}"
+                            th:text="${c.name}">
+                    </option>
+                </select>
+
+                <!-- hidden inputs -->
+                <div id="coursesInputs"></div>
+            </div>
+            <!-- Вільний час -->
+            <div class="block">
+                <h2>Вільний час</h2>
+                <p class="hint" style="margin-bottom: 10px;">
+                    Порада: можна затиснути ліву кнопку миші та тягнути по клітинках, щоб швидко вибрати кілька комірок.
+                </p>
+
+                <table class="times-table">
+                    <thead>
+                    <tr>
+                        <th>Година</th>
+                        <th th:each="dayName : ${dayNames}" th:text="${dayName}"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="hour : ${hours}">
+                        <th th:text="${hour}"></th>
+
+                        <td th:each="day : ${days}">
+                            <input type="checkbox"
+                                   class="freeTimeCheckbox"
+                                   name="freeTimeIds"
+                                   th:each="ft : ${freeTimes}"
+                                   th:if="${(ft.dayOfTheWeek == day and ft.timeOfTheDay.toString() == hour.split(':')[0] and ft.minute.toString() == hour.split(':')[1].replace('0','')+'0') }"
+                                   th:value="${ft.id}"
+                                   th:checked="${teacherFreeTimes.contains(ft.id)}">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <button onclick="managePassEditTeacher()" class="btn-small btn btn-green" type="submit">Зберегти</button>
+
+    </form>
+
+</div>
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<script src="/mainSrcipt.js"></script>
+<script>
+</script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Редагування учня</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
+
+<section class="hero" style="min-height: 120px;">
+    <div class="container">
+        <p th:text="'Учень: '+${student.user.name}"></p>
+        <h3 class="ml-20">Змінити</h3>
+    </div>
+</section>
+<div class="main-content">
+    <div class="container">
+        <div class="card" style="overflow: clip;">
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+
+            <form th:action="@{/admin/student/{id}/edit(id=${student.id})}" th:object="${student}" method="post" id="form">
+
+                <p class="d-none" id="id" th:text="${student.id}"></p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Ім'я</label>
+                        <input type="text" th:field="*{user.name}"  required minlength="2" maxlength="100"
+                               title="Лише букви, пробіли, апостроф або дефіс">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Вік</label>
+                        <input type="number" th:field="*{age}" required min="7" max="17">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" th:field="*{user.email}" required maxlength="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="text" th:field="*{phoneNumber}" required maxlength="15" >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="text" name="password" minlength="6" maxlength="50" id="pass">
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Коментар</label>
+                        <textarea th:field="*{comment}" maxlength="500" required
+                                  placeholder="Наприклад: зручний час занять, рівень підготовки, побажання"></textarea>
+                    </div>
+                </div>
+
+
+
+                <button onclick="managePassEditStudent()" type="submit" class="btn-small btn btn-green">
+                    Зберегти
+                </button>
+
+                <a   th:href="@{/admin/students}" class="btn btn-blue">
+                    Назад
+                </a>
+
+            </form>
+
+
+
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<script src="/mainSrcipt.js"></script>
+</body>
+
+</html>

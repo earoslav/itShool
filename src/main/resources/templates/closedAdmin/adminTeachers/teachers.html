@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!-- Коротко: Thymeleaf-шаблон сторінки. -->
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Kids School - Викладачі</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/generalStyle.css">
+</head>
+<body>
+<header th:replace="~{fragments/header :: adminHeader}"></header>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+<section class="hero">
+    <div class="container">
+        <h3 >Усі викладачі:</h3>
+    </div>
+</section>
+
+
+<!-- FORM -->
+<div class="container">
+
+    <div class="card">
+        <form method="get" class="list-limit-form">
+            <label for="listLimit">Показати:</label>
+            <select id="listLimit" name="limit">
+                <option value="10" th:selected="${listLimit == '10'}">10</option>
+                <option value="100" th:selected="${listLimit == '100'}">100</option>
+                <option value="all" th:selected="${listLimit == 'all'}">Усі</option>
+            </select>
+            <button type="submit" class="btn btn-blue">Застосувати</button>
+        </form>
+        <input type="text" id="myInput" onkeyup="searchTeacher()" placeholder="Пошук за ім'ям..">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ім'я</th>
+                <th>Вік</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>tg username</th>
+                <th>Коментар</th>
+                <th>Дії</th>
+            </tr>
+            </thead>
+
+            <tbody id="teachers">
+            <tr th:each="teacher : ${teachers}">
+                <td th:text="${teacher.id}">1</td>
+                <td th:text="${teacher.user.name}">Ім'я</td>
+                <td th:text="${teacher.age}">15</td>
+                <td th:text="${teacher.user.email}">email</td>
+                <td th:text="${teacher.phoneNumber}">+380...</td>
+                <td th:text="${teacher.tgUsername}">+380...</td>
+                <td th:text="${teacher.comment}">comment</td>
+
+                <td>
+                    <a th:href="@{/admin/teacher/{id}/edit(id=${teacher.id})}" class="btn btn-blue">✏️</a>
+                    <a th:href="@{/admin/teacher/{id}/lessons(id=${teacher.id})}" class="btn btn-blue">📋 Уроки</a>
+                    <form method="post" th:action="@{/admin/teacher/{id}/delete(id=${teacher.id})}">
+                        <input type="hidden" name="teacherId" th:value="${teacher.id}" />
+                    <button class="btn-red btn btn-red" type="submit" onclick="return confirm('Видалити?')">🗑</button>
+                    </form>
+                    <a th:href="@{/admin/teacher/{id}/info(id=${teacher.id})}" class="btn btn-blue">ℹ️ Деталі</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- якщо список пустий -->
+        <div th:if="${teachers.isEmpty()}">
+            <p>Вчителів поки немає</p>
+        </div>
+
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: standardFooter}"></footer>
+<!--<script>-->
+<!--    function searchTeacher() {-->
+<!--        // Declare variables-->
+<!--        var input, filter, ul, a, i, txtValue;-->
+<!--        input = document.getElementById('myInput');-->
+<!--        teachers = document.getElementById('teachers').getElementsByTagName("tr");-->
+<!--        filter = input.value.toUpperCase();-->
+
+<!--        // Loop through all list items, and hide those who don't match the search query-->
+<!--        for (i = 0; i < teachers.length; i++) {-->
+<!--            a = teachers[i].getElementsByTagName("td")[1];-->
+<!--            txtValue = a.textContent || a.innerText;-->
+<!--            if (txtValue.toUpperCase().indexOf(filter) > -1) {-->
+<!--                teachers[i].style.display = "";-->
+<!--            } else {-->
+<!--                teachers[i].style.display = "none";-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
+<script src="/mainSrcipt.js"></script>
+</body>
+</html>

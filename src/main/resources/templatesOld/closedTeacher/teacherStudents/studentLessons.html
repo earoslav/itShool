@@ -180,12 +180,12 @@
                 </button>
             </form>
             <form class="popupForm" th:action="@{/teacher/{tId}/student/lessons/deleteCourse/0(tId=${teacher.id})}" method="post" id="deleteCourseForm">
-                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити?')">🗑️
-                    Видалити курс з учнем
+                <button id="deleteCourseBtn" class="popup-btn delete-btn" onclick="return confirm('Видалити щотижневий урок?')">🗑️
+                    Видалити щотижневий урок
                 </button>
             </form>
             <form class="popupForm" th:action="@{/teacher/{tId}/addMoneyByLessonWithStudent/0/{sId}(tId=${teacher.id}, sId=${student.id})}" method="post" id="setWasForm">
-                <button type="submit" id="setWasBtn" class="popup-btn mark-was-btn">Познчити "було"</button>
+                <button type="submit" id="setWasBtn" class="popup-btn mark-was-btn">Позначити "було"</button>
             </form>
             <button class="popup-btn cancel-btn" onclick="closePopup()">Скасувати</button>
         </div>

@@ -18,6 +18,8 @@ public class LessonAdminLessonsDTO {
 
     private StudentAdminLessonsDTO student;
 
+    private String studentName;
+
 
     private TeacherAdminLessonsDTO teacher;
 
@@ -25,6 +27,7 @@ public class LessonAdminLessonsDTO {
     private CourseAdminLessonsDTO course;
 
 
+    // todo needed?
     private LocalDateTime lessonTime;
 
     private float duration;
